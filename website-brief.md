@@ -46,9 +46,6 @@ building, not just the parts below.
 
 ## Decisions already made (do not re-litigate without a reason)
 
-- **Repo:** new, separate repo from the data pipeline (`data-gatherer`).
-  Reason: independent deploy cadence, no reason to couple a personal site's
-  release cycle to a data pipeline's.
 - **Backend: FastAPI (Python).** Reason: least lines of code for this
   person — they have deep Python/data-science experience and near-zero web
   experience, and want to read the same Parquet/WAL files the collector
