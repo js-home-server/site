@@ -1,11 +1,13 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
+@import '@fontsource/inter/latin-400.css';
+@import '@fontsource/inter/latin-500.css';
+@import '@fontsource/inter/latin-700.css';
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
 	--radius: 0.6rem;
-
 	--background: #f9f9f7;
 	--foreground: #0b0b0b;
 	--card: #fcfcfb;
@@ -38,8 +40,11 @@
 .dark {
 	color-scheme: dark;
 
-	--background: #0d0d0d;
-	--foreground: #ffffff;
+	/* The site is painted on this black and this off-white: the shell, the
+	   status cards and the hero all read them from here rather than repeating
+	   literals. */
+	--background: #090909;
+	--foreground: #f3f3ef;
 	--card: #1a1a19;
 	--card-foreground: #ffffff;
 	--popover: #1a1a19;
@@ -74,7 +79,7 @@
 	--radius-xl: calc(var(--radius) + 4px);
 
 	--font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
-	--font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+	--font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
@@ -112,4 +117,48 @@
 	body {
 		@apply bg-background text-foreground;
 	}
+	/* Body only paints its own box; without this the overscroll gutter and any
+	   area past the last element flash white. */
+	html {
+		background: var(--color-background);
+	}
+}
+
+/* --- site ----------------------------------------------------------------
+   The theme above covers surfaces and body text. These are the few values the
+   hand-written pages add: two steps of quiet text below --muted-foreground for
+   the small-caps labels, and the three accents the hero and the status bar
+   share. Both greys clear 6:1 on the background, which the labels need at the
+   sizes they are set in. */
+:root {
+	--text-dim: #a09f98;
+	--text-faint: #8a8a84;
+
+	--mint: #9aefb7;
+	--amber: #f4cf91;
+	--pink: #efabc4;
+}
+
+/* The standard column for a content page. The landing page opts out: it is
+   full-bleed and sizes itself from the hero. */
+.page {
+	max-width: 62rem;
+	margin-inline: auto;
+	padding: clamp(2rem, 7vh, 4.5rem) var(--gutter) clamp(3rem, 10vh, 6rem);
+}
+
+.page h1 {
+	margin: 0;
+	font-size: clamp(2.25rem, 6vw, 4rem);
+	font-weight: 700;
+	letter-spacing: -0.045em;
+	line-height: 1;
+}
+
+.page h1 + p {
+	margin: clamp(1rem, 2vw, 1.5rem) 0 0;
+	max-width: 44ch;
+	color: var(--text-dim);
+	font-size: clamp(1rem, 1.4vw, 1.15rem);
+	line-height: 1.6;
 }

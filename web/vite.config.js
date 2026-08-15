@@ -4,7 +4,16 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-	server: { port: 5199},
+	server: {
+		port: 5199,
+		proxy: {
+			'/api/status': {
+				target: 'https://status-api.js195.co.uk',
+				changeOrigin: true,
+				rewrite: (path) => path.replace(/^\/api/, '')
+			}
+		}
+	},
 	plugins: [
 		tailwindcss(),
 		sveltekit({
