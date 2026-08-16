@@ -28,17 +28,55 @@
 <style>
 	.landing {
 		/* --- hero tuning knobs -------------------------------------------
-		   --bull-drop: how far the horn tips sit below the header. 0 puts them
-		     flush with the bottom of the header; negative pulls them up behind
-		     the nav. Plain rem — it is measured outside the zoom below.
-		   --bull-scale: the bull's size. This also sets the status bar's width,
-		     which is measured from the art rather than declared.
-		   Both are the full-size values. The hero is one composition — art, name
-		   and status bar share the space under the header — so the queries at
-		   the foot of this file only ever step them down, which means whichever
-		   axis is tightest wins. */
-		--bull-drop: 2rem;
-		--bull-scale: 1.6;
+		   The art is a fixed grid of characters — 160 wide, 112 tall — so its
+		   whole size is one number: how big one character cell is. Everything
+		   here is written in terms of that cell, which is what keeps the
+		   composition in proportion instead of being a fixed pixel island that
+		   happens to suit one screen. The constants come from measuring the
+		   rendered <pre>: JetBrains Mono advances 0.6021em per character and the
+		   generated component sets line-height 0.72, so the art is
+		     160 x 0.6021 = 96.34 cells wide, 112 x 0.72 = 80.64 cells tall.
+
+		   --art-fill: the share of the viewport height the bull takes. This is
+		     the whole look, measured off the reference screenshot — a maximised
+		     window on a 16" MacBook Pro, 1728x993 — where the art was 774 tall.
+		     774 of 993 is 0.78.
+		   --tuck: how far the bull's faded tail runs past the top of the cards.
+		     By that point the gradient has taken it to the page colour, so this
+		     reads as the bull finishing at the cards rather than short of them.
+		   --sky: least clear band between the nav and the horn tips.
+		   --bar-reserve: what the cards cost. An estimate, used only to stop the
+		     art colliding with them on a short viewport. */
+		--art-fill: 0.78;
+		--tuck: 4rem;
+		--sky: 2rem;
+		/* The cards themselves plus the gap they keep from the bottom edge,
+		   which is the header's own top padding. */
+		--bar-reserve: calc(8.5rem + var(--nav-pad-top));
+
+		/* Three limits, smallest wins, no breakpoints anywhere: the art may not
+		   outgrow the width it is allowed, may not exceed its share of the
+		   height, and may never push its top above the sky under the nav. On a
+		   normal screen the middle term rules and the composition is the
+		   reference one at any size; the outer two take over at the extremes.
+
+		   The floor is the get-out. On a landscape phone or a half-height window
+		   the fit term goes to almost nothing and the bull becomes a stamp;
+		   below that size the hero stops trying to fit and scrolls instead, which
+		   is what the query at the foot of this file allows. It sits inside the
+		   width term, never outside it: a floor that could beat the width is a
+		   floor that crops the horns off a small phone. */
+		--cell: min(
+			(100vw - 2 * var(--gutter)) / 96.34,
+			max(
+				4px,
+				min(
+					var(--art-fill) * 100svh / 80.64,
+					(100svh - var(--header-height) - var(--bar-reserve) + var(--tuck) - var(--sky)) /
+						80.64
+				)
+			)
+		);
 
 		display: grid;
 		/* The generator crops the art to its ink bounding box in both axes (see
@@ -56,12 +94,14 @@
 
 	.wrap {
 		position: relative;
-		/* The horn tips start exactly where the header ends, so the menu keeps a
-		   clear band above them and the bull's bottom tucks that much further
-		   into the status bar. align-self keeps this box the art's own height,
-		   so the identity can sit at a fixed point on the bull's face. */
-		align-self: start;
-		margin-top: var(--bull-drop);
+		/* Centred in what is left between the nav and the cards, so the slack
+		   splits evenly above and below instead of collecting under the bull.
+		   On a tall portrait screen the art is width-bound and cannot fill the
+		   height; dumping all of that at the bottom is what read as a hole
+		   between the bull and the cards. align-self keeps this box the art's
+		   own height, so the identity can sit at a fixed point on the face. */
+		align-self: end;
+		margin-bottom: calc(-1 * var(--tuck));
 	}
 
 	/* The bull dissolves into the page on the way down. This is an overlay of the
@@ -77,11 +117,12 @@
 		pointer-events: none;
 	}
 
-	.bull {
-		/* zoom, not transform: scale — zoom scales the layout box too, so the
-		   column above measures the art at the size it is actually painted.
-		   Keep offsets off this element: zoom would multiply them. */
-		zoom: var(--bull-scale);
+	/* The generated component hard-codes font-size: 6px. Overriding it here is
+	   what actually resizes the art — a character grid has no other size — and
+	   it beats the old zoom because the layout box follows natively, so the
+	   column above still measures the art at the size it is painted. */
+	.bull :global(pre) {
+		font-size: var(--cell);
 	}
 
 	.identity {
@@ -113,24 +154,23 @@
 		pointer-events: none;
 	}
 
+	/* The name is measured in cells like everything else, so it keeps its size
+	   relative to the face it sits on instead of drifting against it. 11 cells
+	   is the 105.6px it renders at on the reference screen. The clamps are only
+	   end-stops for the extremes the cell cannot sensibly reach. */
 	h1 {
 		margin: 0;
 		color: var(--color-foreground);
-		/* Sized off whichever axis is scarcer. A wide, short window is the case
-		   that bites: the vw term alone puts a 140px name on a 500px-tall screen
-		   and it runs straight into the status bar. */
-		font-size: clamp(2.4rem, min(6.5vw, 12svh), 6.6rem);
+		font-size: clamp(2.2rem, 11 * var(--cell), 9rem);
 		font-weight: 700;
 		letter-spacing: -0.055em;
 		line-height: 0.95;
 	}
 
 	p {
-		/* The gap under the name. Scales with the viewport so it stays in
-		   proportion to a heading that is itself sized off vw. */
-		margin: clamp(0.65rem, 1.3vw, 1.15rem) 0 0;
+		margin: clamp(0.6rem, 1.9 * var(--cell), 1.4rem) 0 0;
 		color: var(--color-foreground);
-		font-size: clamp(0.78rem, 1.35vw, 1.2rem);
+		font-size: clamp(0.72rem, 2 * var(--cell), 1.35rem);
 		font-weight: 500;
 		letter-spacing: 0.28em;
 		text-transform: uppercase;
@@ -140,11 +180,26 @@
 		color: var(--mint);
 	}
 
-	@media (max-width: 48rem) {
-		.landing {
-			--bull-scale: 1.3;
+	/* The only query left. Everything the old ladder of max-height steps did is
+	   now in the three-way min() above, which cannot be caught out by a size
+	   nobody thought to test. This one is not about fit: a portrait phone is so
+	   much taller than it is wide that a bull kept whole inside the gutter is
+	   too small to read as anything, so the horns are allowed off the edges. */
+	/* Portrait. Not a size breakpoint — a change of which constraint binds. Past
+	   roughly square the art is limited by width, so it cannot reach down to the
+	   cards however it is anchored; pinning it to them piles every bit of the
+	   slack into one void above the horns. Centring splits that slack instead.
+	   The threshold is where the two terms of the min() cross: the art is 1.195
+	   cells wide per cell tall, so at --art-fill 0.78 the width term takes over
+	   just under square. */
+	@media (max-aspect-ratio: 19 / 20) {
+		.wrap {
+			align-self: center;
+			margin-bottom: 0;
 		}
+	}
 
+	@media (max-width: 48rem) {
 		.identity::before {
 			inset-inline: -1rem;
 		}
@@ -154,43 +209,14 @@
 		}
 	}
 
-	/* Short viewports: a laptop at 768, a half-height window, a landscape phone.
-	   The header and the status bar cost the same there as they do anywhere, and
-	   the name hangs off the art's own height, so the art is what has to give or
-	   the name lands on top of the bar. Each step is sized to still clear it at
-	   the shortest viewport that step covers, measured at the widest — the name
-	   is largest there, so that is the worst case. */
-	@media (max-height: 52rem) {
-		.landing {
-			--bull-scale: 1.3;
-			--bull-drop: 1.5rem;
-		}
-	}
-
-	@media (max-height: 48rem) {
-		.landing {
-			--bull-scale: 1.05;
-			--bull-drop: 1.25rem;
-		}
-	}
-
-	@media (max-height: 44rem) {
-		.landing {
-			--bull-scale: 0.78;
-			--bull-drop: 1rem;
-		}
-	}
-
-	/* Past here no size of art leaves the name clear, so the hero stops
-	   pretending to fit: it keeps its proportions and the page scrolls the last
-	   of it into view. The fold still lands on nav, horns and name. */
+	/* Too short for the composition at any size the floor allows, so the hero
+	   keeps its proportions and lets the last of itself scroll into view. The
+	   fold still lands on nav, horns and name. */
 	@media (max-height: 40rem) {
 		.landing {
-			--bull-scale: 0.62;
-			--bull-drop: 0.5rem;
-
 			height: auto;
 			min-height: calc(100svh - var(--header-height));
 		}
+
 	}
 </style>
