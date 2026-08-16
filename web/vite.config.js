@@ -7,7 +7,9 @@ export default defineConfig({
 	server: {
 		port: 5199,
 		proxy: {
-			'/api/status': {
+			/* The API sends no Access-Control-Allow-Origin, so the browser can only
+			   reach it same-origin. Everything under /api goes through here. */
+			'/api': {
 				target: 'https://status-api.js195.co.uk',
 				changeOrigin: true,
 				rewrite: (path) => path.replace(/^\/api/, '')

@@ -117,9 +117,9 @@
 		margin: 0;
 		color: var(--color-foreground);
 		/* Sized off whichever axis is scarcer. A wide, short window is the case
-		   that bites: 8vw alone puts a 150px name on a 500px-tall screen and it
-		   runs straight into the status bar. */
-		font-size: clamp(3rem, min(8vw, 14svh), 8rem);
+		   that bites: the vw term alone puts a 140px name on a 500px-tall screen
+		   and it runs straight into the status bar. */
+		font-size: clamp(2.4rem, min(6.5vw, 12svh), 6.6rem);
 		font-weight: 700;
 		letter-spacing: -0.055em;
 		line-height: 0.95;
