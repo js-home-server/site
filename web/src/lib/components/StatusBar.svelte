@@ -1,28 +1,20 @@
 <script>
 	import { onMount } from 'svelte';
 
-	const HISTORY_HOURS = 24;
-	const SEGMENT_MINUTES = 15; /* the target bar: one per quarter hour, 96 in all */
-	const SEGMENTS = (HISTORY_HOURS * 60) / SEGMENT_MINUTES;
+	const HISTORY_RANGE = '24h';
+	const STATUS_URL = '/api/status';
+	const HISTORY_URL = `/api/history?range=${HISTORY_RANGE}`;
+	const SNAPSHOT_MS = 30_000;
+	const HISTORY_MS = 300_000; /* the series' own step: asking faster returns the same points */
 	const BAR_PITCH = 2; /* px a bar needs to read as one: its ink and its gap */
-	const HOUR_MS = 3600_000;
-	const WINDOW_MS = HISTORY_HOURS * HOUR_MS;
-	const STORE_KEY = 'status-history-v1';
+	const MAX_SEGMENTS = 96;
 
 	let snapshot = $state(null);
-	/* Samples the page has actually seen. The API returns a point-in-time
-	   snapshot with no history, so a 24h chart has to be accumulated here and
-	   kept across visits. Replace this with the server's own series the moment
-	   /api/status can return one. */
-	let history = $state([]);
-	let fetching = false;
+	/* The API's own history: { generatedAt, range, stepSeconds, status,
+	   cpuTemperatureC, latencyMs }, each series a list of [unixSeconds, value].
+	   status is 1 for up, 0 for down, fractional for part of a bucket. */
+	let series = $state(null);
 
-	const withinWindow = (points) => {
-		const cutoff = Date.now() - WINDOW_MS;
-		return points.filter((p) => p?.t >= cutoff);
-	};
-
-	const formatUptime = (seconds) => `${Math.floor(seconds / 3600)}h`;
 	const mean = (values) => values.reduce((sum, v) => sum + v, 0) / values.length;
 
 	const percentile = (values, p) => {
@@ -32,66 +24,110 @@
 
 	let online = $derived(snapshot?.server === 'online');
 
-	/* Quarter-hour bars where there is room for them. A phone card is narrower
-	   than 96 bars and their gaps, and grid answers that by shrinking every bar
-	   to nothing, so take the finest bucket the strip can actually draw. */
-	let stripWidth = $state(0);
-	let segmentCount = $derived(
-		stripWidth ? Math.max(12, Math.min(SEGMENTS, Math.floor(stripWidth / BAR_PITCH))) : SEGMENTS
+	const pointsOf = (key) => (Array.isArray(series?.[key]) ? series[key] : []);
+
+	let temps = $derived(pointsOf('cpuTemperatureC'));
+	let latencies = $derived(pointsOf('latencyMs'));
+	let uptime = $derived(pointsOf('status'));
+
+	/* All three graphics share one x axis: the span the API actually returned,
+	   which is at most `range` but less until it has been collecting that long.
+	   Labelling the window from the data means the caption can never overstate
+	   what the traces cover, and it grows into 24H on its own. */
+	let spanSeconds = $derived(uptime.length > 1 ? uptime.at(-1)[0] - uptime[0][0] : 0);
+	let spanLabel = $derived(
+		spanSeconds >= 3600
+			? `${Math.round(spanSeconds / 3600)}H`
+			: spanSeconds > 0
+				? `${Math.round(spanSeconds / 60)}M`
+				: '—'
 	);
 
-	/* The only thing a lone snapshot says about the past is how far back the
-	   current boot reaches: time inside uptimeSeconds was up, anything older is
-	   unknown rather than down. */
-	let segments = $derived(
-		Array.from(
-			{ length: segmentCount },
-			(_, i) =>
-				online &&
-				snapshot.uptimeSeconds >= ((segmentCount - i) / segmentCount) * HISTORY_HOURS * 3600
-		)
-	);
+	/* An SVG path over the series, x by timestamp so a gap in collection reads as
+	   a gap rather than being closed up. y is scaled to the series' own range
+	   with a little headroom, so a flat trace still shows its shape and spikes
+	   still have somewhere to go. */
+	function chart(points) {
+		if (points.length < 2) return '';
 
-	/* An SVG path over the readings themselves: one step per sample, evenly
-	   spaced, joined straight. Clock time cannot drive x here — the samples only
-	   cover the minutes the tab has been open, so on a 24h axis a whole session
-	   lands in the last half-percent of the card and draws as a vertical spike.
-	   y is scaled to the series' own range with a little headroom, so a flat
-	   trace still shows its shape and spikes still have somewhere to go. */
-	function chart(values) {
-		if (values.length < 2) return '';
-
+		const values = points.map((p) => p[1]);
 		const min = Math.min(...values);
 		const max = Math.max(...values);
 		const pad = (max - min) * 0.15 || 1;
 		const lo = min - pad;
 		const span = max + pad - lo;
-		const step = 100 / (values.length - 1);
+		const t0 = points[0][0];
+		const dt = points.at(-1)[0] - t0 || 1;
 
-		return values
-			.map((v, i) => {
+		return points
+			.map(([t, v], i) => {
+				const x = ((t - t0) / dt) * 100;
 				const y = 30 - ((v - lo) / span) * 30;
-				return `${i ? 'L' : 'M'}${(i * step).toFixed(2)},${y.toFixed(2)}`;
+				return `${i ? 'L' : 'M'}${x.toFixed(2)},${y.toFixed(2)}`;
 			})
 			.join(' ');
 	}
 
-	const seriesOf = (key) => history.map((p) => p[key]).filter((v) => typeof v === 'number');
+	/* One bar per bucket of that same window, at the finest pitch the strip can
+	   draw: a phone card is narrower than 96 bars and their gaps, and grid
+	   answers that by shrinking every bar to nothing. Never more bars than
+	   samples either, or the empty buckets between them read as outages. */
+	let stripWidth = $state(0);
+	let segmentCount = $derived(
+		stripWidth ? Math.max(12, Math.min(MAX_SEGMENTS, Math.floor(stripWidth / BAR_PITCH))) : MAX_SEGMENTS
+	);
 
-	let temps = $derived(seriesOf('temp'));
-	let latencies = $derived(seriesOf('latency'));
+	let segments = $derived.by(() => {
+		if (uptime.length < 2) return [];
 
-	/* One entry per chart card. Everything the markup needs is settled here, so
-	   the template stays a list of cards rather than a pile of ternaries. */
+		const t0 = uptime[0][0];
+		const dt = uptime.at(-1)[0] - t0 || 1;
+		const count = Math.min(segmentCount, uptime.length);
+		const buckets = Array.from({ length: count }, () => []);
+
+		for (const [t, v] of uptime) {
+			buckets[Math.min(count - 1, Math.floor(((t - t0) / dt) * count))].push(v);
+		}
+
+		/* A bucket the API had nothing for is unknown, which is not the same as
+		   down and must not be drawn as if it were. */
+		return buckets.map((b) => (b.length ? (mean(b) >= 0.5 ? 'up' : 'down') : 'unknown'));
+	});
+
+	/* Runs of down buckets, not down buckets: a two-hour outage is one incident,
+	   however many bars it happens to cover. */
+	let incidents = $derived(
+		segments.reduce((n, s, i) => n + (s === 'down' && segments[i - 1] !== 'down' ? 1 : 0), 0)
+	);
+
+	/* One entry per card. Everything the markup needs is settled here, so the
+	   template stays a list of cards rather than a pile of ternaries. */
 	let cards = $derived([
 		{
+			label: 'Uptime',
+			value: online ? Math.floor(snapshot.uptimeSeconds / 3600) : '—',
+			unit: online ? 'h' : '',
+			tone: 'mint',
+			/* Silence is not the same as a clean record: with no series behind it
+			   the strip cannot say anything about incidents either way. */
+			stats: segments.length
+				? incidents
+					? `${incidents} INCIDENT${incidents > 1 ? 'S' : ''}`
+					: 'NO INCIDENTS'
+				: 'NO HISTORY YET',
+			strip: true
+		},
+		{
 			label: 'CPU Temp',
-			value: snapshot ? `${Math.round(snapshot.cpuTemperatureC)}°` : '—',
-			unit: '',
+			value: snapshot ? Math.round(snapshot.cpuTemperatureC) : '—',
+			/* Degrees hug their number, word units take a space. Both carry the
+			   unit at every mention, headline and stats alike. */
+			unit: snapshot ? '°C' : '',
+			tight: true,
 			tone: 'amber',
 			stats: temps.length
-				? `Min ${Math.round(Math.min(...temps))}° · Max ${Math.round(Math.max(...temps))}°`
-				: 'No history yet',
+				? `MIN ${Math.round(Math.min(...temps.map((p) => p[1])))}°C · MAX ${Math.round(Math.max(...temps.map((p) => p[1])))}°C`
+				: 'NO HISTORY YET',
 			path: chart(temps)
 		},
 		{
@@ -100,110 +136,92 @@
 			unit: snapshot ? 'ms' : '',
 			tone: 'pink',
 			stats: latencies.length
-				? `Avg ${Math.round(mean(latencies))} · P95 ${Math.round(percentile(latencies, 0.95))}`
-				: 'No history yet',
+				? `AVG ${Math.round(mean(latencies.map((p) => p[1])))} ms · P95 ${Math.round(percentile(latencies.map((p) => p[1]), 0.95))} ms`
+				: 'NO HISTORY YET',
 			path: chart(latencies)
 		}
 	]);
 
 	let uptimeLabel = $derived(
-		`Uptime over the last ${HISTORY_HOURS} hours: ${Math.round((segments.filter(Boolean).length / segments.length) * HISTORY_HOURS)} of ${HISTORY_HOURS} hours confirmed up`
+		segments.length
+			? `Server uptime over the last ${spanLabel}: ${segments.filter((s) => s === 'up').length} of ${segments.length} intervals up`
+			: 'Server uptime history unavailable'
 	);
 
-	function record(sample) {
-		history = [
-			...withinWindow(history),
-			{ t: Date.now(), temp: sample.cpuTemperatureC, latency: sample.latencyMs }
-		];
-		try {
-			localStorage.setItem(STORE_KEY, JSON.stringify(history));
-		} catch {
-			/* Private mode or a full quota: the chart just stays session-only. */
-		}
-	}
+	const inFlight = new Set();
 
-	async function loadStatus() {
-		if (fetching) return;
-		fetching = true;
+	async function load(key, url, apply) {
+		if (inFlight.has(key)) return;
+		inFlight.add(key);
 
 		try {
-			const response = await fetch('/api/status');
-			if (!response.ok) throw new Error(`Status request failed: ${response.status}`);
-			snapshot = await response.json();
-			record(snapshot);
+			const response = await fetch(url);
+			if (!response.ok) throw new Error(`${key} request failed: ${response.status}`);
+			apply(await response.json());
 		} catch {
-			/* Keep the last good snapshot on the wire dropping out; the next
-			   poll picks it back up. */
+			/* Keep the last good data on the wire dropping out; the next poll
+			   picks it back up. */
 		} finally {
-			fetching = false;
+			inFlight.delete(key);
 		}
 	}
+
+	const loadSnapshot = () => load('status', STATUS_URL, (data) => (snapshot = data));
+	const loadHistory = () => load('history', HISTORY_URL, (data) => (series = data));
 
 	onMount(() => {
-		try {
-			const stored = JSON.parse(localStorage.getItem(STORE_KEY) ?? '[]');
-			if (Array.isArray(stored)) history = withinWindow(stored);
-		} catch {
-			/* Unreadable store: start a fresh window. */
-		}
-
-		loadStatus();
-		const timer = window.setInterval(() => {
-			if (!document.hidden) loadStatus();
-		}, 30_000);
-		const handleVisibility = () => {
-			if (!document.hidden) loadStatus();
+		const refresh = () => {
+			if (document.hidden) return;
+			loadSnapshot();
+			loadHistory();
 		};
 
-		document.addEventListener('visibilitychange', handleVisibility);
+		refresh();
+		/* The headline numbers move every poll; the series only gains a point
+		   every stepSeconds, so it is not worth re-fetching at the same rate. */
+		const timers = [
+			window.setInterval(() => !document.hidden && loadSnapshot(), SNAPSHOT_MS),
+			window.setInterval(() => !document.hidden && loadHistory(), HISTORY_MS)
+		];
+
+		document.addEventListener('visibilitychange', refresh);
 		return () => {
-			window.clearInterval(timer);
-			document.removeEventListener('visibilitychange', handleVisibility);
+			timers.forEach(window.clearInterval);
+			document.removeEventListener('visibilitychange', refresh);
 		};
 	});
 </script>
 
-{#snippet chartCard({ label, value, unit, tone, stats, path })}
+{#snippet metricCard({ label, value, unit, tight, tone, stats, path, strip })}
 	<div class="metric">
 		<span class="label">{label}</span>
 		<strong class="value {tone}">
-			{value}{#if unit}<span class="unit">{unit}</span>{/if}
+			{value}{#if unit}<span class="unit" class:tight>{unit}</span>{/if}
 		</strong>
 		<span class="stats">{stats}</span>
-		<div class="chart {tone}">
-			{#if path}
-				<svg viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">
-					<path d={path} vector-effect="non-scaling-stroke" />
-				</svg>
-			{/if}
-		</div>
+		{#if strip}
+			<div class="history" bind:clientWidth={stripWidth} role="img" aria-label={uptimeLabel}>
+				{#each segments as state, i (i)}
+					<i class={state}></i>
+				{/each}
+			</div>
+		{:else}
+			<div class="chart {tone}">
+				{#if path}
+					<svg viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">
+						<path d={path} vector-effect="non-scaling-stroke" />
+					</svg>
+				{/if}
+			</div>
+		{/if}
+		<span class="window"><span>{spanLabel}</span><span>NOW</span></span>
 	</div>
 {/snippet}
 
 <aside class="status-bar" aria-label="Live server status">
 	<div class="metrics">
-		<div class="metric status">
-			<span class="label">Status</span>
-			<strong class="state" class:mint={online}>
-				{online ? 'Online' : 'Unavailable'}
-			</strong>
-			<span class="stats">
-				Uptime {snapshot ? formatUptime(snapshot.uptimeSeconds) : '—'}
-			</span>
-			<div
-				class="history"
-				bind:clientWidth={stripWidth}
-				role="img"
-				aria-label={uptimeLabel}
-			>
-				{#each segments as up}
-					<i class:up></i>
-				{/each}
-			</div>
-		</div>
-
 		{#each cards as card (card.label)}
-			{@render chartCard(card)}
+			{@render metricCard(card)}
 		{/each}
 	</div>
 </aside>
@@ -241,7 +259,8 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.3rem;
-		min-height: 4.5rem;
+		/* Room for the graphic and the window caption beneath it. */
+		min-height: 5.4rem;
 		/* The row is anchored at the foot of the page, so this is also what sets
 		   where the top edge of the cards lands. */
 		padding: 0.7rem 0.9rem;
@@ -261,9 +280,17 @@
 		margin-top: auto;
 	}
 
-	.state {
-		text-transform: uppercase;
-		letter-spacing: 0.02em;
+	/* The traces carry no axis, so this is one: the span they cover on the left,
+	   the present on the right, which is also the direction they are read in. */
+	.window {
+		display: flex;
+		justify-content: space-between;
+		margin-top: -0.1rem;
+		color: var(--text-faint);
+		font-size: 0.55rem;
+		font-weight: 500;
+		letter-spacing: 0.12em;
+		line-height: 1;
 	}
 
 	.history {
@@ -275,7 +302,8 @@
 
 	.history i {
 		border-radius: 1px;
-		/* Unknown, not down: dim enough to read as "no data" beside the mint. */
+		/* The bare bar is unknown, not down: dim enough to read as "no data"
+		   beside the mint, and never mistakable for an outage. */
 		background: color-mix(in srgb, var(--mint) 12%, var(--color-background));
 	}
 
@@ -283,33 +311,37 @@
 		background: var(--mint);
 	}
 
-	/* Online reads at the same size and weight as the numbers beside it. */
-	.value,
-	.state {
-		color: var(--color-foreground);
-		font-size: clamp(1.15rem, 1.65vw, 1.6rem);
-		font-weight: 700;
-		line-height: 1;
+	.history i.down {
+		background: var(--pink);
 	}
 
 	.value {
+		color: var(--color-foreground);
+		font-size: clamp(1.15rem, 1.65vw, 1.6rem);
+		font-weight: 700;
 		letter-spacing: -0.02em;
+		line-height: 1;
 	}
 
 	.unit {
-		margin-left: 0.15em;
-		font-size: 0.45em;
+		margin-left: 0.3em;
+		font-size: 0.5em;
 		font-weight: 500;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
+		letter-spacing: 0.04em;
 	}
 
+	/* A degree sign belongs to its number; ms is a word and keeps its space. */
+	.unit.tight {
+		margin-left: 0.06em;
+	}
+
+	/* Cased by hand rather than by text-transform: the labels want small caps but
+	   °C and ms are unit symbols and are wrong in any other case. */
 	.stats {
 		color: var(--text-dim);
 		font-size: 0.62rem;
 		font-weight: 500;
 		letter-spacing: 0.1em;
-		text-transform: uppercase;
 	}
 
 	.chart {
@@ -361,7 +393,7 @@
 		}
 
 		.metric {
-			min-height: 5rem;
+			min-height: 5.9rem;
 			padding: 0.7rem 0.6rem;
 		}
 
