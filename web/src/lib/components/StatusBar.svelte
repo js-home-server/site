@@ -237,9 +237,11 @@
 		   page); only cap it so it never runs off a narrow viewport. */
 		width: 100%;
 		max-width: calc(100vw - 2 * var(--gutter));
-		/* Standalone boxes need to clear the bottom edge; the outer edges stay
-		   flush so the row still measures tip to tip. */
-		margin: 0 auto 1rem;
+		/* The cards sit off the bottom edge by exactly what the nav sits off the
+		   top — same token, so the page is framed evenly however the header's
+		   own padding resolves. The outer edges stay flush so the row still
+		   measures tip to tip. */
+		margin: 0 auto var(--nav-pad-top);
 	}
 
 	.metrics {
