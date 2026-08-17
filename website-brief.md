@@ -40,7 +40,7 @@ building, not just the parts below.
   already made in this brief.
 - **Reuse existing infrastructure before building new.** The Cloudflare
   Tunnel, Grafana, Prometheus, the `data-gatherer` archive, and the
-  TradingView implementation already at `/Users/js/coding-projects/charting`
+  TradingView implementation already at `/Users/js/coding-server/charting`
   are all existing infrastructure to build on top of, not patterns to
   reimplement from scratch.
 
