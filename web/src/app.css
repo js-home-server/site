@@ -223,3 +223,14 @@
 .plot > .foot {
 	grid-column: 2;
 }
+
+/* A graph's scale runs down that gutter: spread over the height it measures, right
+   aligned against the drawing, and hanging half a line past each end so the top
+   and bottom labels sit level with the rules they name rather than inside them. */
+.plot > .scale {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	align-items: flex-end;
+	margin: -0.3rem 0;
+}

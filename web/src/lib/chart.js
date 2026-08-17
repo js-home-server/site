@@ -20,13 +20,17 @@ export const markY = (value, [lo, hi]) =>
    scaled to the series' own range with a little headroom, which is what a
    thumbnail sparkline wants: a flat trace still shows its shape and spikes still
    have somewhere to go. */
-/* The series' own range with a little air above and below it, for a sparkline
-   with no scale of its own to be drawn against. */
-function headroom(values) {
+/* The series' own range with a little air above and below it, for a chart with no
+   scale of its own to be drawn against. The floor holds at zero for a series that
+   never goes under it: a negative percentage is not a reading anything can take,
+   and an axis that offers one is an axis nobody can read. */
+export function headroom(values) {
 	const min = Math.min(...values);
 	const max = Math.max(...values);
 	const pad = (max - min) * 0.15 || 1;
-	return [min - pad, max + pad];
+	const lo = min - pad;
+
+	return [min >= 0 && lo < 0 ? 0 : lo, max + pad];
 }
 
 export function chart(points, domain) {

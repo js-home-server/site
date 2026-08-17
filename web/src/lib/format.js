@@ -3,7 +3,13 @@
    number it has not got, so a caller never has to guard a reading before writing
    it down. */
 
-export const pct = (v) => (Number.isFinite(v) ? `${Math.round(v)}%` : '—');
+/* Whole percentages, except under one: pressure runs in hundredths of a percent,
+   and rounding every reading of it to 0% would print the same figure for a machine
+   that is stalling and one that is idle. Zero stays zero. */
+export const pct = (v) => {
+	if (!Number.isFinite(v)) return '—';
+	return v !== 0 && Math.abs(v) < 1 ? `${v.toFixed(2)}%` : `${Math.round(v)}%`;
+};
 
 export const degrees = (v) => (Number.isFinite(v) ? `${Math.round(v)}°C` : '—');
 
