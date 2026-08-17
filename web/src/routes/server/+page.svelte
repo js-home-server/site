@@ -3,13 +3,16 @@
 	import AsciiDish from '$lib/components/AsciiDish.svelte';
 	import AsciiShip from '$lib/components/AsciiShip.svelte';
 	import Capacity from '$lib/components/Capacity.svelte';
+	import Dial from '$lib/components/Dial.svelte';
 	import Heatmap from '$lib/components/Heatmap.svelte';
 	import Horizon from '$lib/components/Horizon.svelte';
 	import MetricRow from '$lib/components/MetricRow.svelte';
 	import Panel from '$lib/components/Panel.svelte';
 	import Placeholder from '$lib/components/Placeholder.svelte';
+	import Stack from '$lib/components/Stack.svelte';
 	import Trace from '$lib/components/Trace.svelte';
 	import { bytes, degrees, pct, rate, stamp } from '$lib/format.js';
+	import { memoryBands } from '$lib/memory.js';
 	import { server, watch } from '$lib/server.svelte.js';
 	import { bucket, last, summarise } from '$lib/stats.js';
 	import { volume } from '$lib/storage.js';
@@ -45,6 +48,9 @@
 	let snapshot = $derived(server.snapshot);
 	let series = $derived(server.series);
 	let month = $derived(server.month);
+
+	/* How the machine's memory is divided, as three shares of the whole. */
+	let ram = $derived(memoryBands(series));
 
 	/* Each volume worked out from its own 30-day series: where it is, which way it
 	   is going, and when that runs out. The capacity boxes and the horizon are the
@@ -103,7 +109,8 @@
 		).filter((lane) => lane.cells.length)
 	);
 
-	const IO_TICKS = ['24h ago', '18h', '12h', '6h', 'Now'];
+	/* The 24h scale both maps of the window are labelled with. */
+	const DAY_TICKS = ['24h ago', '18h', '12h', '6h', 'Now'];
 
 	/* Per-core utilisation as a map: one row a core, one cell a bucket, straight
 	   off the same 0-100% scale the traces are drawn against. */
@@ -150,11 +157,10 @@
 			<!-- Sustained pressure is the reading that matters rather than any one
 			     spike, so the rules are the two levels worth seeing a trace cross. -->
 			<Trace
-				points={series?.cpuPressurePercent}
+				lines={[{ id: 'pressure', points: series?.cpuPressurePercent, tone: 'var(--coral)' }]}
 				domain={[0, 100]}
 				format={pct}
 				marks={[25, 50]}
-				tone="var(--coral)"
 			/>
 		</MetricRow>
 
@@ -168,18 +174,48 @@
 			     0°C, so the bottom 40° of the axis would be empty and the trace flat
 			     against the top of it. -->
 			<Trace
-				points={series?.cpuTemperatureC}
+				lines={[{ id: 'temperature', points: series?.cpuTemperatureC, tone: 'var(--amber)' }]}
 				domain={[40, 100]}
 				format={degrees}
 				marks={[60, 80]}
-				tone="var(--amber)"
 			/>
 		</MetricRow>
 	</div>
 {/snippet}
 
 {#snippet memory()}
-	<Placeholder note="value + sparkline" lines={2} />
+	<div class="split memory">
+		<Dial
+			label="RAM usage"
+			percent={snapshot?.memoryPercent}
+			tone="var(--mint)"
+			detail={snapshot
+				? `${bytes(snapshot.memoryUsedBytes)} / ${bytes(snapshot.memoryTotalBytes)}`
+				: '—'}
+		/>
+
+		<Panel label="Memory history (24h)">
+			<!-- Used, cache and free, which is how the memory is actually divided: the
+			     cache is the part the machine would give back under pressure. -->
+			<Stack bands={ram} ticks={DAY_TICKS} note="no memory history yet" />
+		</Panel>
+
+		<div class="wide">
+			<Panel label="Pressure (24h)">
+				<!-- No domain: this reading lives in hundredths of a percent, so the scale
+				     is the range it covered rather than the 0-100 a share could take.
+				     Some is any task waiting on memory, full is every task waiting at
+				     once — the second is the one that means the machine stopped. -->
+				<Trace
+					lines={[
+						{ id: 'some', points: series?.memoryPressureSomePercent, tone: 'var(--amber)', label: 'Some' },
+						{ id: 'full', points: series?.memoryPressureFullPercent, tone: 'var(--coral)', label: 'Full', dashed: true }
+					]}
+					format={pct}
+				/>
+			</Panel>
+		</div>
+	</div>
 {/snippet}
 
 {#snippet storage()}
@@ -187,7 +223,7 @@
 	     the horizon spans both of them across the rest, because it is the one chart
 	     that reads them together. Everything else about the disks runs along the
 	     bottom. -->
-	<div class="lanes">
+	<div class="split">
 		{#each volumes as vol (vol.id)}
 			<!-- The series' last percent, or the live snapshot's until the history has
 			     one: the box reads the same either way. -->
@@ -203,13 +239,13 @@
 			<Horizon {volumes} />
 		</div>
 
-		<div class="extras">
+		<div class="wide io">
 			<Panel label="I/O pulse (24h)">
 				<!-- Each lane is stretched to its own busiest quarter-hour, so the key
 				     quotes that lane's own floor and ceiling in bytes a second. -->
 				<Heatmap
 					rows={io}
-					ticks={IO_TICKS}
+					ticks={DAY_TICKS}
 					normalise="row"
 					format={rate}
 					note="no io history yet"
@@ -499,11 +535,22 @@
 		gap: 0.75rem;
 	}
 
-	/* A third for the volumes, the rest for the chart that spans them. */
-	.lanes {
+	/* A third for one reading, the rest for the chart beside it. Storage puts two
+	   volumes and a horizon in it, memory a dial and a history. A panel directly
+	   inside is a part of the row rather than a heading of its own. */
+	.split {
+		--title-size: 0.68rem;
+		--title-color: var(--text-faint);
+
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
 		gap: 0.75rem;
+	}
+
+	/* Taller than a row's sparkline: this chart is three bands deep and the dial
+	   beside it is a shape of its own, not a line of text. */
+	.memory {
+		--graph-min: 9rem;
 	}
 
 	.horizon {
@@ -514,20 +561,23 @@
 		grid-column: 2;
 	}
 
-	.extras {
-		/* A wider gutter than the graphs above: these row labels are words, not
-		   core numbers. Taller too — four lanes divide the block, so the floor has
-		   to leave each one a cell worth looking at. */
-		--axis-w: 5rem;
-		--graph-min: 8rem;
-		/* A panel inside the storage panel: its title reads as a part of that box
-		   rather than a section of its own. */
-		--title-size: 0.68rem;
-		--title-color: var(--text-faint);
+	/* A chart that runs the width of the row rather than sitting in one of its
+	   columns. Shorter than the boxes above it: a chart this wide reads across, and
+	   the height only has to be enough to see a line move. */
+	.wide {
+		--graph-min: 6rem;
 
 		display: grid;
 		grid-column: 1 / -1;
 		gap: 0.75rem;
+	}
+
+	/* The io map wants a wider gutter than the graphs above it: these row labels are
+	   words, not core numbers. Taller too — four lanes divide the block, so the floor
+	   has to leave each one a cell worth looking at. */
+	.io {
+		--axis-w: 5rem;
+		--graph-min: 8rem;
 	}
 
 	/* The measurements every graph in the panel is laid out to: the gutter its
@@ -584,9 +634,9 @@
 			--graph-min: 5rem;
 		}
 
-		/* The lanes cannot hold two columns either: the volumes stack and the
-		   horizon takes the full width under them. */
-		.lanes {
+		/* The split cannot hold two columns either: the boxes stack and the chart
+		   takes the full width under them. */
+		.split {
 			grid-template-columns: minmax(0, 1fr);
 		}
 

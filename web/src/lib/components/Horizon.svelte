@@ -211,15 +211,6 @@
 		grid-template-rows: minmax(4rem, 1fr) auto;
 	}
 
-	.scale {
-		display: flex;
-		flex-direction: column;
-		justify-content: space-between;
-		align-items: flex-end;
-		/* Half a line at each end, so a label sits level with the rule it names. */
-		margin: -0.3rem 0;
-	}
-
 	.canvas {
 		position: relative;
 		min-height: 0;
