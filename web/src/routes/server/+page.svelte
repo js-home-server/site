@@ -123,6 +123,10 @@
 				cells: bucket(points, HEAT_COLUMNS)
 			}))
 	);
+
+	let rx = $derived(series?.networkReceiveBytesPerSecond ?? []);
+	let tx = $derived(series?.networkTransmitBytesPerSecond ?? []);
+	const ms = (v) => (Number.isFinite(v) ? `${Math.round(v)} ms` : '—');
 </script>
 
 <svelte:head>
@@ -259,7 +263,39 @@
 {/snippet}
 
 {#snippet network()}
-	<Placeholder note="in/out chart" lines={3} />
+	<div class="network-panel">
+		<div class="network-throughput">
+			<Panel label="Throughput (24h)">
+				<Trace
+					lines={[
+						{ id: 'rx', points: rx, tone: 'var(--azure)', label: 'RX' },
+						{ id: 'tx', points: tx, tone: 'var(--mint)', label: 'TX' }
+					]}
+					format={rate}
+				/>
+			</Panel>
+		</div>
+
+		<div class="network-foot">
+			<div class="network-quality">
+				{#each [
+					['RX drops', snapshot?.networkReceiveDropsPerSecond],
+					['TX drops', snapshot?.networkTransmitDropsPerSecond],
+					['Errors', snapshot ? snapshot.networkReceiveErrorsPerSecond + snapshot.networkTransmitErrorsPerSecond : null],
+					['TCP retransmits', snapshot?.networkTcpRetransmitsPerSecond]
+				] as [label, value]}
+					<div><span class="eyebrow">{label}</span><strong>{Number.isFinite(value) ? value : '—'}</strong><small>/s</small></div>
+				{/each}
+			</div>
+
+			<div class="network-latency">
+				<Panel label="HTTP probe latency (24h)">
+					<div class="latency-reading"><strong>{reading('latencyMs', ms)}</strong><span>P95 {summarise(series?.latencyMs, ms)[2][1]}</span></div>
+					<Trace lines={[{ id: 'latency', points: series?.latencyMs, tone: 'var(--violet)' }]} format={ms} />
+				</Panel>
+			</div>
+		</div>
+	</div>
 {/snippet}
 
 {#snippet time()}
@@ -636,6 +672,74 @@
 		gap: var(--divide);
 	}
 
+	.network-panel {
+		--graph-min: 12rem;
+		display: grid;
+		gap: 0;
+		margin: calc(-1 * var(--divide)) calc(-1 * var(--pad)) calc(-1 * var(--pad));
+	}
+
+	.network-foot,
+	.network-quality {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.network-throughput,
+	.network-quality > div,
+	.network-latency {
+		padding: var(--divide) var(--pad);
+	}
+
+	.network-quality > div {
+		display: flex;
+		flex-direction: column;
+		gap: 0.45rem;
+	}
+
+	.network-quality > div + div,
+	.network-latency {
+		border-left: var(--rule);
+	}
+
+	.network-throughput,
+	.network-foot {
+		border-top: var(--rule);
+	}
+
+	.network-foot {
+		--graph-min: 6rem;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+	}
+
+	.network-quality {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+
+	.network-quality strong,
+	.latency-reading strong {
+		color: var(--mint);
+		font-family: var(--font-mono);
+		font-size: 1.45rem;
+	}
+
+	.network-quality small,
+	.latency-reading span {
+		color: var(--text-faint);
+		font-family: var(--font-mono);
+		font-size: 0.6rem;
+	}
+
+	.latency-reading {
+		display: flex;
+		align-items: baseline;
+		gap: 1.25rem;
+	}
+
+	.latency-reading strong {
+		color: var(--violet);
+	}
+
 	/* Under this the rail cannot hold its column and its labels at once. It goes
 	   horizontal along the top instead, still sticky, still the way through the
 	   page. */
@@ -690,6 +794,15 @@
 			padding-left: var(--pad);
 			padding-right: var(--pad);
 			padding-top: var(--divide);
+			border-left: 0;
+			border-top: var(--rule);
+		}
+
+		.network-foot {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
+		.network-latency {
 			border-left: 0;
 			border-top: var(--rule);
 		}
