@@ -65,6 +65,7 @@
 
 			<svg viewBox="0 0 {VIEW.width} {VIEW.height}" preserveAspectRatio="none" aria-hidden="true">
 				{#each traces as trace (trace.id)}
+					<path class="area" d="{trace.d} L{VIEW.width},{VIEW.height} L0,{VIEW.height} Z" style:color={trace.tone} />
 					<path
 						d={trace.d}
 						class:dashed={trace.dashed}
@@ -139,6 +140,12 @@
 		stroke: currentcolor;
 		stroke-width: 1.25;
 		stroke-linejoin: round;
+	}
+
+	path.area {
+		fill: currentcolor;
+		stroke: none;
+		opacity: 0.12;
 	}
 
 	path.dashed {
