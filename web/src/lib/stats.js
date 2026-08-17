@@ -3,6 +3,10 @@
 
 export const mean = (values) => values.reduce((sum, v) => sum + v, 0) / values.length;
 
+/* The reading at the end of a series: what it says now. Null where there is no
+   series yet, which every formatter in $lib/format.js writes as an em dash. */
+export const last = (points) => (points?.length ? points.at(-1)[1] : null);
+
 export const percentile = (values, p) => {
 	const sorted = [...values].sort((a, b) => a - b);
 	return sorted[Math.min(sorted.length - 1, Math.ceil(p * sorted.length) - 1)];
@@ -28,18 +32,18 @@ export function bucket(points, count) {
 	return buckets.map((b) => (b.length ? mean(b) : null));
 }
 
-/* The four numbers a metric is read by, formatted and ready to render. Em dashes
-   rather than an absent block when there is no series: a card that gains its
-   data later must not change shape when it does. */
+/* The four numbers a metric is read by, formatted and ready to render. An empty
+   series needs no guard here: every formatter writes a number it has not got as
+   an em dash, so a card that gains its data later keeps its shape until it
+   does. */
 export function summarise(points, format) {
 	const values = points?.map((p) => p[1]) ?? [];
-	const at = (p) => (values.length ? format(percentile(values, p)) : '—');
 
 	return [
-		['Min', values.length ? format(Math.min(...values)) : '—'],
-		['Med', at(0.5)],
-		['P95', at(0.95)],
-		['Max', values.length ? format(Math.max(...values)) : '—']
+		['Min', format(Math.min(...values))],
+		['Med', format(percentile(values, 0.5))],
+		['P95', format(percentile(values, 0.95))],
+		['Max', format(Math.max(...values))]
 	];
 }
 

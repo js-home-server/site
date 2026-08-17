@@ -98,8 +98,8 @@
 		width: 0.35rem;
 		height: 0.35rem;
 		border-radius: 50%;
-		background: currentColor;
-		box-shadow: 0 0 0.7rem currentColor;
+		background: currentcolor;
+		box-shadow: 0 0 0.7rem currentcolor;
 		content: '';
 		transform: translateX(-50%);
 	}

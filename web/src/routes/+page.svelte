@@ -217,6 +217,5 @@
 			height: auto;
 			min-height: calc(100svh - var(--header-height));
 		}
-
 	}
 </style>
