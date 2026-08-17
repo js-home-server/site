@@ -3,6 +3,11 @@
    number it has not got, so a caller never has to guard a reading before writing
    it down. */
 
+/* A percentage as a share of a whole: between nothing and all of it, or nothing at
+   all where there is no reading. What is drawn as a ring or a bar has to be one of
+   those, whatever the API says. */
+export const share = (v) => (Number.isFinite(v) ? Math.min(100, Math.max(0, v)) : null);
+
 /* Whole percentages, except under one: pressure runs in hundredths of a percent,
    and rounding every reading of it to 0% would print the same figure for a machine
    that is stalling and one that is idle. Zero stays zero. */

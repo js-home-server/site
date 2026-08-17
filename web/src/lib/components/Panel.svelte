@@ -1,10 +1,10 @@
 <script>
-	/* A labelled box. Every card on the dashboard is one of these, so the frame is
-	   written once and what goes in it is the caller's business. */
+	/* A labelled block. Every titled part of a dashboard section is one of these:
+	   the title is written once and what goes under it is the caller's business. */
 	let { label, children } = $props();
 </script>
 
-<div class="panel card">
+<div class="panel">
 	{#if label}<h3>{label}</h3>{/if}
 	{@render children()}
 </div>

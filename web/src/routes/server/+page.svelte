@@ -194,11 +194,13 @@
 				: '—'}
 		/>
 
-		<Panel label="Memory history (24h)">
-			<!-- Used, cache and free, which is how the memory is actually divided: the
-			     cache is the part the machine would give back under pressure. -->
-			<Stack bands={ram} ticks={DAY_TICKS} note="no memory history yet" />
-		</Panel>
+		<div class="beside">
+			<Panel label="Memory history (24h)">
+				<!-- Used, cache and free, which is how the memory is actually divided: the
+				     cache is the part the machine would give back under pressure. -->
+				<Stack bands={ram} ticks={DAY_TICKS} note="no memory history yet" />
+			</Panel>
+		</div>
 
 		<div class="wide">
 			<Panel label="Pressure (24h)">
@@ -219,23 +221,24 @@
 {/snippet}
 
 {#snippet storage()}
-	<!-- Three lanes. The two volumes each keep a capacity box in the first third;
-	     the horizon spans both of them across the rest, because it is the one chart
-	     that reads them together. Everything else about the disks runs along the
-	     bottom. -->
+	<!-- Three lanes. The volumes take the first third; the horizon takes the rest,
+	     because it is the one chart that reads them together. Everything else about
+	     the disks runs along the bottom. -->
 	<div class="split">
-		{#each volumes as vol (vol.id)}
-			<!-- The series' last percent, or the live snapshot's until the history has
-			     one: the box reads the same either way. -->
-			<Capacity
-				label="{vol.label} capacity"
-				percent={vol.percentNow ?? snapshot?.[`${vol.id}Percent`]}
-				tone={vol.tone}
-				detail={vol.totalNow ? `${bytes(vol.usedNow)} / ${bytes(vol.totalNow)}` : '—'}
-			/>
-		{/each}
+		<div class="volumes">
+			{#each volumes as vol (vol.id)}
+				<!-- The series' last percent, or the live snapshot's until the history
+				     has one: the reading is the same either way. -->
+				<Capacity
+					label="{vol.label} capacity"
+					percent={vol.percentNow ?? snapshot?.[`${vol.id}Percent`]}
+					tone={vol.tone}
+					detail={vol.totalNow ? `${bytes(vol.usedNow)} / ${bytes(vol.totalNow)}` : '—'}
+				/>
+			{/each}
+		</div>
 
-		<div class="horizon">
+		<div class="beside">
 			<Horizon {volumes} />
 		</div>
 
@@ -273,12 +276,12 @@
 	     of digits to a screen reader. -->
 	<div class="art ship" aria-hidden="true"><AsciiShip /></div>
 	<div class="grid">
-		{#each Array.from({ length: 4 }) as _, i (i)}
+		{#each Array.from({ length: 4 })}
 			{@render stub('Container', 'cpu · mem · status', 3)}
 		{/each}
 	</div>
 	<div class="grid" style="--min: 14rem">
-		{#each Array.from({ length: 3 }) as _, i (i)}
+		{#each Array.from({ length: 3 })}
 			{@render stub('Container', 'cpu · mem · status', 3)}
 		{/each}
 	</div>
@@ -408,7 +411,6 @@
 		font-family: var(--font-mono);
 		font-size: 0.65rem;
 		letter-spacing: 0.08em;
-		opacity: 0.7;
 	}
 
 	.dot {
@@ -500,11 +502,29 @@
 		margin-bottom: 0.75rem;
 	}
 
+	/* A section is one box, divided rather than filled with smaller ones: the parts
+	   inside wear no frame of their own and are separated by a rule instead, drawn a
+	   shade under the box's own border so the box stays the strongest line on the
+	   page.
+
+	   Every rule runs the full width or height of what it divides — wall to wall, not
+	   inset by the padding — which it does by bleeding out by --pad and putting the
+	   same back as padding. --divide is the air either side of a rule, and the gap of
+	   whatever lays the parts out, so the two cannot drift apart. */
 	section {
+		--pad: clamp(1rem, 2.5vw, 1.75rem);
+		--rule: 1px solid color-mix(in srgb, var(--color-border) 75%, transparent);
+		--divide: clamp(1rem, 2vw, 1.5rem);
+
+		/* No panel in here is a heading of its own — the section's own h2 is that —
+		   so every one of their titles is turned down to a label. */
+		--title-size: 0.68rem;
+		--title-color: var(--text-faint);
+
 		display: grid;
-		gap: 0.75rem;
+		gap: var(--divide);
 		margin-bottom: clamp(2rem, 6vh, 3.5rem);
-		padding: clamp(1rem, 2.5vw, 1.75rem);
+		padding: var(--pad);
 		border: 1px solid var(--color-border);
 		border-radius: 0.35rem;
 		/* Clears the sticky rail when a link jumps here. */
@@ -517,8 +537,12 @@
 		margin-bottom: 0;
 	}
 
+	/* The heading is separated from the section's contents by the same rule that
+	   divides them from each other. */
 	h2 {
-		margin: 0 0 0.5rem;
+		margin: 0 calc(-1 * var(--pad));
+		padding: 0 var(--pad) var(--divide);
+		border-bottom: var(--rule);
 		font-size: 1.05rem;
 		font-weight: 700;
 		letter-spacing: 0.16em;
@@ -532,33 +556,56 @@
 	.grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(var(--min, 11rem), 1fr));
-		gap: 0.75rem;
+		gap: var(--divide);
 	}
 
-	/* A third for one reading, the rest for the chart beside it. Storage puts two
-	   volumes and a horizon in it, memory a dial and a history. A panel directly
-	   inside is a part of the row rather than a heading of its own. */
+	/* A third for one reading, the rest for the chart beside it. Storage puts the
+	   volumes in one column and a horizon in the other, memory a dial and a
+	   history. */
 	.split {
-		--title-size: 0.68rem;
-		--title-color: var(--text-faint);
-
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
-		gap: 0.75rem;
+		gap: var(--divide);
+	}
+
+	/* Whatever sits in the second column carries the line down the middle, top to
+	   bottom: up to the rule under the heading, down to the one over the chart
+	   beneath — the negative margins are the gaps either end. */
+	.beside {
+		display: grid;
+		margin-top: calc(-1 * var(--divide));
+		margin-bottom: calc(-1 * var(--divide));
+		padding-top: var(--divide);
+		padding-left: var(--divide);
+		border-left: var(--rule);
+	}
+
+	/* The volumes, one under the other, a line between them. */
+	.volumes {
+		--bleed-end: var(--divide);
+
+		display: grid;
+		gap: var(--divide);
+		align-content: start;
+	}
+
+	/* A rule between two stacked readings, run out to the section's own edges. The
+	   volumes are the exception at their right edge: they stop at the line down the
+	   middle, which is what makes the two meet in a T rather than crossing. */
+	.stack > :global(*) + :global(*),
+	.volumes > :global(*) + :global(*) {
+		margin-left: calc(-1 * var(--pad));
+		margin-right: calc(-1 * var(--bleed-end, var(--pad)));
+		padding-top: var(--divide);
+		padding-left: var(--pad);
+		padding-right: var(--bleed-end, var(--pad));
+		border-top: var(--rule);
 	}
 
 	/* Taller than a row's sparkline: this chart is three bands deep and the dial
 	   beside it is a shape of its own, not a line of text. */
 	.memory {
 		--graph-min: 9rem;
-	}
-
-	.horizon {
-		/* A grid, so the placeholder inside stretches to the two rows it spans
-		   without this having to reach into another component's scope. */
-		display: grid;
-		grid-row: 1 / 3;
-		grid-column: 2;
 	}
 
 	/* A chart that runs the width of the row rather than sitting in one of its
@@ -569,7 +616,11 @@
 
 		display: grid;
 		grid-column: 1 / -1;
-		gap: 0.75rem;
+		gap: var(--divide);
+		margin-inline: calc(-1 * var(--pad));
+		padding-top: var(--divide);
+		padding-inline: var(--pad);
+		border-top: var(--rule);
 	}
 
 	/* The io map wants a wider gutter than the graphs above it: these row labels are
@@ -580,16 +631,9 @@
 		--graph-min: 8rem;
 	}
 
-	/* The measurements every graph in the panel is laid out to: the gutter its
-	   scale sits in, and the floor under its height. Set here, read by the rows. */
 	.stack {
-		--axis-w: 2.4rem;
-		--graph-min: 6rem;
-
 		display: grid;
-		/* The same gap the volumes keep in the storage panel, so a box is a box
-		   wherever it is on the page. */
-		gap: 0.75rem;
+		gap: var(--divide);
 	}
 
 	/* Under this the rail cannot hold its column and its labels at once. It goes
@@ -634,15 +678,20 @@
 			--graph-min: 5rem;
 		}
 
-		/* The split cannot hold two columns either: the boxes stack and the chart
-		   takes the full width under them. */
+		/* The split cannot hold two columns either: everything stacks, so the rule
+		   between the columns lies down with them. */
 		.split {
 			grid-template-columns: minmax(0, 1fr);
 		}
 
-		.horizon {
-			grid-row: auto;
-			grid-column: 1;
+		.beside {
+			margin-top: 0;
+			margin-inline: calc(-1 * var(--pad));
+			padding-left: var(--pad);
+			padding-right: var(--pad);
+			padding-top: var(--divide);
+			border-left: 0;
+			border-top: var(--rule);
 		}
 	}
 </style>

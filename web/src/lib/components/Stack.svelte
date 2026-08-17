@@ -1,5 +1,5 @@
 <script>
-	import { VIEW } from '$lib/chart.js';
+	import { markY, PERCENT_GRID, VIEW } from '$lib/chart.js';
 	import { bytes, pct } from '$lib/format.js';
 	import Placeholder from './Placeholder.svelte';
 
@@ -12,10 +12,9 @@
 	   about that scale. */
 	let { bands = [], ticks = [], note = 'no history yet' } = $props();
 
-	const GRID = [0, 25, 50, 75, 100];
-
-	const y = (percent) =>
-		VIEW.height - (Math.min(100, Math.max(0, percent)) / 100) * VIEW.height;
+	/* Everything here is a share of one whole, so the scale is the whole and the
+	   projection onto it is the one every chart uses. */
+	const y = (percent) => markY(Math.min(100, Math.max(0, percent)), [0, 100]);
 
 	/* One filled area per band: along its own top edge, then back along the top of
 	   whatever it sits on. The bands share a clock, so the x of a point is its
@@ -45,19 +44,22 @@
 {#if areas.length}
 	<div class="plot">
 		<div class="scale">
-			{#each [...GRID].reverse() as level (level)}
+			{#each [...PERCENT_GRID].reverse() as level (level)}
 				<span class="tick">{pct(level)}</span>
 			{/each}
 		</div>
 
 		<div class="canvas">
+			<!-- Under the bands, and elements rather than strokes: this svg is stretched,
+			     and a dash pattern inside it would come out at a different size from
+			     every other dotted line on the page. -->
+			{#each PERCENT_GRID as level (level)}
+				<i class="grid" style="top: {100 - level}%"></i>
+			{/each}
+
 			<!-- Decorative: the legend under it carries the same three numbers in
 			     words. -->
 			<svg viewBox="0 0 {VIEW.width} {VIEW.height}" preserveAspectRatio="none" aria-hidden="true">
-				{#each GRID as level (level)}
-					<line class="grid" x1="0" x2={VIEW.width} y1={y(level)} y2={y(level)} />
-				{/each}
-
 				{#each areas as area (area.id)}
 					<path d={area.d} style:color={area.tone} />
 				{/each}
@@ -115,13 +117,13 @@
 		vector-effect: non-scaling-stroke;
 	}
 
-	/* Under the bands, since they are painted over it: the rules are there to read
-	   a level off, not to divide the chart. */
+	/* A level to read the bands against, not a division of the chart. */
 	.grid {
-		stroke: var(--color-border);
-		stroke-dasharray: 1 4;
-		stroke-width: 1;
-		vector-effect: non-scaling-stroke;
+		position: absolute;
+		inset-inline: 0;
+		height: 1px;
+		color: var(--color-border);
+		background-image: var(--dot-row);
 	}
 
 	/* Spread across the drawing, since the ends of the row are the ends of the
@@ -148,29 +150,6 @@
 		justify-content: space-between;
 		gap: 0.5rem;
 		align-items: baseline;
-	}
-
-	/* The swatch sits with the name, so the pair is read as that band's. */
-	.legend dt {
-		display: flex;
-		align-items: center;
-		gap: 0.4rem;
-		font-size: 0.58rem;
-		letter-spacing: 0.12em;
-	}
-
-	.legend dt i {
-		width: 0.5rem;
-		height: 0.5rem;
-		border-radius: 1px;
-		background: currentcolor;
-	}
-
-	.legend dd {
-		margin: 0;
-		color: var(--text-dim);
-		font-family: var(--font-mono);
-		font-size: 0.62rem;
 	}
 
 	/* No room for three across a phone: one band to a line. */

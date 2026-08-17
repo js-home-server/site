@@ -1,4 +1,5 @@
 <script>
+	import { PERCENT_GRID } from '$lib/chart.js';
 	import { bytes, pct, perDay, untilFull } from '$lib/format.js';
 	import { MONTH_RANGE } from '$lib/server.svelte.js';
 	import { bucket } from '$lib/stats.js';
@@ -104,15 +105,14 @@
 		...steps.map((m) => ({ at: m * MONTH, label: `+${monthLabel(m)}` }))
 	];
 
-	const GRID = [0, 25, 50, 75, 100];
 </script>
 
 {#if traces.length}
-	<div class="horizon card">
+	<div class="horizon">
 		<div class="head">
 			<!-- The window the series was asked for, read from the request itself, so
 			     the caption cannot claim a history that was never fetched. -->
-			<span class="caption eyebrow">{MONTH_RANGE} used space history &amp; projection</span>
+			<h3 class="caption eyebrow">{MONTH_RANGE} used space history &amp; projection</h3>
 			{#if soonest}
 				<!-- The rate behind this date is the one on that volume's legend row,
 				     so it is not quoted twice. -->
@@ -124,26 +124,28 @@
 
 		<div class="plot frame">
 			<div class="scale">
-				{#each [...GRID].reverse() as level (level)}
+				{#each [...PERCENT_GRID].reverse() as level (level)}
 					<span class="tick">{pct(level)}</span>
 				{/each}
 			</div>
 
 			<div class="canvas" bind:clientWidth={width} bind:clientHeight={height}>
+				<!-- Rules as elements rather than strokes, so they wear the site's own dots
+				     rather than a dash pattern of their own. -->
+				{#each PERCENT_GRID as level (level)}
+					<i class="grid" style="top: {y(level)}px; left: {PAD.left}px; right: {PAD.right}px"></i>
+				{/each}
+
+				<i class="divider" style="left: {x(0)}px; top: {PAD.top}px; bottom: {PAD.bottom}px"></i>
+
 				<svg viewBox="0 0 {width} {height}" aria-hidden="true">
-					{#each GRID as level (level)}
-						<line class="grid" x1={PAD.left} x2={width - PAD.right} y1={y(level)} y2={y(level)} />
-					{/each}
-
-					<line class="divider" x1={x(0)} x2={x(0)} y1={PAD.top} y2={height - PAD.bottom} />
-
 					{#each traces as trace (trace.id)}
 						<g style:color={trace.tone}>
 							<path class="history" d={trace.line} />
 							{#if trace.projection}
 								<path class="projection" d={trace.projection} />
 							{/if}
-							{#each trace.marks as mark, i (i)}
+							{#each trace.marks as mark}
 								<circle cx={mark.x} cy={mark.y} r="1.8" />
 							{/each}
 						</g>
@@ -187,8 +189,8 @@
 
 	/* A footnote to the number under it rather than a label on the box, so it is
 	   set a step down from the small caps elsewhere. */
-	.caption,
-	.legend dt {
+	.caption {
+		margin: 0;
 		font-size: 0.58rem;
 		letter-spacing: 0.12em;
 	}
@@ -225,16 +227,20 @@
 	}
 
 	.grid {
-		stroke: var(--color-border);
-		stroke-dasharray: 1 4;
-		stroke-width: 1;
+		position: absolute;
+		height: 1px;
+		color: var(--color-border);
+		background-image: var(--dot-row);
 	}
 
-	/* Where the measured part ends and the guess begins. */
+	/* Where the measured part ends and the guess begins. Brighter than the grid it
+	   crosses rather than a heavier dash, so every dotted line keeps the one
+	   rhythm. */
 	.divider {
-		stroke: var(--text-faint);
-		stroke-dasharray: 4 4;
-		stroke-width: 1;
+		position: absolute;
+		width: 1px;
+		color: var(--text-faint);
+		background-image: var(--dot-column);
 	}
 
 	.history {
@@ -288,24 +294,4 @@
 		align-items: baseline;
 	}
 
-	/* The swatch sits with the name, so the row is read as that volume's. */
-	.legend dt {
-		display: flex;
-		align-items: center;
-		gap: 0.4rem;
-	}
-
-	.legend dt i {
-		width: 0.5rem;
-		height: 0.5rem;
-		border-radius: 1px;
-		background: currentcolor;
-	}
-
-	.legend dd {
-		margin: 0;
-		color: var(--text-dim);
-		font-family: var(--font-mono);
-		font-size: 0.62rem;
-	}
 </style>

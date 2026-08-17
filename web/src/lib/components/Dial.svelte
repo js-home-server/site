@@ -1,5 +1,5 @@
 <script>
-	import { pct } from '$lib/format.js';
+	import { pct, share } from '$lib/format.js';
 
 	/* A share of something, as a ring with the reading in the middle. The ring is
 	   what makes it legible from across the room; the figure is what makes it a
@@ -7,10 +7,10 @@
 	   any, so the box does not change shape when it gets them. */
 	let { label, percent, tone, detail = '—' } = $props();
 
-	let filled = $derived(typeof percent === 'number' ? Math.min(100, Math.max(0, percent)) : null);
+	let filled = $derived(share(percent));
 </script>
 
-<div class="dial card" style:color={tone}>
+<div class="dial" style:color={tone}>
 	<h3 class="eyebrow">{label}</h3>
 
 	<div class="gauge">
@@ -21,7 +21,7 @@
 		<strong class="figure">{pct(filled)}</strong>
 	</div>
 
-	<p class="detail"><span class="eyebrow">Used</span><span>{detail}</span></p>
+	<p class="readout"><span class="eyebrow">Used</span><span>{detail}</span></p>
 </div>
 
 <style>
@@ -62,21 +62,4 @@
 		mask: radial-gradient(closest-side, transparent 67%, black 68%);
 	}
 
-	.detail {
-		display: flex;
-		justify-content: space-between;
-		gap: 0.5rem;
-		margin: 0.15rem 0 0;
-		color: var(--text-dim);
-		font-family: var(--font-mono);
-		font-size: 0.66rem;
-		line-height: 1.5;
-	}
-
-	/* The label keeps the sans face the rest of the small caps are set in. */
-	.detail .eyebrow {
-		font-family: var(--font-sans);
-		font-size: 0.56rem;
-		letter-spacing: 0.12em;
-	}
 </style>

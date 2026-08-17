@@ -5,7 +5,7 @@
 	let { label, value, tone, stats = [], children } = $props();
 </script>
 
-<div class="row card">
+<div class="row">
 	<div class="figures">
 		<h3 class="name eyebrow">{label}</h3>
 		<strong class="figure" style:color={tone}>{value}</strong>
@@ -20,9 +20,9 @@
 </div>
 
 <style>
-	/* Numbers a third, graph the rest. A box of its own, framed like every other
-	   card on the dashboard: the panel around it is what says these readings
-	   belong to one thing. */
+	/* Numbers a third, graph the rest. No frame of its own: the section it sits in
+	   is the box, and the rule above it is what separates one reading from the
+	   next. */
 	.row {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
@@ -54,11 +54,17 @@
 		margin: 0.35rem 0 0;
 	}
 
+	/* Ruled like a table, in the dots every measuring line on the page is drawn
+	   with. */
 	.summary div {
 		display: flex;
 		justify-content: space-between;
 		gap: 0.4rem;
-		border-bottom: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+		color: var(--color-border);
+		background-image: var(--dot-row);
+		background-position: 0 100%;
+		background-repeat: no-repeat;
+		background-size: 100% 1px;
 		line-height: 1.35;
 	}
 

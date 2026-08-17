@@ -108,15 +108,15 @@
 </script>
 
 {#snippet metricCard({ label, value, unit, tight, tone, stats, path, strip })}
-	<div class="metric card">
-		<span class="eyebrow">{label}</span>
+	<div class="metric">
+		<h2 class="eyebrow">{label}</h2>
 		<strong class="value {tone}">
 			{value}{#if unit}<span class="unit" class:tight>{unit}</span>{/if}
 		</strong>
 		<span class="stats">{stats}</span>
 		{#if strip}
 			<div class="history" bind:clientWidth={stripWidth} role="img" aria-label={uptimeLabel}>
-				{#each segments as state, i (i)}
+				{#each segments as state}
 					<i class={state}></i>
 				{/each}
 			</div>
@@ -163,6 +163,10 @@
 		margin: 0 auto var(--nav-pad-top);
 	}
 
+	h2 {
+		margin: 0;
+	}
+
 	.metrics {
 		display: grid;
 		/* Equal cells that divide the bar exactly, however wide it is and however
@@ -176,14 +180,18 @@
 		scrollbar-width: thin;
 	}
 
-	/* The dashboard's frame, worn here too, plus the two things these cards need
-	   that a box on a plain page does not. */
+	/* These are the one place on the site that is still a card: they stand on the
+	   bull rather than inside a box, so the frame is what makes each one a card
+	   rather than three columns of loose text. */
 	.metric {
 		display: flex;
 		flex-direction: column;
 		gap: 0.3rem;
 		/* Room for the graphic and the window caption beneath it. */
 		min-height: 5.4rem;
+		padding: 0.75rem 0.9rem;
+		border: 1px solid var(--color-border);
+		border-radius: 0.25rem;
 		/* Opaque: the bull sits directly behind these and a chart drawn over its
 		   texture is unreadable. The gaps between boxes still show it. */
 		background: var(--color-background);
@@ -202,10 +210,16 @@
 		display: grid;
 		grid-auto-flow: column;
 		grid-auto-columns: 1fr;
+		align-items: end;
 		gap: 1px;
 	}
 
+	/* Height as well as colour, so the three states are three states to anyone who
+	   cannot tell mint from pink: a bucket that was up stands two thirds tall, an
+	   outage stands full height, and one nothing was collected for barely
+	   registers. */
 	.history i {
+		height: 65%;
 		border-radius: 1px;
 		/* The bare bar is unknown, not down: dim enough to read as "no data"
 		   beside the mint, and never mistakable for an outage. */
@@ -217,7 +231,12 @@
 	}
 
 	.history i.down {
+		height: 100%;
 		background: var(--pink);
+	}
+
+	.history i:not(.up, .down) {
+		height: 30%;
 	}
 
 	.value {
