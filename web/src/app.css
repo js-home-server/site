@@ -127,8 +127,9 @@
    The theme above covers surfaces and body text. These are the few values the
    hand-written pages add: two steps of quiet text below --muted-foreground for
    the small-caps labels, and the three accents the hero and the status bar
-   share. Both greys clear 6:1 on the background, which the labels need at the
-   sizes they are set in. */
+   share. On the background they measure 5.7:1 and 7.5:1, so both clear AA at the
+   sizes the labels are set in — which is also why nothing dims them further with
+   opacity: that is what would take them under it. */
 :root {
 	--text-dim: #a09f98;
 	--text-faint: #8a8a84;
@@ -144,6 +145,20 @@
 	   drive's colour before it is the panel's. */
 	--violet: #c1aef2;
 	--azure: #a2c8f2;
+
+	/* A measuring line, as opposed to a dividing one: dotted, so it never competes
+	   with the rules that divide a section. Drawn as a gradient rather than with
+	   border-style: dotted, which sets its dots one pixel apart — at this weight
+	   that is a grey line with a texture, not a row of dots.
+
+	   One pixel on, four off, in the colour of whatever uses it. Every dotted line on
+	   the site comes from here, because the alternatives do not hold the rhythm: a
+	   1px dotted border sets its dots one pixel apart, and an SVG stroke-dasharray is
+	   scaled by the viewBox — 1 4 in a 100-unit box stretched to 950px is not 1px and
+	   4px, and vector-effect: non-scaling-stroke does not save it either. A rule that
+	   has to lie over a drawing is a positioned element wearing this, not a stroke. */
+	--dot-row: repeating-linear-gradient(to right, currentcolor 0 1px, transparent 1px 5px);
+	--dot-column: repeating-linear-gradient(to bottom, currentcolor 0 1px, transparent 1px 5px);
 }
 
 /* The standard column for a content page. The landing page opts out: it is
@@ -171,19 +186,12 @@
 }
 
 /* --- dashboard parts -----------------------------------------------------
-   The four shapes every card on the site is built from. They live here rather
-   than in a component because they cross scopes: a scoped rule cannot reach
-   another component's root, and a copy in each file is how they drift apart.
-   Anything a single card needs on top of these stays scoped to that card. */
+   The shapes every reading on the site is built from. They live here rather than
+   in a component because they cross scopes: a scoped rule cannot reach another
+   component's root, and a copy in each file is how they drift apart. Anything a
+   single one needs on top of these stays scoped to it. */
 
-/* The frame. Every box on the dashboard wears it. */
-.card {
-	padding: 0.75rem 0.9rem;
-	border: 1px solid var(--color-border);
-	border-radius: 0.25rem;
-}
-
-/* What a box is called: small caps, quiet, above whatever it labels. */
+/* What a block is called: small caps, quiet, above whatever it labels. */
 .eyebrow {
 	color: var(--text-faint);
 	font-size: 0.62rem;
@@ -192,7 +200,7 @@
 	text-transform: uppercase;
 }
 
-/* The one number a card is read by. */
+/* The one number a reading is known by. */
 .figure {
 	font-size: clamp(1.6rem, 2.8vw, 2.2rem);
 	font-weight: 700;
@@ -206,6 +214,51 @@
 	font-family: var(--font-mono);
 	font-size: 0.55rem;
 	letter-spacing: 0.04em;
+}
+
+/* A chart's key: a swatch, the band or series it names, and what that reads now.
+   The rows or columns they are laid out in are the chart's own business — this is
+   only the shape of one entry. */
+.legend dt {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	font-size: 0.58rem;
+	letter-spacing: 0.12em;
+}
+
+.legend dt i {
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 1px;
+	background: currentcolor;
+}
+
+.legend dd {
+	margin: 0;
+	color: var(--text-dim);
+	font-family: var(--font-mono);
+	font-size: 0.62rem;
+}
+
+/* The sizes behind a reading, set under it: what it is called on the left, what it
+   comes to on the right. */
+.readout {
+	display: flex;
+	justify-content: space-between;
+	gap: 0.5rem;
+	margin: 0.15rem 0 0;
+	color: var(--text-dim);
+	font-family: var(--font-mono);
+	font-size: 0.66rem;
+	line-height: 1.5;
+}
+
+/* Its label keeps the sans face the rest of the small caps are set in. */
+.readout .eyebrow {
+	font-family: var(--font-sans);
+	font-size: 0.56rem;
+	letter-spacing: 0.12em;
 }
 
 /* A graph: its scale in a gutter, the drawing beside it, a foot under the

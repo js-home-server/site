@@ -36,7 +36,6 @@
 	   rules use, so a label cannot drift from the line it names. */
 	let scale = $derived(
 		[scaleTo[1], ...marks, scaleTo[0]].map((value) => ({
-			value,
 			label: format(value),
 			offset: (markY(value, scaleTo) / VIEW.height) * 100
 		}))
@@ -51,18 +50,20 @@
 		<!-- The scale sits in its own gutter beside the plot, so no label is ever
 		     painted over the trace it belongs to. -->
 		<div class="axis">
-			{#each scale as { value, label, offset } (value)}
+			{#each scale as { label, offset }}
 				<span class="tick" style="top: {offset}%">{label}</span>
 			{/each}
 		</div>
 
 		<div class="chart">
-			<svg viewBox="0 0 {VIEW.width} {VIEW.height}" preserveAspectRatio="none" aria-hidden="true">
-				{#each marks as mark (mark)}
-					{@const y = markY(mark, scaleTo)}
-					<line class="rule" x1="0" x2={VIEW.width} y1={y} y2={y} vector-effect="non-scaling-stroke" />
-				{/each}
+			<!-- The rules are elements rather than strokes: this svg is stretched, and a
+			     dash pattern inside it would come out at a different size from every
+			     other dotted line on the page. -->
+			{#each marks as mark (mark)}
+				<i class="rule" style="top: {(markY(mark, scaleTo) / VIEW.height) * 100}%"></i>
+			{/each}
 
+			<svg viewBox="0 0 {VIEW.width} {VIEW.height}" preserveAspectRatio="none" aria-hidden="true">
 				{#each traces as trace (trace.id)}
 					<path
 						d={trace.d}
@@ -109,12 +110,17 @@
 	}
 
 	/* The trace is drawn against a fixed scale, so the box has to be a fixed box:
-	   a border on the floor and the head of the domain, nothing in between. */
+	   a line on the floor and the head of the domain, nothing in between. Dotted,
+	   like every grey line on the page that measures something rather than dividing
+	   it — the solid ones are the sections and their parts. */
 	.chart {
 		position: relative;
 		grid-column: 2;
-		border-top: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
-		border-bottom: 1px solid var(--color-border);
+		color: var(--color-border);
+		background-image: var(--dot-row), var(--dot-row);
+		background-position: 0 0, 0 100%;
+		background-repeat: no-repeat;
+		background-size: 100% 1px;
 	}
 
 	/* Out of flow: left in, the svg would claim a height from its own aspect ratio
@@ -139,11 +145,15 @@
 		stroke-dasharray: 4 3;
 	}
 
+	/* A level worth seeing the trace cross, drawn at the weight of every other
+	   measuring line rather than a brighter one of its own: what marks it out is
+	   that it is labelled in the gutter. */
 	.rule {
-		stroke: var(--text-faint);
-		stroke-dasharray: 2 3;
-		stroke-width: 1;
-		opacity: 0.45;
+		position: absolute;
+		inset-inline: 0;
+		height: 1px;
+		color: var(--color-border);
+		background-image: var(--dot-row);
 	}
 
 	.key {
