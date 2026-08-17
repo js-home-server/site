@@ -137,6 +137,14 @@
 	--mint: #9aefb7;
 	--amber: #f4cf91;
 	--pink: #efabc4;
+	/* Pastel like the other three and at the same lightness, so it reads as a
+	   fourth accent rather than an alarm. */
+	--coral: #efa39a;
+
+	/* The two volumes. One tone each, wherever they appear: a reading is the
+	   drive's colour before it is the panel's. */
+	--violet: #c1aef2;
+	--azure: #a2c8f2;
 }
 
 /* The standard column for a content page. The landing page opts out: it is
@@ -161,4 +169,58 @@
 	color: var(--text-dim);
 	font-size: clamp(1rem, 1.4vw, 1.15rem);
 	line-height: 1.6;
+}
+
+/* --- dashboard parts -----------------------------------------------------
+   The four shapes every card on the site is built from. They live here rather
+   than in a component because they cross scopes: a scoped rule cannot reach
+   another component's root, and a copy in each file is how they drift apart.
+   Anything a single card needs on top of these stays scoped to that card. */
+
+/* The frame. Every box on the dashboard wears it. */
+.card {
+	padding: 0.75rem 0.9rem;
+	border: 1px solid var(--color-border);
+	border-radius: 0.25rem;
+}
+
+/* What a box is called: small caps, quiet, above whatever it labels. */
+.eyebrow {
+	color: var(--text-faint);
+	font-size: 0.62rem;
+	font-weight: 500;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+}
+
+/* The one number a card is read by. */
+.figure {
+	font-size: clamp(1.6rem, 2.8vw, 2.2rem);
+	font-weight: 700;
+	letter-spacing: -0.03em;
+	line-height: 1;
+}
+
+/* A mark on an axis, in either direction. */
+.tick {
+	color: var(--text-faint);
+	font-family: var(--font-mono);
+	font-size: 0.55rem;
+	letter-spacing: 0.04em;
+}
+
+/* A graph: its scale in a gutter, the drawing beside it, a foot under the
+   drawing. The two custom properties are set by whatever panel the graph sits
+   in, so a column of them lines up on one gutter and one floor. */
+.plot {
+	display: grid;
+	grid-template-columns: var(--axis-w, 2.4rem) minmax(0, 1fr);
+	grid-template-rows: minmax(0, 1fr);
+	gap: 0.3rem 0.45rem;
+	min-height: var(--graph-min, 6rem);
+}
+
+/* A graph's foot sits under the drawing, not under the gutter. */
+.plot > .foot {
+	grid-column: 2;
 }

@@ -1,30 +1,24 @@
 <script>
-	import { onMount } from 'svelte';
+	import { chart } from '$lib/chart.js';
+	import TimeAxis from './TimeAxis.svelte';
+	import { server, watch } from '$lib/server.svelte.js';
+	import { bucket, mean, percentile } from '$lib/stats.js';
 
-	const HISTORY_RANGE = '24h';
-	const STATUS_URL = '/api/status';
-	const HISTORY_URL = `/api/history?range=${HISTORY_RANGE}`;
-	const SNAPSHOT_MS = 30_000;
-	const HISTORY_MS = 300_000; /* the series' own step: asking faster returns the same points */
 	const BAR_PITCH = 2; /* px a bar needs to read as one: its ink and its gap */
 	const MAX_SEGMENTS = 96;
 
-	let snapshot = $state(null);
-	/* The API's own history: { generatedAt, range, stepSeconds, status,
-	   cpuTemperatureC, latencyMs }, each series a list of [unixSeconds, value].
-	   status is 1 for up, 0 for down, fractional for part of a bucket. */
-	let series = $state(null);
+	$effect(watch);
 
-	const mean = (values) => values.reduce((sum, v) => sum + v, 0) / values.length;
-
-	const percentile = (values, p) => {
-		const sorted = [...values].sort((a, b) => a - b);
-		return sorted[Math.min(sorted.length - 1, Math.ceil(p * sorted.length) - 1)];
-	};
+	let snapshot = $derived(server.snapshot);
+	/* The API's own history, each series a list of [unixSeconds, value]. status is
+	   1 for up, 0 for down, fractional for part of a bucket. */
+	let series = $derived(server.series);
 
 	let online = $derived(snapshot?.server === 'online');
 
 	const pointsOf = (key) => (Array.isArray(series?.[key]) ? series[key] : []);
+	/* The readings on their own, which is all the summaries below need. */
+	const valuesOf = (points) => points.map((p) => p[1]);
 
 	let temps = $derived(pointsOf('cpuTemperatureC'));
 	let latencies = $derived(pointsOf('latencyMs'));
@@ -43,31 +37,6 @@
 				: '—'
 	);
 
-	/* An SVG path over the series, x by timestamp so a gap in collection reads as
-	   a gap rather than being closed up. y is scaled to the series' own range
-	   with a little headroom, so a flat trace still shows its shape and spikes
-	   still have somewhere to go. */
-	function chart(points) {
-		if (points.length < 2) return '';
-
-		const values = points.map((p) => p[1]);
-		const min = Math.min(...values);
-		const max = Math.max(...values);
-		const pad = (max - min) * 0.15 || 1;
-		const lo = min - pad;
-		const span = max + pad - lo;
-		const t0 = points[0][0];
-		const dt = points.at(-1)[0] - t0 || 1;
-
-		return points
-			.map(([t, v], i) => {
-				const x = ((t - t0) / dt) * 100;
-				const y = 30 - ((v - lo) / span) * 30;
-				return `${i ? 'L' : 'M'}${x.toFixed(2)},${y.toFixed(2)}`;
-			})
-			.join(' ');
-	}
-
 	/* One bar per bucket of that same window, at the finest pitch the strip can
 	   draw: a phone card is narrower than 96 bars and their gaps, and grid
 	   answers that by shrinking every bar to nothing. Never more bars than
@@ -77,22 +46,11 @@
 		stripWidth ? Math.max(12, Math.min(MAX_SEGMENTS, Math.floor(stripWidth / BAR_PITCH))) : MAX_SEGMENTS
 	);
 
-	let segments = $derived.by(() => {
-		if (uptime.length < 2) return [];
-
-		const t0 = uptime[0][0];
-		const dt = uptime.at(-1)[0] - t0 || 1;
-		const count = Math.min(segmentCount, uptime.length);
-		const buckets = Array.from({ length: count }, () => []);
-
-		for (const [t, v] of uptime) {
-			buckets[Math.min(count - 1, Math.floor(((t - t0) / dt) * count))].push(v);
-		}
-
-		/* A bucket the API had nothing for is unknown, which is not the same as
-		   down and must not be drawn as if it were. */
-		return buckets.map((b) => (b.length ? (mean(b) >= 0.5 ? 'up' : 'down') : 'unknown'));
-	});
+	/* A bucket the API had nothing for is unknown, which is not the same as down
+	   and must not be drawn as if it were. */
+	let segments = $derived(
+		bucket(uptime, segmentCount).map((v) => (v === null ? 'unknown' : v >= 0.5 ? 'up' : 'down'))
+	);
 
 	/* Runs of down buckets, not down buckets: a two-hour outage is one incident,
 	   however many bars it happens to cover. */
@@ -126,7 +84,7 @@
 			tight: true,
 			tone: 'amber',
 			stats: temps.length
-				? `MIN ${Math.round(Math.min(...temps.map((p) => p[1])))}°C · MAX ${Math.round(Math.max(...temps.map((p) => p[1])))}°C`
+				? `MIN ${Math.round(Math.min(...valuesOf(temps)))}°C · MAX ${Math.round(Math.max(...valuesOf(temps)))}°C`
 				: 'NO HISTORY YET',
 			path: chart(temps)
 		},
@@ -136,7 +94,7 @@
 			unit: snapshot ? 'ms' : '',
 			tone: 'pink',
 			stats: latencies.length
-				? `AVG ${Math.round(mean(latencies.map((p) => p[1])))} ms · P95 ${Math.round(percentile(latencies.map((p) => p[1]), 0.95))} ms`
+				? `AVG ${Math.round(mean(valuesOf(latencies)))} ms · P95 ${Math.round(percentile(valuesOf(latencies), 0.95))} ms`
 				: 'NO HISTORY YET',
 			path: chart(latencies)
 		}
@@ -148,53 +106,11 @@
 			: 'Server uptime history unavailable'
 	);
 
-	const inFlight = new Set();
-
-	async function load(key, url, apply) {
-		if (inFlight.has(key)) return;
-		inFlight.add(key);
-
-		try {
-			const response = await fetch(url);
-			if (!response.ok) throw new Error(`${key} request failed: ${response.status}`);
-			apply(await response.json());
-		} catch {
-			/* Keep the last good data on the wire dropping out; the next poll
-			   picks it back up. */
-		} finally {
-			inFlight.delete(key);
-		}
-	}
-
-	const loadSnapshot = () => load('status', STATUS_URL, (data) => (snapshot = data));
-	const loadHistory = () => load('history', HISTORY_URL, (data) => (series = data));
-
-	onMount(() => {
-		const refresh = () => {
-			if (document.hidden) return;
-			loadSnapshot();
-			loadHistory();
-		};
-
-		refresh();
-		/* The headline numbers move every poll; the series only gains a point
-		   every stepSeconds, so it is not worth re-fetching at the same rate. */
-		const timers = [
-			window.setInterval(() => !document.hidden && loadSnapshot(), SNAPSHOT_MS),
-			window.setInterval(() => !document.hidden && loadHistory(), HISTORY_MS)
-		];
-
-		document.addEventListener('visibilitychange', refresh);
-		return () => {
-			timers.forEach(window.clearInterval);
-			document.removeEventListener('visibilitychange', refresh);
-		};
-	});
 </script>
 
 {#snippet metricCard({ label, value, unit, tight, tone, stats, path, strip })}
 	<div class="metric">
-		<span class="label">{label}</span>
+		<span class="eyebrow">{label}</span>
 		<strong class="value {tone}">
 			{value}{#if unit}<span class="unit" class:tight>{unit}</span>{/if}
 		</strong>
@@ -214,7 +130,7 @@
 				{/if}
 			</div>
 		{/if}
-		<span class="window"><span>{spanLabel}</span><span>NOW</span></span>
+		<TimeAxis range={spanLabel} />
 	</div>
 {/snippet}
 
@@ -280,19 +196,6 @@
 	.history {
 		height: 1.85rem;
 		margin-top: auto;
-	}
-
-	/* The traces carry no axis, so this is one: the span they cover on the left,
-	   the present on the right, which is also the direction they are read in. */
-	.window {
-		display: flex;
-		justify-content: space-between;
-		margin-top: -0.1rem;
-		color: var(--text-faint);
-		font-size: 0.55rem;
-		font-weight: 500;
-		letter-spacing: 0.12em;
-		line-height: 1;
 	}
 
 	.history {
@@ -364,14 +267,6 @@
 		stroke-linejoin: round;
 	}
 
-	.label {
-		color: var(--text-faint);
-		font-size: 0.62rem;
-		font-weight: 500;
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-	}
-
 	/* One tone class per metric, worn by both the value and its trace: the
 	   stroke is currentcolor, so the two can never drift apart. */
 	.mint {
@@ -404,7 +299,7 @@
 			letter-spacing: 0.05em;
 		}
 
-		.label {
+		.eyebrow {
 			letter-spacing: 0.08em;
 		}
 	}
