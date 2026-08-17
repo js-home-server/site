@@ -1,9 +1,11 @@
 /* How readings are written down. One place, so the same quantity is never
-   spelled two ways on the same page. */
+   spelled two ways on the same page. Every one of these answers an em dash for a
+   number it has not got, so a caller never has to guard a reading before writing
+   it down. */
 
-export const pct = (v) => `${Math.round(v)}%`;
+export const pct = (v) => (Number.isFinite(v) ? `${Math.round(v)}%` : '—');
 
-export const degrees = (v) => `${Math.round(v)}°C`;
+export const degrees = (v) => (Number.isFinite(v) ? `${Math.round(v)}°C` : '—');
 
 const GB = 2 ** 30;
 const TB = 2 ** 40;

@@ -54,6 +54,10 @@
 	   caller can write them down, and the words they stand for where it cannot. */
 	const ends = ([lo, hi]) => (format ? [format(lo), format(hi)] : ['Idle', 'Peak']);
 
+	/* The range a given row's own shades cover, which is the map's unless the rows
+	   were each stretched on their own scale. */
+	const rowEnds = (index) => ends(normalise === 'row' ? extents[index] : extent);
+
 	/* One entry per ramp in the map, each spelling out the range its own colours
 	   cover. Rows stretched on their own scale get one each — the same shade means
 	   a different reading one lane down, so a single key would be a claim about
@@ -93,7 +97,16 @@
 		<div class="map" class:bare={!readings}>
 			{#each rows as row, index (row.id)}
 				<span class="row-id tick">{row.id}</span>
-				<div class="cells" style:color={row.tone ?? 'var(--mint)'}>
+				<!-- The lane in words, the way the uptime strip and the capacity bars
+				     are: the id and the current reading either side of it are already
+				     text, but the shades between them are not. -->
+				{@const [lo, hi] = rowEnds(index)}
+				<div
+					class="cells"
+					style:color={row.tone ?? 'var(--mint)'}
+					role="img"
+					aria-label="{row.id} over the window, {lo} to {hi}"
+				>
 					{#each row.cells as cell}
 						<i
 							class:unknown={cell === null}

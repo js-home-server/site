@@ -20,14 +20,19 @@ export const markY = (value, [lo, hi]) =>
    scaled to the series' own range with a little headroom, which is what a
    thumbnail sparkline wants: a flat trace still shows its shape and spikes still
    have somewhere to go. */
-export function chart(points, domain) {
-	if (!Array.isArray(points) || points.length < 2) return '';
-
-	const values = points.map((p) => p[1]);
+/* The series' own range with a little air above and below it, for a sparkline
+   with no scale of its own to be drawn against. */
+function headroom(values) {
 	const min = Math.min(...values);
 	const max = Math.max(...values);
 	const pad = (max - min) * 0.15 || 1;
-	const [lo, hi] = domain ?? [min - pad, max + pad];
+	return [min - pad, max + pad];
+}
+
+export function chart(points, domain) {
+	if (!Array.isArray(points) || points.length < 2) return '';
+
+	const [lo, hi] = domain ?? headroom(points.map((p) => p[1]));
 	const t0 = points[0][0];
 	const dt = points.at(-1)[0] - t0 || 1;
 

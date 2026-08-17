@@ -1,5 +1,5 @@
 <script>
-	import { chart } from '$lib/chart.js';
+	import { chart, VIEW } from '$lib/chart.js';
 	import TimeAxis from './TimeAxis.svelte';
 	import { server, watch } from '$lib/server.svelte.js';
 	import { bucket, mean, percentile } from '$lib/stats.js';
@@ -105,11 +105,10 @@
 			? `Server uptime over the last ${spanLabel}: ${segments.filter((s) => s === 'up').length} of ${segments.length} intervals up`
 			: 'Server uptime history unavailable'
 	);
-
 </script>
 
 {#snippet metricCard({ label, value, unit, tight, tone, stats, path, strip })}
-	<div class="metric">
+	<div class="metric card">
 		<span class="eyebrow">{label}</span>
 		<strong class="value {tone}">
 			{value}{#if unit}<span class="unit" class:tight>{unit}</span>{/if}
@@ -124,7 +123,11 @@
 		{:else}
 			<div class="chart {tone}">
 				{#if path}
-					<svg viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">
+					<svg
+						viewBox="0 0 {VIEW.width} {VIEW.height}"
+						preserveAspectRatio="none"
+						aria-hidden="true"
+					>
 						<path d={path} vector-effect="non-scaling-stroke" />
 					</svg>
 				{/if}
@@ -173,17 +176,14 @@
 		scrollbar-width: thin;
 	}
 
+	/* The dashboard's frame, worn here too, plus the two things these cards need
+	   that a box on a plain page does not. */
 	.metric {
 		display: flex;
 		flex-direction: column;
 		gap: 0.3rem;
 		/* Room for the graphic and the window caption beneath it. */
 		min-height: 5.4rem;
-		/* The row is anchored at the foot of the page, so this is also what sets
-		   where the top edge of the cards lands. */
-		padding: 0.7rem 0.9rem;
-		border: 1px solid var(--color-border);
-		border-radius: 0.25rem;
 		/* Opaque: the bull sits directly behind these and a chart drawn over its
 		   texture is unreadable. The gaps between boxes still show it. */
 		background: var(--color-background);

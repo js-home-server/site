@@ -1,15 +1,17 @@
 <script>
+	import { pct } from '$lib/format.js';
+
 	/* How full a volume is: the share as a number, as a bar, and the sizes behind
 	   it. `detail` is an em dash where those are not available yet, so a volume
 	   that gains them later does not change the shape of the box. */
 	let { label, percent, tone, detail = '—' } = $props();
 
 	let filled = $derived(typeof percent === 'number' ? Math.min(100, Math.max(0, percent)) : null);
-	let reading = $derived(filled === null ? '—' : `${Math.round(filled)}%`);
+	let reading = $derived(pct(filled));
 </script>
 
 <div class="capacity card" style:color={tone}>
-	<span class="eyebrow">{label}</span>
+	<h3 class="eyebrow">{label}</h3>
 	<strong class="figure">{reading}</strong>
 
 	<!-- The bar runs the full width whatever the reading: the dashes are the space
@@ -31,6 +33,12 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.4rem;
+	}
+
+	/* A heading, so a box on the dashboard is a stop for anyone reading by them,
+	   and set as the same quiet label it looks like. */
+	h3 {
+		margin: 0;
 	}
 
 	.bar {

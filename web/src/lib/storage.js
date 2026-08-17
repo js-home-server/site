@@ -1,11 +1,9 @@
 /* What the dashboard knows about a volume, worked out from the series the API
    carries: where it stands now, which way it is going, and when that runs out.
    The capacity boxes and the horizon chart are two views of this one shape. */
-import { slope } from './stats.js';
+import { last, slope } from './stats.js';
 
 const DAY = 86_400;
-
-const last = (points) => (points?.length ? points.at(-1)[1] : null);
 
 /* `used`, `available` and `percent` are the volume's own series. Everything
    derived is null where the series cannot support it, so a volume the collector

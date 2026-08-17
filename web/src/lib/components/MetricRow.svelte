@@ -7,7 +7,7 @@
 
 <div class="row card">
 	<div class="figures">
-		<span class="name eyebrow">{label}</span>
+		<h3 class="name eyebrow">{label}</h3>
 		<strong class="figure" style:color={tone}>{value}</strong>
 		<dl class="summary">
 			{#each stats as [name, reading] (name)}
@@ -37,8 +37,10 @@
 	}
 
 	/* A shade brighter than the labels on the boxes around it: this one names the
-	   reading under it, not the card. */
+	   reading under it, not the card. A heading like the panels', so the readings
+	   are stops for anyone navigating by them. */
 	.name {
+		margin: 0;
 		color: var(--text-dim);
 		letter-spacing: 0.12em;
 	}
