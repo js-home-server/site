@@ -1,8 +1,8 @@
 <script>
-	import { chart, VIEW } from '$lib/chart.js';
+	import { area, chart, VIEW } from '$lib/chart.js';
 	import TimeAxis from './TimeAxis.svelte';
 	import { server, watch } from '$lib/server.svelte.js';
-	import { bucket, mean, percentile } from '$lib/stats.js';
+	import { bucket, mean, outages, percentile } from '$lib/stats.js';
 
 	const BAR_PITCH = 2; /* px a bar needs to read as one: its ink and its gap */
 	const MAX_SEGMENTS = 96;
@@ -46,17 +46,20 @@
 		stripWidth ? Math.max(12, Math.min(MAX_SEGMENTS, Math.floor(stripWidth / BAR_PITCH))) : MAX_SEGMENTS
 	);
 
-	/* A bucket the API had nothing for is unknown, which is not the same as down
-	   and must not be drawn as if it were. */
+	/* Any failed poll in the bucket makes it an outage, not most of them: a bar is
+	   a quarter of an hour, and asking for the average of one is what let a
+	   five-minute outage come out as a clean bar. A bucket the API had nothing for
+	   is unknown, which is not the same as down and must not be drawn as if it
+	   were. */
 	let segments = $derived(
-		bucket(uptime, segmentCount).map((v) => (v === null ? 'unknown' : v >= 0.5 ? 'up' : 'down'))
+		bucket(uptime, segmentCount).map((v) => (v === null ? 'unknown' : v < 1 ? 'down' : 'up'))
 	);
 
-	/* Runs of down buckets, not down buckets: a two-hour outage is one incident,
-	   however many bars it happens to cover. */
-	let incidents = $derived(
-		segments.reduce((n, s, i) => n + (s === 'down' && segments[i - 1] !== 'down' ? 1 : 0), 0)
-	);
+	/* Counted off the series itself rather than the bars drawn from it: a bar is a
+	   quarter of an hour averaged, so a single failed poll inside one leaves it
+	   above the half and the strip has nothing to show. The strip is a picture of
+	   the window; this is the count, and the dashboard reads it the same way. */
+	let incidents = $derived(outages(uptime));
 
 	/* One entry per card. Everything the markup needs is settled here, so the
 	   template stays a list of cards rather than a pile of ternaries. */
@@ -110,7 +113,7 @@
 {#snippet metricCard({ label, value, unit, tight, tone, stats, path, strip })}
 	<div class="metric">
 		<h2 class="eyebrow">{label}</h2>
-		<strong class="value {tone}">
+		<strong class="figure value {tone}">
 			{value}{#if unit}<span class="unit" class:tight>{unit}</span>{/if}
 		</strong>
 		<span class="stats">{stats}</span>
@@ -128,6 +131,7 @@
 						preserveAspectRatio="none"
 						aria-hidden="true"
 					>
+						<path class="area" d={area(path)} />
 						<path d={path} vector-effect="non-scaling-stroke" />
 					</svg>
 				{/if}
@@ -206,20 +210,17 @@
 		margin-top: auto;
 	}
 
+	/* Every bar the full height of the box, which is the height of the traces in the
+	   cards beside it: this is a band of colour across the window, not a chart with
+	   a reading to stand at. */
 	.history {
 		display: grid;
 		grid-auto-flow: column;
 		grid-auto-columns: 1fr;
-		align-items: end;
 		gap: 1px;
 	}
 
-	/* Height as well as colour, so the three states are three states to anyone who
-	   cannot tell mint from pink: a bucket that was up stands two thirds tall, an
-	   outage stands full height, and one nothing was collected for barely
-	   registers. */
 	.history i {
-		height: 65%;
 		border-radius: 1px;
 		/* The bare bar is unknown, not down: dim enough to read as "no data"
 		   beside the mint, and never mistakable for an outage. */
@@ -231,20 +232,15 @@
 	}
 
 	.history i.down {
-		height: 100%;
 		background: var(--pink);
 	}
 
-	.history i:not(.up, .down) {
-		height: 30%;
-	}
-
+	/* Smaller than a figure on the dashboard: three of these share the width of
+	   the bull rather than a section of their own. */
 	.value {
 		color: var(--color-foreground);
 		font-size: clamp(1.15rem, 1.65vw, 1.6rem);
-		font-weight: 700;
 		letter-spacing: -0.02em;
-		line-height: 1;
 	}
 
 	.unit {
@@ -284,6 +280,14 @@
 		stroke: currentcolor;
 		stroke-width: 1.25;
 		stroke-linejoin: round;
+	}
+
+	/* The same shading the dashboard's traces carry: enough to give the line a
+	   body, not enough to read as a colour of its own. */
+	.chart path.area {
+		fill: currentcolor;
+		stroke: none;
+		opacity: 0.12;
 	}
 
 	/* One tone class per metric, worn by both the value and its trace: the

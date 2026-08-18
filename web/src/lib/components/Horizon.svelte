@@ -40,7 +40,7 @@
 
 	/* Seconds either side of now, to a fraction of the axis and then to pixels.
 	   Now is the middle; anything past the ends of the window sits on them. */
-	const share = (seconds) => 0.5 * (1 + Math.max(-1, Math.min(1, seconds / SPAN)));
+	const along = (seconds) => 0.5 * (1 + Math.max(-1, Math.min(1, seconds / SPAN)));
 
 	/* The volume that runs out first: the headline is its date. */
 	let soonest = $derived(
@@ -49,7 +49,7 @@
 			.sort((a, b) => a.daysToFull - b.daysToFull)[0] ?? null
 	);
 
-	let x = $derived((seconds) => PAD.left + share(seconds) * plot.width);
+	let x = $derived((seconds) => PAD.left + along(seconds) * plot.width);
 	let y = $derived((percent) => PAD.top + (1 - Math.min(100, Math.max(0, percent)) / 100) * plot.height);
 
 	/* The past, thinned to a readable number of marks, and the line that joins
@@ -116,13 +116,13 @@
 			{#if soonest}
 				<!-- The rate behind this date is the one on that volume's legend row,
 				     so it is not quoted twice. -->
-				<strong style:color={soonest.tone}>{untilFull(soonest.daysToFull)} to full</strong>
+				<strong class="figure" style:color={soonest.tone}>{untilFull(soonest.daysToFull)} to full</strong>
 			{:else}
-				<strong class="steady">No growth to project</strong>
+				<strong class="figure steady">No growth to project</strong>
 			{/if}
 		</div>
 
-		<div class="plot frame">
+		<div class="plot">
 			<div class="scale">
 				{#each [...PERCENT_GRID].reverse() as level (level)}
 					<span class="tick">{pct(level)}</span>
@@ -130,10 +130,8 @@
 			</div>
 
 			<div class="canvas" bind:clientWidth={width} bind:clientHeight={height}>
-				<!-- Rules as elements rather than strokes, so they wear the site's own dots
-				     rather than a dash pattern of their own. -->
 				{#each PERCENT_GRID as level (level)}
-					<i class="grid" style="top: {y(level)}px; left: {PAD.left}px; right: {PAD.right}px"></i>
+					<i class="gridline" style="top: {y(level)}px; left: {PAD.left}px; right: {PAD.right}px"></i>
 				{/each}
 
 				<i class="divider" style="left: {x(0)}px; top: {PAD.top}px; bottom: {PAD.bottom}px"></i>
@@ -197,9 +195,7 @@
 
 	.head strong {
 		font-size: clamp(1.3rem, 2.4vw, 1.9rem);
-		font-weight: 700;
 		letter-spacing: -0.02em;
-		line-height: 1;
 		text-transform: uppercase;
 	}
 
@@ -209,7 +205,7 @@
 
 	/* The same gutter and floor every other graph keeps, with a row under the
 	   drawing for the time axis. */
-	.plot.frame {
+	.plot {
 		grid-template-rows: minmax(4rem, 1fr) auto;
 	}
 
@@ -224,13 +220,6 @@
 		inset: 0;
 		width: 100%;
 		height: 100%;
-	}
-
-	.grid {
-		position: absolute;
-		height: 1px;
-		color: var(--color-border);
-		background-image: var(--dot-row);
 	}
 
 	/* Where the measured part ends and the guess begins. Brighter than the grid it

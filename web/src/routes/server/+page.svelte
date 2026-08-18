@@ -12,10 +12,10 @@
 	import Placeholder from '$lib/components/Placeholder.svelte';
 	import Stack from '$lib/components/Stack.svelte';
 	import Trace from '$lib/components/Trace.svelte';
-	import { bytes, degrees, pct, rate, stamp } from '$lib/format.js';
+	import { bytes, degrees, duration, pct, rate, stamp } from '$lib/format.js';
 	import { memoryBands } from '$lib/memory.js';
-	import { server, watch } from '$lib/server.svelte.js';
-	import { bucket, last, summarise } from '$lib/stats.js';
+	import { RANGE, server, watch } from '$lib/server.svelte.js';
+	import { bucket, last, mean, outages, summarise } from '$lib/stats.js';
 	import { volume } from '$lib/storage.js';
 
 	/* Wireframe. CPU and storage are wired up; everything else is a placeholder
@@ -23,6 +23,7 @@
 	   per stop on the rail: a section is a box on the page, its own heading, and
 	   its own place in the list. */
 	const SECTIONS = [
+		{ id: 'uptime', label: 'Uptime' },
 		{ id: 'cpu', label: 'CPU' },
 		{ id: 'memory', label: 'Memory' },
 		{ id: 'storage', label: 'Storage' },
@@ -128,6 +129,24 @@
 	let rx = $derived(series?.networkReceiveBytesPerSecond ?? []);
 	let tx = $derived(series?.networkTransmitBytesPerSecond ?? []);
 	const ms = (v) => (Number.isFinite(v) ? `${Math.round(v)} ms` : '—');
+
+	/* Availability is read in nines, so it keeps two decimals where pct() would
+	   round 99.98% up to a month without an outage in it. */
+	const nines = (v) => (Number.isFinite(v) ? `${v.toFixed(2)}%` : '—');
+
+	/* The status series is 1 for a poll the machine answered and 0 for one it did
+	   not, so its mean is the share of the window the machine was up.
+
+	   Read off the 24h series and not the 30d one, even though a month is the
+	   window worth quoting: the API downsamples the long range to two-hour steps
+	   and does not carry the failures through, so every one of its readings is
+	   exactly 1 and an outage that plainly happened is not in it. A number that
+	   cannot go below 100% is not an availability figure. */
+	let statusDay = $derived(series?.status ?? []);
+	let availability = $derived(statusDay.length ? mean(statusDay.map((p) => p[1])) * 100 : null);
+	let incidents = $derived(outages(statusDay));
+
+	let online = $derived(snapshot?.server === 'online');
 </script>
 
 <svelte:head>
@@ -138,6 +157,40 @@
 	<Panel {label}>
 		<Placeholder {note} {lines} />
 	</Panel>
+{/snippet}
+
+{#snippet uptime()}
+	<!-- Decorative: the section is named by its heading, and the art is thousands
+	     of digits to a screen reader. -->
+	<div class="art dish" aria-hidden="true"><AsciiDish /></div>
+
+	<div class="band bleed centred">
+		<div>
+			<span class="eyebrow">Uptime</span>
+			<!-- The state is the dot and the word both, not the colour: "up" and "down"
+			     are the reading, and the dot only agrees with them. -->
+			<strong class:down={!online}>
+				<i></i>{online ? `Up ${duration(snapshot.uptimeSeconds)}` : 'Down'}
+			</strong>
+		</div>
+
+		<div>
+			<span class="eyebrow">{RANGE} availability</span>
+			<strong>{nines(availability)}</strong>
+		</div>
+
+		<div>
+			<span class="eyebrow">Incidents</span>
+			<strong class:down={incidents > 0}>{statusDay.length ? incidents : '—'}</strong>
+		</div>
+
+		<div>
+			<span class="eyebrow">Next planned outage</span>
+			<!-- Nothing scheduled is not a reading in the same sense as the three
+			     beside it, and is set back so it does not read as one. -->
+			<strong class="unknown">—</strong>
+		</div>
+	</div>
 {/snippet}
 
 {#snippet cpu()}
@@ -200,7 +253,7 @@
 		/>
 
 		<div class="beside">
-			<Panel label="Memory history (24h)">
+			<Panel label="Memory history">
 				<!-- Used, cache and free, which is how the memory is actually divided: the
 				     cache is the part the machine would give back under pressure. -->
 				<Stack bands={ram} ticks={DAY_TICKS} note="no memory history yet" />
@@ -208,7 +261,7 @@
 		</div>
 
 		<div class="wide">
-			<Panel label="Pressure (24h)">
+			<Panel label="Pressure">
 				<!-- No domain: this reading lives in hundredths of a percent, so the scale
 				     is the range it covered rather than the 0-100 a share could take.
 				     Some is any task waiting on memory, full is every task waiting at
@@ -248,7 +301,7 @@
 		</div>
 
 		<div class="wide io">
-			<Panel label="I/O pulse (24h)">
+			<Panel label="I/O pulse">
 				<!-- Each lane is stretched to its own busiest quarter-hour, so the key
 				     quotes that lane's own floor and ceiling in bytes a second. -->
 				<Heatmap
@@ -264,10 +317,12 @@
 {/snippet}
 
 {#snippet network()}
-	<div class="network-panel">
-		<div class="network-throughput">
-			<div class="network-chart">
-				<Panel label="Throughput (24h)">
+	<!-- Two bands across the section rather than a grid of panels: the throughput
+	     and what is left of the link on top, the counts and the probe under it. -->
+	<div class="bleed bands">
+		<div class="band" style="--cells: minmax(0, 3fr) minmax(10rem, 1fr)">
+			<div>
+				<Panel label="Throughput">
 					<Trace
 						lines={[
 							{ id: 'rx', points: rx, tone: 'var(--azure)', label: 'RX' },
@@ -277,7 +332,7 @@
 					/>
 				</Panel>
 			</div>
-			<div class="network-utilisation">
+			<div>
 				<Dial
 					label="Network utilisation"
 					percent={snapshot?.networkUtilizationPercent}
@@ -287,20 +342,27 @@
 			</div>
 		</div>
 
-		<div class="network-foot">
-			<div class="network-quality">
+		<!-- The counts take the larger share: their names have to fit across it, and
+		     the longest of them ("TCP retransmits") is what sets the split. -->
+		<div class="band quality" style="--cells: minmax(0, 1.2fr) minmax(0, 1fr)">
+			<div class="band nested" style="--cells: repeat(3, minmax(0, 1fr))">
+				<!-- Both directions to a count, the way the errors beside them already
+				     read: a packet lost on the way out is the same fault as one lost on
+				     the way in, and which end it happened at is not something this box
+				     can act on. -->
 				{#each [
-					['RX drops', snapshot?.networkReceiveDropsPerSecond],
-					['TX drops', snapshot?.networkTransmitDropsPerSecond],
+					['Drops', snapshot ? snapshot.networkReceiveDropsPerSecond + snapshot.networkTransmitDropsPerSecond : null],
 					['Errors', snapshot ? snapshot.networkReceiveErrorsPerSecond + snapshot.networkTransmitErrorsPerSecond : null],
 					['TCP retransmits', snapshot?.networkTcpRetransmitsPerSecond]
 				] as [label, value]}
-					<div><span class="eyebrow">{label}</span><strong>{Number.isFinite(value) ? value : '—'}</strong><small>/s</small></div>
+					<!-- Rounded: these are counts a second, and summing two of them is
+					     what turns 0.1 and 0.2 into 0.30000000000000004. -->
+					<div><span class="eyebrow">{label}</span><strong>{Number.isFinite(value) ? +value.toFixed(2) : '—'}</strong><small>/s</small></div>
 				{/each}
 			</div>
 
-			<div class="network-latency">
-				<Panel label="HTTP probe latency (24h)">
+			<div>
+				<Panel label="HTTP probe latency">
 					<div class="latency-reading"><strong>{reading('latencyMs', ms)}</strong><span>P95 {summarise(series?.latencyMs, ms)[2][1]}</span></div>
 					<Trace lines={[{ id: 'latency', points: series?.latencyMs, tone: 'var(--violet)' }]} format={ms} />
 				</Panel>
@@ -365,14 +427,10 @@
 	</aside>
 
 	<div class="body">
-		<header class="masthead">
-			<div class="art dish" aria-hidden="true"><AsciiDish /></div>
-			<div class="intro">
-				<h1>Server</h1>
-				<p class="state eyebrow">Placeholder — no data wired up</p>
-				<p class="meta">host · uptime · kernel</p>
-			</div>
-		</header>
+		<!-- The page's own heading. The sections carry the titling now, so this is
+		     for the outline rather than the eye: without it the document starts at
+		     h2 and the sections are under nothing. -->
+		<h1>Server</h1>
 
 		<!-- The rail and the page are the one list, so neither can drift from the
 		     other: each section is a box with its own heading, and its body is a
@@ -380,7 +438,7 @@
 		{#each SECTIONS as section (section.id)}
 			<section id={section.id} {@attach spy(section.id)}>
 				<h2>{section.label}</h2>
-				{@render { cpu, memory, storage, network, time, containers }[section.id]()}
+				{@render { uptime, cpu, memory, storage, network, time, containers }[section.id]()}
 			</section>
 		{/each}
 	</div>
@@ -488,48 +546,23 @@
 		font-size: 0.72rem;
 	}
 
-	.masthead {
-		position: relative;
-		margin-bottom: clamp(1.5rem, 4vh, 2.5rem);
-	}
-
-	/* The title sits in the art rather than above it: top-left corner of the frame,
-	   which is empty sky. Out of flow, so the masthead is exactly as tall as the
-	   art and the rail beside it starts on the same line. */
-	.intro {
-		position: absolute;
-		top: 0;
-		left: 0;
-	}
-
+	/* Read out, never drawn: the sections do the titling, and this is only here so
+	   the document has something to start its outline at. */
 	h1 {
-		/* Up by the leading the line box keeps over the capitals, so the S starts at
-		   the top of the picture rather than the box around the word. */
-		margin: -0.15em 0 0;
-		font-size: clamp(1.9rem, 4vw, 2.8rem);
-		font-weight: 700;
-		letter-spacing: -0.045em;
-		line-height: 1;
-	}
-
-	.state {
-		margin: 0.7rem 0 0;
-		color: var(--mint);
-		font-size: 0.7rem;
-	}
-
-	.meta {
-		margin: 0.35rem 0 0;
-		color: var(--text-faint);
-		font-family: var(--font-mono);
-		font-size: 0.75rem;
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		margin: -1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
 	}
 
 	/* A piece of generated ascii art. A character grid has one size — how big one
 	   cell is — so the art is sized by setting that from the box it sits in, and
 	   --cols is how many cells wide the grid measures: its column count times the
-	   0.6021em JetBrains Mono advances per character. Both pieces on this page
-	   therefore span their box exactly and shrink with it. */
+	   0.6021em JetBrains Mono advances per character. Every piece on this page
+	   therefore spans its box and shrinks with it. */
 	.art {
 		container-type: inline-size;
 		--device-px: 1px;
@@ -574,18 +607,21 @@
 		line-height: round(0.72em, var(--device-px));
 	}
 
-	/* 175 columns, which is the count that puts a digit here at the ~9.55px the
-	   bull and the ship are set at in their own boxes. */
-	.dish {
-		--cols: 105.37;
-	}
-
-	/* 166 columns, which at the width of a section is the ~9.5px the bull's own
-	   digits are set at on a laptop screen. Both pieces that head a section are cut
-	   to that same count, so a digit is one size across the page. */
+	/* 166 columns, which at the width of a section box is the ~9.5px the bull's own
+	   digits are set at on a laptop screen. This is the cell size, not a count of
+	   what is in any one picture: every piece that heads a section is scaled by it,
+	   so a digit is one size across the page whether that art turns out to be 164
+	   columns or 166. */
+	.dish,
 	.ship,
 	.map {
 		--cols: 99.95;
+	}
+
+	/* A grid of stubs follows these two; the foot under the dish brings its own
+	   air. */
+	.ship,
+	.map {
 		margin-bottom: 0.75rem;
 	}
 
@@ -676,6 +712,11 @@
 		align-content: start;
 	}
 
+	.stack {
+		display: grid;
+		gap: var(--divide);
+	}
+
 	/* A rule between two stacked readings, run out to the section's own edges. The
 	   volumes are the exception at their right edge: they stop at the line down the
 	   middle, which is what makes the two meet in a T rather than crossing. */
@@ -710,6 +751,73 @@
 		border-top: var(--rule);
 	}
 
+	/* A band across a section: cells side by side, a rule between them and one over
+	   the lot. `--cells` is how they divide; the default is equal shares. Nest one
+	   in a cell of another to divide it again — the inner band is the division, not
+	   a second row, so it drops the rule and the padding it would otherwise wear. */
+	.band {
+		display: grid;
+		grid-template-columns: var(--cells, repeat(auto-fit, minmax(0, 1fr)));
+		border-top: var(--rule);
+	}
+
+	.band > * {
+		padding: var(--divide) var(--pad);
+	}
+
+	.band > * + * {
+		border-left: var(--rule);
+	}
+
+	.band.nested {
+		padding: 0;
+		border-top: 0;
+	}
+
+	/* Out to the section's own edges, which is where a band's rules have to end,
+	   and down to the bottom one, which the section's padding would otherwise hold
+	   it off. */
+	.bleed {
+		margin-inline: calc(-1 * var(--pad));
+		margin-bottom: calc(-1 * var(--pad));
+	}
+
+	/* A whole band of headline readings rather than one beside a chart: they line
+	   up on their centres, since there is nothing in the cell to range against. */
+	.centred > * {
+		display: grid;
+		gap: 0.55rem;
+		justify-items: center;
+		text-align: center;
+	}
+
+	.centred strong {
+		display: flex;
+		align-items: center;
+		gap: 0.55rem;
+		color: var(--mint);
+		font-family: var(--font-mono);
+		font-size: 1.15rem;
+		text-transform: uppercase;
+	}
+
+	/* The dot only agrees with the word beside it — it is never the only thing
+	   saying which way this reads. */
+	.centred i {
+		width: 0.4rem;
+		height: 0.4rem;
+		border-radius: 50%;
+		background: currentcolor;
+	}
+
+	.centred .down {
+		color: var(--coral);
+	}
+
+	.centred .unknown {
+		color: var(--text-faint);
+	}
+
 	/* The io map wants a wider gutter than the graphs above it: these row labels are
 	   words, not core numbers. Taller too — four lanes divide the block, so the floor
 	   has to leave each one a cell worth looking at. */
@@ -718,77 +826,37 @@
 		--graph-min: 8rem;
 	}
 
-	.stack {
-		display: grid;
-		gap: var(--divide);
-	}
-
-	.network-panel {
+	/* A section that is nothing but bands, stacked. It starts against the rule under
+	   the heading rather than a gap below it, so the first band brings no rule of
+	   its own. */
+	.bands {
 		--graph-min: 12rem;
-		display: grid;
-		gap: 0;
-		margin: calc(-1 * var(--divide)) calc(-1 * var(--pad)) calc(-1 * var(--pad));
+
+		margin-top: calc(-1 * var(--divide));
 	}
 
-	.network-throughput {
-		display: grid;
-		grid-template-columns: minmax(0, 3fr) minmax(10rem, 1fr);
-		padding: 0;
+	.bands > .band:first-child {
+		border-top: 0;
 	}
 
-	.network-chart,
-	.network-utilisation {
-		padding: var(--divide) var(--pad);
+	.quality {
+		--graph-min: 6rem;
 	}
 
-	.network-utilisation {
-		border-left: var(--rule);
-	}
-
-	.network-foot,
-	.network-quality {
-		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-	}
-
-	.network-quality > div,
-	.network-latency {
-		padding: var(--divide) var(--pad);
-	}
-
-	.network-quality > div {
+	.quality .nested > div {
 		display: flex;
 		flex-direction: column;
 		gap: 0.45rem;
 	}
 
-	.network-quality > div + div,
-	.network-latency {
-		border-left: var(--rule);
-	}
-
-	.network-throughput,
-	.network-foot {
-		border-top: var(--rule);
-	}
-
-	.network-foot {
-		--graph-min: 6rem;
-		grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
-	}
-
-	.network-quality {
-		grid-template-columns: repeat(4, minmax(0, 1fr));
-	}
-
-	.network-quality strong,
+	.quality strong,
 	.latency-reading strong {
 		color: var(--mint);
 		font-family: var(--font-mono);
 		font-size: 1.45rem;
 	}
 
-	.network-quality small,
+	.quality small,
 	.latency-reading span {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
@@ -863,22 +931,16 @@
 			border-top: var(--rule);
 		}
 
-		.network-foot {
+		/* No band holds its cells side by side at this width: they stack, and the
+		   rule between them lies down with them. The four counts are the exception —
+		   they are short enough to stay a row. */
+		.band:not(.nested) {
 			grid-template-columns: minmax(0, 1fr);
 		}
 
-		.network-throughput {
-			grid-template-columns: minmax(0, 1fr);
-		}
-
-		.network-utilisation {
-			border-left: 0;
+		.band:not(.nested) > * + * {
 			border-top: var(--rule);
-		}
-
-		.network-latency {
 			border-left: 0;
-			border-top: var(--rule);
 		}
 	}
 </style>

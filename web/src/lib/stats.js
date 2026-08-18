@@ -7,6 +7,15 @@ export const mean = (values) => values.reduce((sum, v) => sum + v, 0) / values.l
    series yet, which every formatter in $lib/format.js writes as an em dash. */
 export const last = (points) => (points?.length ? points.at(-1)[1] : null);
 
+/* Runs of downtime, not readings of it: an outage lasting four polls is one
+   incident, not four. The status series is 1 for a poll the machine answered and
+   0 for one it did not, so anything under a half is down. */
+export const outages = (points) =>
+	(points ?? []).reduce(
+		(n, [, v], i, all) => n + (v < 0.5 && !(i && all[i - 1][1] < 0.5) ? 1 : 0),
+		0
+	);
+
 export const percentile = (values, p) => {
 	const sorted = [...values].sort((a, b) => a - b);
 	return sorted[Math.min(sorted.length - 1, Math.ceil(p * sorted.length) - 1)];

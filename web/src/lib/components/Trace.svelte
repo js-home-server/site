@@ -1,5 +1,5 @@
 <script>
-	import { chart, headroom, markY, VIEW } from '$lib/chart.js';
+	import { area, chart, headroom, markY, VIEW } from '$lib/chart.js';
 	import Placeholder from './Placeholder.svelte';
 	import TimeAxis from './TimeAxis.svelte';
 
@@ -55,17 +55,15 @@
 			{/each}
 		</div>
 
-		<div class="chart">
-			<!-- The rules are elements rather than strokes: this svg is stretched, and a
-			     dash pattern inside it would come out at a different size from every
-			     other dotted line on the page. -->
-			{#each marks as mark (mark)}
-				<i class="rule" style="top: {(markY(mark, scaleTo) / VIEW.height) * 100}%"></i>
+		<div class="canvas">
+			<!-- The levels worth seeing the trace cross. -->
+			{#each marks as mark}
+				<i class="gridline" style="top: {(markY(mark, scaleTo) / VIEW.height) * 100}%"></i>
 			{/each}
 
 			<svg viewBox="0 0 {VIEW.width} {VIEW.height}" preserveAspectRatio="none" aria-hidden="true">
 				{#each traces as trace (trace.id)}
-					<path class="area" d="{trace.d} L{VIEW.width},{VIEW.height} L0,{VIEW.height} Z" style:color={trace.tone} />
+					<path class="area" d={area(trace.d)} style:color={trace.tone} />
 					<path
 						d={trace.d}
 						class:dashed={trace.dashed}
@@ -114,7 +112,7 @@
 	   a line on the floor and the head of the domain, nothing in between. Dotted,
 	   like every grey line on the page that measures something rather than dividing
 	   it — the solid ones are the sections and their parts. */
-	.chart {
+	.canvas {
 		position: relative;
 		grid-column: 2;
 		color: var(--color-border);
@@ -150,17 +148,6 @@
 
 	path.dashed {
 		stroke-dasharray: 4 3;
-	}
-
-	/* A level worth seeing the trace cross, drawn at the weight of every other
-	   measuring line rather than a brighter one of its own: what marks it out is
-	   that it is labelled in the gutter. */
-	.rule {
-		position: absolute;
-		inset-inline: 0;
-		height: 1px;
-		color: var(--color-border);
-		background-image: var(--dot-row);
 	}
 
 	.key {
