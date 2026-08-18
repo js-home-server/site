@@ -10,7 +10,7 @@
 	let filled = $derived(share(percent));
 </script>
 
-<div class="dial" style:color={tone}>
+<div class="meter" style:color={tone}>
 	<h3 class="eyebrow">{label}</h3>
 
 	<div class="gauge">
@@ -25,16 +25,6 @@
 </div>
 
 <style>
-	.dial {
-		display: flex;
-		flex-direction: column;
-		gap: 0.4rem;
-	}
-
-	h3 {
-		margin: 0;
-	}
-
 	/* Square, centred, and as big as the box allows up to a size that still leaves
 	   the reading room to sit inside it. */
 	.gauge {

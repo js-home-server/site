@@ -11,7 +11,7 @@
 		<strong class="figure" style:color={tone}>{value}</strong>
 		<dl class="summary">
 			{#each stats as [name, reading] (name)}
-				<div><dt>{name}</dt><dd>{reading}</dd></div>
+				<div class="readout ruled"><dt class="eyebrow">{name}</dt><dd>{reading}</dd></div>
 			{/each}
 		</dl>
 	</div>
@@ -54,35 +54,6 @@
 		margin: 0.35rem 0 0;
 	}
 
-	/* Ruled like a table, in the dots every measuring line on the page is drawn
-	   with. */
-	.summary div {
-		display: flex;
-		justify-content: space-between;
-		gap: 0.4rem;
-		color: var(--color-border);
-		background-image: var(--dot-row);
-		background-position: 0 100%;
-		background-repeat: no-repeat;
-		background-size: 100% 1px;
-		line-height: 1.35;
-	}
-
-	.summary dt {
-		color: var(--text-faint);
-		font-size: 0.56rem;
-		font-weight: 500;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-	}
-
-	.summary dd {
-		margin: 0;
-		color: var(--text-dim);
-		font-family: var(--font-mono);
-		font-size: 0.66rem;
-	}
-
 	/* Neither column is worth much at this width: the numbers go above the graph
 	   rather than beside it, and the summary spreads along instead of down. */
 	@media (max-width: 52rem) {
@@ -97,7 +68,7 @@
 
 		/* Four pairs across a phone leave no room between a name and its number:
 		   the number goes under the name instead of beside it. */
-		.summary div {
+		.summary :global(.readout) {
 			flex-direction: column;
 			align-items: center;
 			gap: 0;

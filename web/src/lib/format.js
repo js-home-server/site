@@ -19,6 +19,21 @@ export const pct = (v) => {
 
 export const degrees = (v) => (Number.isFinite(v) ? `${Math.round(v)}°C` : '—');
 
+/* How long, in the two units that read at that distance: a machine up for a
+   fortnight is not read in minutes, and one up for an hour is not read in days.
+   The smaller unit is padded so a column of these does not jump about as it
+   crosses ten. */
+export function duration(seconds) {
+	if (!Number.isFinite(seconds) || seconds < 0) return '—';
+
+	const pad = (n) => String(n).padStart(2, '0');
+	const days = Math.floor(seconds / 86_400);
+	const hours = Math.floor(seconds / 3600) % 24;
+
+	if (days) return `${days}d ${pad(hours)}h`;
+	return hours ? `${hours}h ${pad(Math.floor(seconds / 60) % 60)}m` : `${Math.floor(seconds / 60)}m`;
+}
+
 const GB = 2 ** 30;
 const TB = 2 ** 40;
 

@@ -146,6 +146,11 @@
 	--violet: #c1aef2;
 	--azure: #a2c8f2;
 
+	/* The gutter a chart's scale runs down. Wide enough for the longest label any of
+	   them carries ("12 KB/s"), since a wrapped scale label is not a label. A panel
+	   whose rows are named in words rather than numbers sets its own. */
+	--axis-w: 2.75rem;
+
 	/* A measuring line, as opposed to a dividing one: dotted, so it never competes
 	   with the rules that divide a section. Drawn as a gradient rather than with
 	   border-style: dotted, which sets its dots one pixel apart — at this weight
@@ -200,6 +205,19 @@
 	text-transform: uppercase;
 }
 
+/* A reading drawn as well as written: its name, the figure, the graphic, and the
+   sizes behind it in a column. What the graphic is — a ring, a bar — is the only
+   part that belongs to the component. */
+.meter {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+}
+
+.meter h3 {
+	margin: 0;
+}
+
 /* The one number a reading is known by. */
 .figure {
 	font-size: clamp(1.6rem, 2.8vw, 2.2rem);
@@ -208,12 +226,15 @@
 	line-height: 1;
 }
 
-/* A mark on an axis, in either direction. */
+/* A mark on an axis, in either direction. Never wrapped: a scale label broken
+   across two lines stops naming the height it sits at, and the gutter below is
+   sized so it does not have to. */
 .tick {
 	color: var(--text-faint);
 	font-family: var(--font-mono);
 	font-size: 0.55rem;
 	letter-spacing: 0.04em;
+	white-space: nowrap;
 }
 
 /* A chart's key: a swatch, the band or series it names, and what that reads now.
@@ -241,8 +262,9 @@
 	font-size: 0.62rem;
 }
 
-/* The sizes behind a reading, set under it: what it is called on the left, what it
-   comes to on the right. */
+/* A reading written out beside its name: what it is called on the left, what it
+   comes to on the right. One under a figure is the sizes behind it; a column of
+   them ruled is that reading's summary. */
 .readout {
 	display: flex;
 	justify-content: space-between;
@@ -261,12 +283,44 @@
 	letter-spacing: 0.12em;
 }
 
+.readout dd {
+	margin: 0;
+}
+
+/* Ruled like a table, in the dots every measuring line on the page is drawn with
+   — which take the row's own colour, so the text in it sets its own back. */
+.readout.ruled {
+	margin: 0;
+	color: var(--color-border);
+	background-image: var(--dot-row);
+	background-position: 0 100%;
+	background-repeat: no-repeat;
+	background-size: 100% 1px;
+	line-height: 1.35;
+}
+
+.readout.ruled dd {
+	color: var(--text-dim);
+}
+
+/* A level to read a chart against, laid over the drawing rather than stroked
+   into it: an svg stretched to its box would draw the dashes at a size of its
+   own. Positioned by whatever places it — a top for a rule across, insets for
+   one that stops short of the gutters. */
+.gridline {
+	position: absolute;
+	inset-inline: 0;
+	height: 1px;
+	color: var(--color-border);
+	background-image: var(--dot-row);
+}
+
 /* A graph: its scale in a gutter, the drawing beside it, a foot under the
    drawing. The two custom properties are set by whatever panel the graph sits
    in, so a column of them lines up on one gutter and one floor. */
 .plot {
 	display: grid;
-	grid-template-columns: var(--axis-w, 2.4rem) minmax(0, 1fr);
+	grid-template-columns: var(--axis-w) minmax(0, 1fr);
 	grid-template-rows: minmax(0, 1fr);
 	gap: 0.3rem 0.45rem;
 	min-height: var(--graph-min, 6rem);

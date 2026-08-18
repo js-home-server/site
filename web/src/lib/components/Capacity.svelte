@@ -10,7 +10,7 @@
 	let reading = $derived(pct(filled));
 </script>
 
-<div class="capacity" style:color={tone}>
+<div class="meter" style:color={tone}>
 	<h3 class="eyebrow">{label}</h3>
 	<strong class="figure">{reading}</strong>
 
@@ -29,18 +29,6 @@
 </div>
 
 <style>
-	.capacity {
-		display: flex;
-		flex-direction: column;
-		gap: 0.4rem;
-	}
-
-	/* A heading, so a box on the dashboard is a stop for anyone reading by them,
-	   and set as the same quiet label it looks like. */
-	h3 {
-		margin: 0;
-	}
-
 	.bar {
 		position: relative;
 		height: 0.55rem;

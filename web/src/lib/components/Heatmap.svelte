@@ -158,7 +158,7 @@
 	.map {
 		display: grid;
 		grid-column: 1 / -1;
-		grid-template-columns: var(--axis-w, 2.4rem) minmax(0, 1fr) auto;
+		grid-template-columns: var(--axis-w) minmax(0, 1fr) auto;
 		/* Whatever the row count, they divide the block between them, so the map
 		   stands as tall as the traces above and below it. */
 		grid-auto-rows: minmax(0, 1fr);
@@ -167,7 +167,7 @@
 	}
 
 	.map.bare {
-		grid-template-columns: var(--axis-w, 2.4rem) minmax(0, 1fr);
+		grid-template-columns: var(--axis-w) minmax(0, 1fr);
 	}
 
 	.cells {

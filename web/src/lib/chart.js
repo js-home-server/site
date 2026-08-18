@@ -14,16 +14,11 @@ export const VIEW = { width: 100, height: 30 };
 export const markY = (value, [lo, hi]) =>
 	VIEW.height - ((value - lo) / (hi - lo || 1)) * VIEW.height;
 
-/* An SVG path over a [unixSeconds, value] series, x by timestamp so a gap in
-   collection reads as a gap rather than being closed up. Empty string for
-   anything too short to draw, which the callers use as "nothing to show".
+/* A trace closed down to the floor and back, which is the shading under it. Both
+   charts that draw one take it from here, so the fill cannot part company with
+   the line it belongs to. */
+export const area = (d) => (d ? `${d} L${VIEW.width},${VIEW.height} L0,${VIEW.height} Z` : '');
 
-   `domain` is [lo, hi] in the series' own units — pass it wherever the reading
-   means something against a fixed scale (0-100% of a CPU) so the trace's height
-   is that reading rather than a shape normalised out of it. Without one, y is
-   scaled to the series' own range with a little headroom, which is what a
-   thumbnail sparkline wants: a flat trace still shows its shape and spikes still
-   have somewhere to go. */
 /* The series' own range with a little air above and below it, for a chart with no
    scale of its own to be drawn against. The floor holds at zero for a series that
    never goes under it: a negative percentage is not a reading anything can take,
@@ -37,6 +32,15 @@ export function headroom(values) {
 	return [min >= 0 && lo < 0 ? 0 : lo, max + pad];
 }
 
+/* An SVG path over a [unixSeconds, value] series, x by timestamp so a gap in
+   collection reads as a gap rather than being closed up. Empty string for
+   anything too short to draw, which the callers use as "nothing to show".
+
+   `domain` is [lo, hi] in the series' own units — pass it wherever the reading
+   means something against a fixed scale (0-100% of a CPU) so the trace's height
+   is that reading rather than a shape normalised out of it. Without one, y is
+   scaled by headroom() above, which is what a thumbnail sparkline wants: a flat
+   trace still shows its shape and spikes still have somewhere to go. */
 export function chart(points, domain) {
 	if (!Array.isArray(points) || points.length < 2) return '';
 

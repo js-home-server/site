@@ -50,11 +50,9 @@
 		</div>
 
 		<div class="canvas">
-			<!-- Under the bands, and elements rather than strokes: this svg is stretched,
-			     and a dash pattern inside it would come out at a different size from
-			     every other dotted line on the page. -->
+			<!-- Under the bands, and a level to read them against. -->
 			{#each PERCENT_GRID as level (level)}
-				<i class="grid" style="top: {100 - level}%"></i>
+				<i class="gridline" style="top: {100 - level}%"></i>
 			{/each}
 
 			<!-- Decorative: the legend under it carries the same three numbers in
@@ -115,15 +113,6 @@
 		stroke: currentcolor;
 		stroke-width: 0.5;
 		vector-effect: non-scaling-stroke;
-	}
-
-	/* A level to read the bands against, not a division of the chart. */
-	.grid {
-		position: absolute;
-		inset-inline: 0;
-		height: 1px;
-		color: var(--color-border);
-		background-image: var(--dot-row);
 	}
 
 	/* Spread across the drawing, since the ends of the row are the ends of the
