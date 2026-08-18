@@ -179,6 +179,20 @@
 		const greatest = Math.max(50e-6, ...clockHistory.map((point) => Math.abs(point[1])));
 		return Math.ceil((greatest * 1.15) / 50e-6) * 50e-6;
 	});
+	let containerMetrics = $derived(snapshot?.containers ?? []);
+	const operational = (status) => status === 'healthy' || status === 'running';
+	let runningContainers = $derived(containerMetrics.filter((container) => operational(container.status)).length);
+	let unhealthyContainers = $derived(containerMetrics.length - runningContainers);
+	let containerMemory = $derived(
+		containerMetrics.reduce((total, container) => total + (container.memoryBytes ?? 0), 0)
+	);
+	const compactBytes = (value) => bytes(value).replace(' ', '\u202f');
+	const allocation = (value, format) => (Number.isFinite(value) ? format(value) : 'Unlimited');
+	const coreLimit = (value) => `${Number.isInteger(value) ? value : value.toFixed(1)} ${value === 1 ? 'core' : 'cores'}`;
+	const fill = (value, limit) =>
+		Number.isFinite(value) && Number.isFinite(limit) && limit > 0
+			? Math.min(100, Math.max(0, (value / limit) * 100))
+			: 0;
 </script>
 
 <svelte:head>
@@ -466,16 +480,43 @@
 	<!-- Decorative: the section is named by its heading, and the art is thousands
 	     of digits to a screen reader. -->
 	<div class="art ship" aria-hidden="true"><AsciiShip /></div>
-	<div class="grid">
-		{#each Array.from({ length: 4 })}
-			{@render stub('Container', 'cpu · mem · status', 3)}
-		{/each}
+	<div class="container-shell bleed">
+		<div class="band nested container-summary" style="--cells: repeat(3, minmax(0, 1fr))">
+			<div><strong class="figure">{runningContainers}</strong><span class="eyebrow">Running</span></div>
+			<div class:warning={unhealthyContainers > 0}><strong class="figure">{unhealthyContainers}</strong><span class="eyebrow">Unhealthy</span></div>
+			<div><strong class="figure">{compactBytes(containerMemory)}</strong><span class="eyebrow">In use</span></div>
+		</div>
+		<div class="band nested container-band" style="--cells: repeat(4, minmax(0, 1fr))">
+			{#each containerMetrics as container (container.name)}
+				<div class="container-slot">
+					<header class="container-head">
+						<h3>{container.name}</h3>
+						<span class="eyebrow" class:warning={!operational(container.status)}>{container.status}</span>
+					</header>
+					<div class="container-resource">
+						<div class="container-reading">
+							<span class="eyebrow">CPU</span>
+							<strong>{pct(container.cpuPercent)}</strong>
+							<span>{allocation(container.cpuLimitCores, coreLimit)}</span>
+						</div>
+						<i class="resource-bar"><i style:width="{fill(container.cpuPercent, (container.cpuLimitCores ?? 0) * 100)}%"></i></i>
+					</div>
+					<div class="container-resource memory-resource">
+						<div class="container-reading">
+							<span class="eyebrow">Memory</span>
+							<strong>{bytes(container.memoryBytes)}</strong>
+							<span>{allocation(container.memoryLimitBytes, bytes)}</span>
+						</div>
+						<i class="resource-bar"><i style:width="{fill(container.memoryBytes, container.memoryLimitBytes)}%"></i></i>
+					</div>
+					<div class="container-uptime"><span class="eyebrow">Uptime</span><strong>{duration(container.uptimeSeconds)}</strong></div>
+				</div>
+			{/each}
+		</div>
 	</div>
-	<div class="grid" style="--min: 14rem">
-		{#each Array.from({ length: 3 })}
-			{@render stub('Container', 'cpu · mem · status', 3)}
-		{/each}
-	</div>
+	{#if !containerMetrics.length}
+		<Placeholder note="no container data" lines={3} />
+	{/if}
 {/snippet}
 
 <div class="server">
@@ -678,6 +719,114 @@
 		margin-bottom: 0.75rem;
 	}
 
+	.container-shell {
+		margin-inline: calc(-1 * var(--pad));
+		border-top: var(--rule);
+	}
+
+	.container-band > .container-slot:nth-child(n + 5) {
+		border-top: var(--rule);
+	}
+
+	.container-band > .container-slot:nth-child(4n + 1) {
+		border-left: 0;
+	}
+
+	.container-summary > div {
+		display: flex;
+		align-items: baseline;
+		justify-content: center;
+		gap: 0.8rem;
+		color: var(--mint);
+	}
+
+	.container-summary .figure {
+		font-family: var(--font-mono);
+	}
+
+	.container-summary .eyebrow {
+		color: var(--text-dim);
+	}
+
+	.container-head,
+	.container-reading,
+	.container-uptime {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 0.75rem;
+	}
+
+	.container-head h3 {
+		margin: 0;
+		font-size: 0.68rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+	}
+
+	.container-head span {
+		color: var(--mint);
+	}
+
+	.container-slot {
+		display: grid;
+		gap: 1rem;
+		min-height: 11rem;
+	}
+
+	.container-resource {
+		display: grid;
+		gap: 0.45rem;
+	}
+
+	.container-reading strong,
+	.container-reading > span:last-child,
+	.container-uptime strong {
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		font-weight: 400;
+	}
+
+	.container-reading strong {
+		margin-left: auto;
+		color: var(--mint);
+	}
+
+	.container-reading > span:last-child {
+		min-width: 4.2rem;
+		color: var(--text-dim);
+		text-align: right;
+		text-transform: uppercase;
+	}
+
+	.resource-bar {
+		display: block;
+		height: 2px;
+		background: var(--color-border);
+	}
+
+	.resource-bar i {
+		display: block;
+		height: 100%;
+		min-width: 0;
+		background: var(--mint);
+	}
+
+	.memory-resource .resource-bar i {
+		background: var(--violet);
+	}
+
+	.container-uptime {
+		margin-top: auto;
+		padding-top: 0.75rem;
+		border-top: var(--rule);
+	}
+
+	.warning,
+	.container-head span.warning {
+		color: var(--coral);
+	}
+
 
 	/* A section is one box, divided rather than filled with smaller ones: the parts
 	   inside wear no frame of their own and are separated by a rule instead, drawn a
@@ -724,16 +873,6 @@
 		font-weight: 700;
 		letter-spacing: 0.16em;
 		text-transform: uppercase;
-	}
-
-	/* Rows of cards that collapse on their own terms rather than at a shared
-	   breakpoint: auto-fit gives the columns way when the cells would be too narrow
-	   to read, at whatever width that happens to be. `--min` is how narrow that is
-	   for the cards in question. */
-	.grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(var(--min, 11rem), 1fr));
-		gap: var(--divide);
 	}
 
 	/* A third for one reading, the rest for the chart beside it. Storage puts the
@@ -826,6 +965,12 @@
 	.band.nested {
 		padding: 0;
 		border-top: 0;
+	}
+
+	/* Unlike a band nested inside another cell, this nested matrix begins the
+	   container rows and needs to divide them from the fleet summary above. */
+	.band.container-band {
+		border-top: var(--rule);
 	}
 
 	/* Out to the section's own edges, which is where a band's rules have to end,
@@ -1061,6 +1206,19 @@
 		}
 
 		.band:not(.nested) > * + * {
+			border-top: var(--rule);
+			border-left: 0;
+		}
+
+		.container-band > .container-slot:nth-child(n + 5) {
+			grid-column: auto;
+		}
+
+		.container-band {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
+		.container-band > .container-slot + .container-slot {
 			border-top: var(--rule);
 			border-left: 0;
 		}
