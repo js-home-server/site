@@ -146,6 +146,14 @@
 	--violet: #c1aef2;
 	--azure: #a2c8f2;
 
+	/* Baselines are painted on whole device pixels, so that is the only pitch a row
+	   of generated ascii art can actually be given, and rounding its line height to
+	   anything else bands the picture. A CSS pixel is not a device pixel on a retina
+	   screen: quantising to one there would both re-introduce the banding (a 7px
+	   pitch at 1.5x is 10.5 device pixels, which paints 10, 11, 10, 11) and cost the
+	   picture far more of its proportions than it has to. */
+	--device-px: 1px;
+
 	/* The gutter a chart's scale runs down. Wide enough for the longest label any of
 	   them carries ("12 KB/s"), since a wrapped scale label is not a label. A panel
 	   whose rows are named in words rather than numbers sets its own. */
@@ -164,6 +172,24 @@
 	   has to lie over a drawing is a positioned element wearing this, not a stroke. */
 	--dot-row: repeating-linear-gradient(to right, currentcolor 0 1px, transparent 1px 5px);
 	--dot-column: repeating-linear-gradient(to bottom, currentcolor 0 1px, transparent 1px 5px);
+}
+
+@media (min-resolution: 1.5dppx) {
+	:root {
+		--device-px: 0.6667px;
+	}
+}
+
+@media (min-resolution: 2dppx) {
+	:root {
+		--device-px: 0.5px;
+	}
+}
+
+@media (min-resolution: 3dppx) {
+	:root {
+		--device-px: 0.3333px;
+	}
 }
 
 /* The standard column for a content page. The landing page opts out: it is
