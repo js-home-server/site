@@ -12,7 +12,8 @@
 	--background: #f9f9f7;
 	--foreground: #0b0b0b;
 	--border: #e1e0d9;
-	--ring: #898781;
+	--border-ui: #77746f;
+	--ring: var(--border-ui);
 }
 
 /* The site as it is actually served: app.html carries this class, and the light
@@ -23,7 +24,8 @@
 	--background: #090909;
 	--foreground: #f3f3ef;
 	--border: #2c2c2a;
-	--ring: #898781;
+	--border-ui: #60605a;
+	--ring: var(--border-ui);
 }
 
 @theme inline {
@@ -33,6 +35,7 @@
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
 	--color-border: var(--border);
+	--color-border-ui: var(--border-ui);
 	--color-ring: var(--ring);
 }
 
@@ -61,17 +64,17 @@
 	--text-dim: #a09f98;
 	--text-faint: #8a8a84;
 
-	--mint: #9aefb7;
-	--amber: #f4cf91;
-	--pink: #efabc4;
-	/* Pastel like the other three and at the same lightness, so it reads as a
-	   fourth accent rather than an alarm. */
-	--coral: #efa39a;
+	/* One perceptual lightness and chroma, six distinct hues. Colour stays rare:
+	   mint/amber/coral carry state, the others distinguish related data. */
+	--mint: #95d6ab;
+	--amber: #dfc07f;
+	--coral: #f9aea7;
+	--pink: #efadd1;
 
 	/* The two volumes. One tone each, wherever they appear: a reading is the
 	   drive's colour before it is the panel's. */
-	--violet: #c1aef2;
-	--azure: #a2c8f2;
+	--violet: #c3bbfb;
+	--azure: #8dccf9;
 
 	/* Baselines are painted on whole device pixels, so that is the only pitch a row
 	   of generated ascii art can actually be given, and rounding its line height to

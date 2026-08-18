@@ -62,10 +62,15 @@
 	let incidents = $derived(outages(uptime));
 
 	/* One entry per card. Everything the markup needs is settled here, so the
-	   template stays a list of cards rather than a pile of ternaries. */
+	   template stays a list of cards rather than a pile of ternaries.
+
+	   `href` is the section of the dashboard that carries the same reading in full,
+	   which for latency is the network section: this is the probe's round trip, and
+	   that is where the rest of the link's readings are. */
 	let cards = $derived([
 		{
 			label: 'Uptime',
+			href: '/server#uptime',
 			value: online ? Math.floor(snapshot.uptimeSeconds / 3600) : '—',
 			unit: online ? 'h' : '',
 			tone: 'mint',
@@ -80,6 +85,7 @@
 		},
 		{
 			label: 'CPU Temp',
+			href: '/server#cpu',
 			value: snapshot ? Math.round(snapshot.cpuTemperatureC) : '—',
 			/* Degrees hug their number, word units take a space. Both carry the
 			   unit at every mention, headline and stats alike. */
@@ -93,9 +99,10 @@
 		},
 		{
 			label: 'Latency',
+			href: '/server#network',
 			value: snapshot ? Math.round(snapshot.latencyMs) : '—',
 			unit: snapshot ? 'ms' : '',
-			tone: 'pink',
+			tone: 'azure',
 			stats: latencies.length
 				? `AVG ${Math.round(mean(valuesOf(latencies)))} ms · P95 ${Math.round(percentile(valuesOf(latencies), 0.95))} ms`
 				: 'NO HISTORY YET',
@@ -232,7 +239,7 @@
 	}
 
 	.history i.down {
-		background: var(--pink);
+		background: var(--coral);
 	}
 
 	/* Smaller than a figure on the dashboard: three of these share the width of
@@ -300,8 +307,8 @@
 		color: var(--amber);
 	}
 
-	.pink {
-		color: var(--pink);
+	.azure {
+		color: var(--azure);
 	}
 
 	@media (max-width: 48rem) {
