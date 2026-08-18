@@ -12,7 +12,20 @@
 	import Spread from '$lib/components/Spread.svelte';
 	import Stack from '$lib/components/Stack.svelte';
 	import Trace from '$lib/components/Trace.svelte';
-	import { bytes, degrees, duration, pct, ppm, rate, seconds, span, stamp } from '$lib/format.js';
+	import {
+		bytes,
+		clockPosition,
+		degrees,
+		duration,
+		microseconds,
+		microspan,
+		pct,
+		ppm,
+		rate,
+		seconds,
+		span,
+		stamp
+	} from '$lib/format.js';
 	import { memoryBands } from '$lib/memory.js';
 	import { RANGE, server, watch } from '$lib/server.svelte.js';
 	import { bucket, last, mean, outages, summarise } from '$lib/stats.js';
@@ -153,11 +166,18 @@
 	let clock = $derived(snapshot?.time);
 	let offsets = $derived(spread(clock));
 
-	/* The rms offset as a band either side of zero: the same series read twice, once
-	   up and once down, so the offset trace has something to be inside. */
-	let rms = $derived({
-		high: (series?.timeRmsOffsetSeconds ?? []).map(([t, v]) => [t, v]),
-		low: (series?.timeRmsOffsetSeconds ?? []).map(([t, v]) => [t, -v])
+	/* Chrony reports the correction needed to reach NTP: a negative correction
+	   means this machine is fast. Flip it here so positive reads naturally as
+	   PHOBOS ahead and negative as PHOBOS behind. */
+	let clockHistory = $derived(
+		(series?.timeSystemOffsetSeconds ?? []).map(([time, offset]) => [time, -offset])
+	);
+	let currentClockOffset = $derived(
+		Number.isFinite(clock?.systemOffsetSeconds) ? -clock.systemOffsetSeconds : null
+	);
+	let clockLimit = $derived.by(() => {
+		const greatest = Math.max(50e-6, ...clockHistory.map((point) => Math.abs(point[1])));
+		return Math.ceil((greatest * 1.15) / 50e-6) * 50e-6;
 	});
 </script>
 
@@ -399,7 +419,7 @@
 			<div class="sync">
 				<Panel label="Sync status">
 					<strong class="figure" class:down={!clock?.synchronized}>
-						<i></i>{clock?.synchronized ? 'Synchronised' : 'Not synchronised'}
+						{clock?.synchronized ? clockPosition(currentClockOffset) : 'Not synchronised'}
 					</strong>
 					{#if clock?.stale}
 						<p class="eyebrow stale">Reading is stale</p>
@@ -408,8 +428,7 @@
 
 				<dl class="leaders">
 					{#each [
-						['System offset', seconds(clock?.systemOffsetSeconds)],
-						['RMS offset', span(clock?.rmsOffsetSeconds)],
+						['RMS offset', microspan(clock?.rmsOffsetSeconds)],
 						['Root delay', span(clock?.rootDelaySeconds)],
 						['Root dispersion', span(clock?.rootDispersionSeconds)],
 						['Frequency', ppm(clock?.frequencyPpm)],
@@ -426,18 +445,17 @@
 
 		<div class="band history">
 			<div>
-				<Panel label="Offset history">
-					<!-- The offset against the band the clock has been holding: the rms is a
-					     width either side of zero, not a reading of its own, so it is drawn
-					     as the two edges of that band rather than as a third line. -->
+				<Panel label="Offset">
+					<div class="offset-chart">
 					<Trace
 						lines={[
-							{ id: 'high', points: rms.high, tone: 'var(--text-faint)', dashed: true, area: false },
-							{ id: 'low', points: rms.low, tone: 'var(--text-faint)', dashed: true, area: false },
-							{ id: 'offset', points: series?.timeSystemOffsetSeconds, tone: 'var(--mint)' }
+							{ id: 'offset', points: clockHistory, tone: 'var(--mint)', area: false }
 						]}
-						format={seconds}
+						domain={[-clockLimit, clockLimit]}
+						marks={[0]}
+						format={microseconds}
 					/>
+					</div>
 				</Panel>
 			</div>
 		</div>
@@ -863,7 +881,11 @@
 	/* Wall to wall along the foot of the section: a trace this wide is read across,
 	   and the height only has to be enough to see the line move. */
 	.history {
-		--graph-min: 7rem;
+		--graph-min: 10rem;
+	}
+
+	.offset-chart {
+		min-height: var(--graph-min);
 	}
 
 	.sync {
@@ -877,15 +899,7 @@
 		align-items: center;
 		gap: 0.6rem;
 		color: var(--mint);
-		font-size: 1.05rem;
 		text-transform: uppercase;
-	}
-
-	.sync .figure i {
-		width: 0.45rem;
-		height: 0.45rem;
-		border-radius: 50%;
-		background: currentcolor;
 	}
 
 	.sync .down {
