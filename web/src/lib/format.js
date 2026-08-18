@@ -19,6 +19,20 @@ export const pct = (v) => {
 
 export const degrees = (v) => (Number.isFinite(v) ? `${Math.round(v)}°C` : '—');
 
+/* A clock offset, at the precision a clock is actually disciplined to:
+   microseconds. Always signed, because which side of the reference it sits on is
+   half the reading. */
+export const seconds = (v) =>
+	Number.isFinite(v) ? `${v < 0 ? '−' : '+'}${Math.abs(v).toFixed(6)}s` : '—';
+
+/* The same quantity unsigned, for the ones that have no side to be on — a
+   dispersion or a delay is a width, not a direction. */
+export const span = (v) => (Number.isFinite(v) ? `${v.toFixed(6)}s` : '—');
+
+/* Parts per million, how fast a clock runs rather than where it is. */
+export const ppm = (v) =>
+	Number.isFinite(v) ? `${v < 0 ? '−' : '+'}${Math.abs(v).toFixed(3)} ppm` : '—';
+
 /* How long, in the two units that read at that distance: a machine up for a
    fortnight is not read in minutes, and one up for an hour is not read in days.
    The smaller unit is padded so a column of these does not jump about as it

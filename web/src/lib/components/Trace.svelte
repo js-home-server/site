@@ -63,7 +63,9 @@
 
 			<svg viewBox="0 0 {VIEW.width} {VIEW.height}" preserveAspectRatio="none" aria-hidden="true">
 				{#each traces as trace (trace.id)}
-					<path class="area" d={area(trace.d)} style:color={trace.tone} />
+					{#if trace.area !== false}
+						<path class="area" d={area(trace.d)} style:color={trace.tone} />
+					{/if}
 					<path
 						d={trace.d}
 						class:dashed={trace.dashed}
