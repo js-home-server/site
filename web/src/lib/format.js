@@ -13,6 +13,7 @@ export const share = (v) => (Number.isFinite(v) ? Math.min(100, Math.max(0, v)) 
    that is stalling and one that is idle. Zero stays zero. */
 export const pct = (v) => {
 	if (!Number.isFinite(v)) return '—';
+	if (v !== 0 && Math.abs(v) < 0.01) return '<0.01%';
 	return v !== 0 && Math.abs(v) < 1 ? `${v.toFixed(2)}%` : `${Math.round(v)}%`;
 };
 
