@@ -1,5 +1,6 @@
 <script>
 	import { pct, share } from '$lib/format.js';
+	import Panel from './Panel.svelte';
 
 	/* A share of something, as a ring with the reading in the middle. The ring is
 	   what makes it legible from across the room; the figure is what makes it a
@@ -10,9 +11,7 @@
 	let filled = $derived(share(percent));
 </script>
 
-<div class="meter" style:color={tone}>
-	<h3 class="eyebrow">{label}</h3>
-
+<Panel {label} {tone}>
 	<div class="gauge">
 		<!-- The ring is its own element because it is masked: a hole punched through
 		     this box would take the figure with it. -->
@@ -22,7 +21,7 @@
 	</div>
 
 	<p class="readout"><span class="eyebrow">Used</span><span>{detail}</span></p>
-</div>
+</Panel>
 
 <style>
 	/* Square, centred, and as big as the box allows up to a size that still leaves

@@ -22,10 +22,9 @@
 		pct,
 		ppm,
 		rate,
-		seconds,
-		span,
 		stamp
 	} from '$lib/format.js';
+	import { fleet } from '$lib/containers.js';
 	import { memoryBands } from '$lib/memory.js';
 	import { RANGE, server, watch } from '$lib/server.svelte.js';
 	import { bucket, last, mean, outages, summarise } from '$lib/stats.js';
@@ -54,7 +53,7 @@
 		{ id: 'ssd', label: 'SSD', tone: 'var(--azure)' }
 	];
 
-	/* Columns in the heatmap. The series is 24h at five-minute steps, so this is
+	/* Columns in the heatmaps. The series is 24h at five-minute steps, so this is
 	   about a quarter-hour a cell — fine enough to see a spike, coarse enough that
 	   a cell is still a cell rather than a hairline. */
 	const HEAT_COLUMNS = 72;
@@ -125,9 +124,6 @@
 		).filter((lane) => lane.cells.length)
 	);
 
-	/* The 24h scale both maps of the window are labelled with. */
-	const DAY_TICKS = ['24h ago', '18h', '12h', '6h', 'Now'];
-
 	/* Per-core utilisation as a map: one row a core, one cell a bucket, straight
 	   off the same 0-100% scale the traces are drawn against. */
 	let cores = $derived(
@@ -179,20 +175,8 @@
 		const greatest = Math.max(50e-6, ...clockHistory.map((point) => Math.abs(point[1])));
 		return Math.ceil((greatest * 1.15) / 50e-6) * 50e-6;
 	});
-	let containerMetrics = $derived(snapshot?.containers ?? []);
-	const operational = (status) => status === 'healthy' || status === 'running';
-	let runningContainers = $derived(containerMetrics.filter((container) => operational(container.status)).length);
-	let unhealthyContainers = $derived(containerMetrics.length - runningContainers);
-	let containerMemory = $derived(
-		containerMetrics.reduce((total, container) => total + (container.memoryBytes ?? 0), 0)
-	);
-	const compactBytes = (value) => bytes(value).replace(' ', '\u202f');
-	const allocation = (value, format) => (Number.isFinite(value) ? format(value) : 'Unlimited');
-	const coreLimit = (value) => `${Number.isInteger(value) ? value : value.toFixed(1)} ${value === 1 ? 'core' : 'cores'}`;
-	const fill = (value, limit) =>
-		Number.isFinite(value) && Number.isFinite(limit) && limit > 0
-			? Math.min(100, Math.max(0, (value / limit) * 100))
-			: 0;
+	/* The containers as the fleet and its slots, both already written out. */
+	let containerFleet = $derived(fleet(snapshot?.containers));
 </script>
 
 <svelte:head>
@@ -211,31 +195,27 @@
 	<div class="art dish" aria-hidden="true"><AsciiDish /></div>
 
 	<div class="band bleed centred">
-		<div>
-			<span class="eyebrow">Uptime</span>
+		<Panel label="Uptime">
 			<!-- The state is the dot and the word both, not the colour: "up" and "down"
 			     are the reading, and the dot only agrees with them. -->
 			<strong class:down={!online}>
 				<i></i>{online ? `Up ${duration(snapshot.uptimeSeconds)}` : 'Down'}
 			</strong>
-		</div>
+		</Panel>
 
-		<div>
-			<span class="eyebrow">{RANGE} availability</span>
+		<Panel label="{RANGE} availability">
 			<strong>{nines(availability)}</strong>
-		</div>
+		</Panel>
 
-		<div>
-			<span class="eyebrow">Incidents</span>
+		<Panel label="Incidents">
 			<strong class:down={incidents > 0}>{statusDay.length ? incidents : '—'}</strong>
-		</div>
+		</Panel>
 
-		<div>
-			<span class="eyebrow">Next planned outage</span>
+		<Panel label="Next planned outage">
 			<!-- Nothing scheduled is not a reading in the same sense as the three
 			     beside it, and is set back so it does not read as one. -->
 			<strong class="unknown">—</strong>
-		</div>
+		</Panel>
 	</div>
 {/snippet}
 
@@ -288,25 +268,25 @@
 {/snippet}
 
 {#snippet memory()}
-	<div class="split memory">
-		<Dial
-			label="RAM usage"
-			percent={snapshot?.memoryPercent}
-			tone="var(--mint)"
-			detail={snapshot
-				? `${bytes(snapshot.memoryUsedBytes)} / ${bytes(snapshot.memoryTotalBytes)}`
-				: '—'}
-		/>
+	<div class="bleed bands memory">
+		<div class="band" style="--cells: minmax(0, 1fr) minmax(0, 2fr)">
+			<Dial
+				label="RAM usage"
+				percent={snapshot?.memoryPercent}
+				tone="var(--mint)"
+				detail={snapshot
+					? `${bytes(snapshot.memoryUsedBytes)} / ${bytes(snapshot.memoryTotalBytes)}`
+					: '—'}
+			/>
 
-		<div class="beside">
 			<Panel label="Memory history">
 				<!-- Used, cache and free, which is how the memory is actually divided: the
 				     cache is the part the machine would give back under pressure. -->
-				<Stack bands={ram} ticks={DAY_TICKS} note="no memory history yet" />
+				<Stack bands={ram} note="no memory history yet" />
 			</Panel>
 		</div>
 
-		<div class="wide">
+		<div class="band pressure">
 			<Panel label="Pressure">
 				<!-- No domain: this reading lives in hundredths of a percent, so the scale
 				     is the range it covered rather than the 0-100 a share could take.
@@ -325,38 +305,32 @@
 {/snippet}
 
 {#snippet storage()}
-	<!-- Three lanes. The volumes take the first third; the horizon takes the rest,
-	     because it is the one chart that reads them together. Everything else about
-	     the disks runs along the bottom. -->
-	<div class="split">
-		<div class="volumes">
-			{#each volumes as vol (vol.id)}
-				<!-- The series' last percent, or the live snapshot's until the history
-				     has one: the reading is the same either way. -->
-				<Capacity
-					label="{vol.label} capacity"
-					percent={vol.percentNow ?? snapshot?.[`${vol.id}Percent`]}
-					tone={vol.tone}
-					detail={vol.totalNow ? `${bytes(vol.usedNow)} / ${bytes(vol.totalNow)}` : '—'}
-				/>
-			{/each}
-		</div>
+	<!-- The volumes take the first third; the horizon takes the rest, because it is
+	     the one chart that reads them together. Everything else about the disks runs
+	     along the bottom. -->
+	<div class="bleed bands">
+		<div class="band" style="--cells: minmax(0, 1fr) minmax(0, 2fr)">
+			<div class="stack">
+				{#each volumes as vol (vol.id)}
+					<!-- The series' last percent, or the live snapshot's until the history
+					     has one: the reading is the same either way. -->
+					<Capacity
+						label="{vol.label} capacity"
+						percent={vol.percentNow ?? snapshot?.[`${vol.id}Percent`]}
+						tone={vol.tone}
+						detail={vol.totalNow ? `${bytes(vol.usedNow)} / ${bytes(vol.totalNow)}` : '—'}
+					/>
+				{/each}
+			</div>
 
-		<div class="beside">
 			<Horizon {volumes} />
 		</div>
 
-		<div class="wide io">
+		<div class="band io">
 			<Panel label="I/O pulse">
 				<!-- Each lane is stretched to its own busiest quarter-hour, so the key
 				     quotes that lane's own floor and ceiling in bytes a second. -->
-				<Heatmap
-					rows={io}
-					ticks={DAY_TICKS}
-					normalise="row"
-					format={rate}
-					note="no io history yet"
-				/>
+				<Heatmap rows={io} normalise="row" format={rate} note="no io history yet" />
 			</Panel>
 		</div>
 	</div>
@@ -367,52 +341,55 @@
 	     and what is left of the link on top, the counts and the probe under it. -->
 	<div class="bleed bands">
 		<div class="band" style="--cells: minmax(0, 3fr) minmax(10rem, 1fr)">
-			<div>
-				<Panel label="Throughput">
-					<Trace
-						lines={[
-							{ id: 'rx', points: rx, tone: 'var(--azure)', label: 'RX' },
-							{ id: 'tx', points: tx, tone: 'var(--mint)', label: 'TX' }
-						]}
-						format={rate}
-					/>
-				</Panel>
-			</div>
-			<div>
-				<Dial
-					label="Network utilisation"
-					percent={snapshot?.networkUtilizationPercent}
-					tone="var(--azure)"
-					detail={`${rate(Math.max(snapshot?.networkReceiveBytesPerSecond ?? 0, snapshot?.networkTransmitBytesPerSecond ?? 0))} / ${rate(snapshot?.networkLinkSpeedBytes)}`}
+			<Panel label="Throughput">
+				<Trace
+					lines={[
+						{ id: 'rx', points: rx, tone: 'var(--azure)', label: 'RX' },
+						{ id: 'tx', points: tx, tone: 'var(--mint)', label: 'TX' }
+					]}
+					format={rate}
 				/>
-			</div>
+			</Panel>
+
+			<Dial
+				label="Network utilisation"
+				percent={snapshot?.networkUtilizationPercent}
+				tone="var(--azure)"
+				detail={`${rate(Math.max(snapshot?.networkReceiveBytesPerSecond ?? 0, snapshot?.networkTransmitBytesPerSecond ?? 0))} / ${rate(snapshot?.networkLinkSpeedBytes)}`}
+			/>
 		</div>
 
-		<!-- The counts take the larger share: their names have to fit across it, and
-		     the longest of them ("TCP retransmits") is what sets the split. -->
-		<div class="band quality" style="--cells: minmax(0, 1.2fr) minmax(0, 1fr)">
-			<div class="band nested" style="--cells: repeat(3, minmax(0, 1fr))">
-				<!-- Both directions to a count, the way the errors beside them already
-				     read: a packet lost on the way out is the same fault as one lost on
-				     the way in, and which end it happened at is not something this box
-				     can act on. -->
-				{#each [
-					['Drops', snapshot ? snapshot.networkReceiveDropsPerSecond + snapshot.networkTransmitDropsPerSecond : null],
-					['Errors', snapshot ? snapshot.networkReceiveErrorsPerSecond + snapshot.networkTransmitErrorsPerSecond : null],
-					['TCP retransmits', snapshot?.networkTcpRetransmitsPerSecond]
-				] as [label, value]}
+		<!-- One band of four rather than three nested beside one: the counts are
+		     peers of the probe, not a group set against it, and the extra level of
+		     division was costing each count the width its name needs. The probe
+		     takes half again, since it carries a chart and they carry a number. -->
+		<div class="band quality" style="--cells: repeat(3, minmax(0, 1fr)) minmax(0, 1.6fr)">
+			<!-- Both directions to a count, the way the errors beside them already
+			     read: a packet lost on the way out is the same fault as one lost on
+			     the way in, and which end it happened at is not something this box
+			     can act on. -->
+			{#each [
+				['Drops', snapshot ? snapshot.networkReceiveDropsPerSecond + snapshot.networkTransmitDropsPerSecond : null],
+				['Errors', snapshot ? snapshot.networkReceiveErrorsPerSecond + snapshot.networkTransmitErrorsPerSecond : null],
+				['TCP retransmits', snapshot?.networkTcpRetransmitsPerSecond]
+			] as [label, value] (label)}
+				<Panel {label}>
 					<!-- Rounded: these are counts a second, and summing two of them is
-					     what turns 0.1 and 0.2 into 0.30000000000000004. -->
-					<div><span class="eyebrow">{label}</span><strong>{Number.isFinite(value) ? +value.toFixed(2) : '—'}</strong><small>/s</small></div>
-				{/each}
-			</div>
-
-			<div>
-				<Panel label="HTTP probe latency">
-					<div class="latency-reading"><strong>{reading('latencyMs', ms)}</strong><span>P95 {summarise(series?.latencyMs, ms)[2][1]}</span></div>
-					<Trace lines={[{ id: 'latency', points: series?.latencyMs, tone: 'var(--violet)' }]} format={ms} />
+					     what turns 0.1 and 0.2 into 0.30000000000000004. The unit sits on
+					     the figure's own baseline: it is part of the reading, not a line
+					     under it. -->
+					<p class="rate">
+						<strong>{Number.isFinite(value) ? +value.toFixed(2) : '—'}</strong><small>/s</small>
+					</p>
 				</Panel>
-			</div>
+			{/each}
+
+			<Panel label="HTTP probe latency">
+				<p class="latency-reading">
+					<strong>{reading('latencyMs', ms)}</strong><span>P95 {summarise(series?.latencyMs, ms)[2][1]}</span>
+				</p>
+				<Trace lines={[{ id: 'latency', points: series?.latencyMs, tone: 'var(--violet)' }]} format={ms} />
+			</Panel>
 		</div>
 	</div>
 {/snippet}
@@ -420,15 +397,13 @@
 {#snippet time()}
 	<div class="bleed bands">
 		<div class="band" style="--cells: minmax(0, 2.2fr) minmax(13rem, 1fr)">
-			<div class="offsets">
-				<Panel label="Source offsets">
-					<!-- The bar is what each source admits it could be wrong by, so a short
-					     one is a source worth following. They agree on the offset to a
-					     fraction of a millisecond and differ sevenfold on their confidence,
-					     which is the whole reading. -->
-					<Spread rows={offsets} format={seconds} note="no time sources reported" />
-				</Panel>
-			</div>
+			<Panel label="Source offsets">
+				<!-- The bar is what each source admits it could be wrong by, so a short
+				     one is a source worth following. They agree on the offset to a
+				     fraction of a millisecond and differ sevenfold on their confidence,
+				     which is the whole reading. -->
+				<Spread rows={offsets} format={microseconds} note="no time sources reported" />
+			</Panel>
 
 			<div class="sync">
 				<Panel label="Sync status">
@@ -443,8 +418,8 @@
 				<dl class="leaders">
 					{#each [
 						['RMS offset', microspan(clock?.rmsOffsetSeconds)],
-						['Root delay', span(clock?.rootDelaySeconds)],
-						['Root dispersion', span(clock?.rootDispersionSeconds)],
+						['Root delay', microspan(clock?.rootDelaySeconds)],
+						['Root dispersion', microspan(clock?.rootDispersionSeconds)],
 						['Frequency', ppm(clock?.frequencyPpm)],
 						['Stratum', clock?.stratum ?? '—'],
 						['Leap status', clock?.leapStatus ?? '—']
@@ -458,20 +433,14 @@
 		</div>
 
 		<div class="band history">
-			<div>
-				<Panel label="Offset">
-					<div class="offset-chart">
-					<Trace
-						lines={[
-							{ id: 'offset', points: clockHistory, tone: 'var(--mint)', area: false }
-						]}
-						domain={[-clockLimit, clockLimit]}
-						marks={[0]}
-						format={microseconds}
-					/>
-					</div>
-				</Panel>
-			</div>
+			<Panel label="Offset">
+				<Trace
+					lines={[{ id: 'offset', points: clockHistory, tone: 'var(--mint)', area: false }]}
+					domain={[-clockLimit, clockLimit]}
+					marks={[0]}
+					format={microseconds}
+				/>
+			</Panel>
 		</div>
 	</div>
 {/snippet}
@@ -480,41 +449,41 @@
 	<!-- Decorative: the section is named by its heading, and the art is thousands
 	     of digits to a screen reader. -->
 	<div class="art ship" aria-hidden="true"><AsciiShip /></div>
-	<div class="container-shell bleed">
-		<div class="band nested container-summary" style="--cells: repeat(3, minmax(0, 1fr))">
-			<div><strong class="figure">{runningContainers}</strong><span class="eyebrow">Running</span></div>
-			<div class:warning={unhealthyContainers > 0}><strong class="figure">{unhealthyContainers}</strong><span class="eyebrow">Unhealthy</span></div>
-			<div><strong class="figure">{compactBytes(containerMemory)}</strong><span class="eyebrow">In use</span></div>
-		</div>
-		<div class="band nested container-band" style="--cells: repeat(4, minmax(0, 1fr))">
-			{#each containerMetrics as container (container.name)}
-				<div class="container-slot">
-					<header class="container-head">
-						<h3>{container.name}</h3>
-						<span class="eyebrow" class:warning={!operational(container.status)}>{container.status}</span>
-					</header>
-					<div class="container-resource">
-						<div class="container-reading">
-							<span class="eyebrow">CPU</span>
-							<strong>{pct(container.cpuPercent)}</strong>
-							<span>{allocation(container.cpuLimitCores, coreLimit)}</span>
-						</div>
-						<i class="resource-bar"><i style:width="{fill(container.cpuPercent, (container.cpuLimitCores ?? 0) * 100)}%"></i></i>
+	{#if containerFleet.slots.length}
+		<div class="container-shell bleed">
+			<div class="band nested container-summary" style="--cells: repeat(3, minmax(0, 1fr))">
+				<div><strong>{containerFleet.running}</strong><span class="eyebrow">Running</span></div>
+				<div class:warning={containerFleet.unhealthy > 0}><strong>{containerFleet.unhealthy}</strong><span class="eyebrow">Unhealthy</span></div>
+				<div><strong>{containerFleet.memory}</strong><span class="eyebrow">In use</span></div>
+			</div>
+
+			<div class="band nested container-band">
+				{#each containerFleet.slots as slot (slot.name)}
+					<div class="container-slot">
+						<header class="container-head">
+							<h3>{slot.name}</h3>
+							<span class="eyebrow" class:warning={!slot.healthy}>{slot.status}</span>
+						</header>
+
+						<!-- What it is using of what it was given, in that resource's own
+						     colour: the reading, the allowance, and the share between them. -->
+						{#each slot.resources as resource (resource.id)}
+							<div class="container-resource" style:color={resource.tone}>
+								<div class="container-reading">
+									<span class="eyebrow">{resource.label}</span>
+									<strong>{resource.value}</strong>
+									<span>{resource.limit}</span>
+								</div>
+								<i class="resource-bar"><i style:width="{resource.fill}%"></i></i>
+							</div>
+						{/each}
+
+						<div class="container-uptime"><span class="eyebrow">Uptime</span><strong>{slot.uptime}</strong></div>
 					</div>
-					<div class="container-resource memory-resource">
-						<div class="container-reading">
-							<span class="eyebrow">Memory</span>
-							<strong>{bytes(container.memoryBytes)}</strong>
-							<span>{allocation(container.memoryLimitBytes, bytes)}</span>
-						</div>
-						<i class="resource-bar"><i style:width="{fill(container.memoryBytes, container.memoryLimitBytes)}%"></i></i>
-					</div>
-					<div class="container-uptime"><span class="eyebrow">Uptime</span><strong>{duration(container.uptimeSeconds)}</strong></div>
-				</div>
-			{/each}
+				{/each}
+			</div>
 		</div>
-	</div>
-	{#if !containerMetrics.length}
+	{:else}
 		<Placeholder note="no container data" lines={3} />
 	{/if}
 {/snippet}
@@ -724,12 +693,27 @@
 		border-top: var(--rule);
 	}
 
-	.container-band > .container-slot:nth-child(n + 5) {
-		border-top: var(--rule);
+	/* As many containers across as fit, not a fixed four: between a phone and a
+	   desktop, four columns is four columns of collisions. Every slot carries the
+	   rule above and to the left of it and the grid is bled a pixel each way, so
+	   the ones on the outside land on the section's own border — which is the only
+	   version of this that does not have to know how many columns there turned out
+	   to be. */
+	.container-band {
+		/* Through --cells, which is how a band is divided: setting the columns
+		   directly is a rule of the same weight as the one it is trying to beat. */
+		--cells: repeat(auto-fill, minmax(13rem, 1fr));
+
+		margin-top: -1px;
+		margin-left: -1px;
 	}
 
-	.container-band > .container-slot:nth-child(4n + 1) {
-		border-left: 0;
+	.container-slot {
+		display: grid;
+		gap: 1rem;
+		min-height: 11rem;
+		border-top: var(--rule);
+		border-left: var(--rule);
 	}
 
 	.container-summary > div {
@@ -738,10 +722,6 @@
 		justify-content: center;
 		gap: 0.8rem;
 		color: var(--mint);
-	}
-
-	.container-summary .figure {
-		font-family: var(--font-mono);
 	}
 
 	.container-summary .eyebrow {
@@ -768,12 +748,6 @@
 		color: var(--mint);
 	}
 
-	.container-slot {
-		display: grid;
-		gap: 1rem;
-		min-height: 11rem;
-	}
-
 	.container-resource {
 		display: grid;
 		gap: 0.45rem;
@@ -789,7 +763,6 @@
 
 	.container-reading strong {
 		margin-left: auto;
-		color: var(--mint);
 	}
 
 	.container-reading > span:last-child {
@@ -809,11 +782,7 @@
 		display: block;
 		height: 100%;
 		min-width: 0;
-		background: var(--mint);
-	}
-
-	.memory-resource .resource-bar i {
-		background: var(--violet);
+		background: currentcolor;
 	}
 
 	.container-uptime {
@@ -822,7 +791,10 @@
 		border-top: var(--rule);
 	}
 
-	.warning,
+	/* Both as specific as the rule each is turning off, or the cell keeps the mint
+	   it wears when everything is well and a count of unhealthy containers reads
+	   as a good number. */
+	.container-summary > .warning,
 	.container-head span.warning {
 		color: var(--coral);
 	}
@@ -875,51 +847,19 @@
 		text-transform: uppercase;
 	}
 
-	/* A third for one reading, the rest for the chart beside it. Storage puts the
-	   volumes in one column and a horizon in the other, memory a dial and a
-	   history. */
-	.split {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
-		gap: var(--divide);
-	}
-
-	/* Whatever sits in the second column carries the line down the middle, top to
-	   bottom: up to the rule under the heading, down to the one over the chart
-	   beneath — the negative margins are the gaps either end. */
-	.beside {
-		display: grid;
-		margin-top: calc(-1 * var(--divide));
-		margin-bottom: calc(-1 * var(--divide));
-		padding-top: var(--divide);
-		padding-left: var(--divide);
-		border-left: var(--rule);
-	}
-
-	/* The volumes, one under the other, a line between them. */
-	.volumes {
-		--bleed-end: var(--divide);
-
+	/* Readings one under the other with a line between them, run out to the edges
+	   of whatever holds them — the section itself for a column of metric rows, a
+	   band's cell for the volumes, which is the same distance either way. */
+	.stack {
 		display: grid;
 		gap: var(--divide);
 		align-content: start;
 	}
 
-	.stack {
-		display: grid;
-		gap: var(--divide);
-	}
-
-	/* A rule between two stacked readings, run out to the section's own edges. The
-	   volumes are the exception at their right edge: they stop at the line down the
-	   middle, which is what makes the two meet in a T rather than crossing. */
-	.stack > :global(*) + :global(*),
-	.volumes > :global(*) + :global(*) {
-		margin-left: calc(-1 * var(--pad));
-		margin-right: calc(-1 * var(--bleed-end, var(--pad)));
+	.stack > :global(*) + :global(*) {
+		margin-inline: calc(-1 * var(--pad));
 		padding-top: var(--divide);
-		padding-left: var(--pad);
-		padding-right: var(--bleed-end, var(--pad));
+		padding-inline: var(--pad);
 		border-top: var(--rule);
 	}
 
@@ -929,19 +869,10 @@
 		--graph-min: 9rem;
 	}
 
-	/* A chart that runs the width of the row rather than sitting in one of its
-	   columns. Shorter than the boxes above it: a chart this wide reads across, and
-	   the height only has to be enough to see a line move. */
-	.wide {
+	/* A chart read across rather than down: the height only has to be enough to see
+	   a line move. */
+	.pressure {
 		--graph-min: 6rem;
-
-		display: grid;
-		grid-column: 1 / -1;
-		gap: var(--divide);
-		margin-inline: calc(-1 * var(--pad));
-		padding-top: var(--divide);
-		padding-inline: var(--pad);
-		border-top: var(--rule);
 	}
 
 	/* A band across a section: cells side by side, a rule between them and one over
@@ -954,23 +885,19 @@
 		border-top: var(--rule);
 	}
 
-	.band > * {
+	/* :global, because a cell is often a component's own root — Panel's — and a
+	   scoped selector cannot reach one. */
+	.band > :global(*) {
 		padding: var(--divide) var(--pad);
 	}
 
-	.band > * + * {
+	.band > :global(* + *) {
 		border-left: var(--rule);
 	}
 
 	.band.nested {
 		padding: 0;
 		border-top: 0;
-	}
-
-	/* Unlike a band nested inside another cell, this nested matrix begins the
-	   container rows and needs to divide them from the fleet summary above. */
-	.band.container-band {
-		border-top: var(--rule);
 	}
 
 	/* Out to the section's own edges, which is where a band's rules have to end,
@@ -983,20 +910,33 @@
 
 	/* A whole band of headline readings rather than one beside a chart: they line
 	   up on their centres, since there is nothing in the cell to range against. */
-	.centred > * {
-		display: grid;
-		gap: 0.55rem;
-		justify-items: center;
+	.centred > :global(*) {
+		align-items: center;
 		text-align: center;
+	}
+
+	/* Every reading that sits in a band, at one size: these are rows of figures
+	   read across and compared down the page, so a cell does not get to pick a
+	   size of its own. Mono, unlike the .figure a whole section is known by —
+	   these are counts, not headlines. The colour is the band's, since a reading
+	   that is off takes its own. */
+	.centred strong,
+	.rate strong,
+	.latency-reading strong,
+	.container-summary strong {
+		font-family: var(--font-mono);
+		font-size: 1.45rem;
+	}
+
+	.centred strong,
+	.rate strong {
+		color: var(--mint);
 	}
 
 	.centred strong {
 		display: flex;
 		align-items: center;
 		gap: 0.55rem;
-		color: var(--mint);
-		font-family: var(--font-mono);
-		font-size: 1.15rem;
 		text-transform: uppercase;
 	}
 
@@ -1017,20 +957,10 @@
 		color: var(--text-faint);
 	}
 
-	/* Eight lanes have to divide this and still each be a lane, so it is taller than
-	   the readings beside it. */
-	.offsets {
-		--graph-min: 13rem;
-	}
-
 	/* Wall to wall along the foot of the section: a trace this wide is read across,
 	   and the height only has to be enough to see the line move. */
 	.history {
 		--graph-min: 10rem;
-	}
-
-	.offset-chart {
-		min-height: var(--graph-min);
 	}
 
 	.sync {
@@ -1095,9 +1025,10 @@
 
 	/* A section that is nothing but bands, stacked. It starts against the rule under
 	   the heading rather than a gap below it, so the first band brings no rule of
-	   its own. */
+	   its own. Tall enough that eight lanes can divide it and each still be a lane,
+	   which is the deepest thing any band holds. */
 	.bands {
-		--graph-min: 12rem;
+		--graph-min: 13rem;
 
 		margin-top: calc(-1 * var(--divide));
 	}
@@ -1110,30 +1041,29 @@
 		--graph-min: 6rem;
 	}
 
-	.quality .nested > div {
+	/* The unit belongs to the number, so it sits on its baseline rather than under
+	   it. */
+	.rate,
+	.latency-reading {
 		display: flex;
-		flex-direction: column;
-		gap: 0.45rem;
+		align-items: baseline;
+		gap: 0.3rem;
+		margin: 0;
 	}
 
-	.quality strong,
-	.latency-reading strong {
-		color: var(--mint);
-		font-family: var(--font-mono);
-		font-size: 1.45rem;
+	.latency-reading {
+		gap: 1.25rem;
 	}
 
-	.quality small,
+	.rate small,
 	.latency-reading span {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
 		font-size: 0.6rem;
 	}
 
-	.latency-reading {
-		display: flex;
-		align-items: baseline;
-		gap: 1.25rem;
+	.latency-reading strong {
+		color: var(--violet);
 	}
 
 	.latency-reading strong {
@@ -1182,45 +1112,17 @@
 			--graph-min: 5rem;
 		}
 
-		/* The split cannot hold two columns either: everything stacks, so the rule
-		   between the columns lies down with them. */
-		.split {
-			grid-template-columns: minmax(0, 1fr);
-		}
-
-		.beside {
-			margin-top: 0;
-			margin-inline: calc(-1 * var(--pad));
-			padding-left: var(--pad);
-			padding-right: var(--pad);
-			padding-top: var(--divide);
-			border-left: 0;
-			border-top: var(--rule);
-		}
-
 		/* No band holds its cells side by side at this width: they stack, and the
-		   rule between them lies down with them. The four counts are the exception —
-		   they are short enough to stay a row. */
-		.band:not(.nested) {
+		   rule between them lies down with them. The containers are the exception —
+		   that grid already fits itself to whatever width it is given. */
+		.band:not(.container-band) {
 			grid-template-columns: minmax(0, 1fr);
 		}
 
-		.band:not(.nested) > * + * {
+		.band:not(.container-band) > :global(* + *) {
 			border-top: var(--rule);
 			border-left: 0;
 		}
 
-		.container-band > .container-slot:nth-child(n + 5) {
-			grid-column: auto;
-		}
-
-		.container-band {
-			grid-template-columns: minmax(0, 1fr);
-		}
-
-		.container-band > .container-slot + .container-slot {
-			border-top: var(--rule);
-			border-left: 0;
-		}
 	}
 </style>

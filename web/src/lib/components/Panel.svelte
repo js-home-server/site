@@ -1,10 +1,13 @@
 <script>
 	/* A labelled block. Every titled part of a dashboard section is one of these:
-	   the title is written once and what goes under it is the caller's business. */
-	let { label, children } = $props();
+	   the title is written once, what goes under it is the caller's business, and
+	   `tone` is the colour that reading is drawn in throughout — set here rather
+	   than on each mark inside, so a panel has one colour and nothing in it has to
+	   be told twice. */
+	let { label, tone, children } = $props();
 </script>
 
-<div class="panel">
+<div class="panel" style:color={tone}>
 	{#if label}<h3>{label}</h3>{/if}
 	{@render children()}
 </div>

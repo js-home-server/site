@@ -1,4 +1,6 @@
 <script>
+	import Panel from './Panel.svelte';
+
 	/* One reading: what it is, what it says now, how it has behaved, and a graph.
 	   The graph is whatever the caller renders — a trace, a map — so this owns the
 	   shape of a row and nothing about what is being measured. */
@@ -6,15 +8,14 @@
 </script>
 
 <div class="row">
-	<div class="figures">
-		<h3 class="name eyebrow">{label}</h3>
-		<strong class="figure" style:color={tone}>{value}</strong>
+	<Panel {label} {tone}>
+		<strong class="figure">{value}</strong>
 		<dl class="summary">
 			{#each stats as [name, reading] (name)}
 				<div class="readout ruled"><dt class="eyebrow">{name}</dt><dd>{reading}</dd></div>
 			{/each}
 		</dl>
-	</div>
+	</Panel>
 
 	{@render children()}
 </div>
@@ -30,28 +31,13 @@
 		align-items: stretch;
 	}
 
-	.figures {
-		display: flex;
-		flex-direction: column;
-		gap: 0.2rem;
-	}
-
-	/* A shade brighter than the labels on the boxes around it: this one names the
-	   reading under it, not the card. A heading like the panels', so the readings
-	   are stops for anyone navigating by them. */
-	.name {
-		margin: 0;
-		color: var(--text-dim);
-		letter-spacing: 0.12em;
-	}
-
 	/* One under the other, filling the height the graph beside it sets: a column of
 	   ruled pairs reads down as a list, and it is what lets the reading above be
 	   set as large as it is. */
 	.summary {
 		display: grid;
 		gap: 0;
-		margin: 0.35rem 0 0;
+		margin: 0;
 	}
 
 	/* Neither column is worth much at this width: the numbers go above the graph

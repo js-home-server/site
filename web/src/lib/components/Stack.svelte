@@ -2,6 +2,7 @@
 	import { markY, PERCENT_GRID, VIEW } from '$lib/chart.js';
 	import { bytes, pct } from '$lib/format.js';
 	import Placeholder from './Placeholder.svelte';
+	import TimeAxis from './TimeAxis.svelte';
 
 	/* Shares of one whole over time, stacked from the floor up.
 
@@ -10,7 +11,7 @@
 	   stacked in the order given and read against a fixed 0-100 scale, because the
 	   question this chart answers — how the whole is divided — is only a question
 	   about that scale. */
-	let { bands = [], ticks = [], note = 'no history yet' } = $props();
+	let { bands = [], note = 'no history yet' } = $props();
 
 	/* Everything here is a share of one whole, so the scale is the whole and the
 	   projection onto it is the one every chart uses. */
@@ -64,13 +65,7 @@
 			</svg>
 		</div>
 
-		{#if ticks.length}
-			<div class="ticks foot">
-				{#each ticks as tick (tick)}
-					<span class="tick">{tick}</span>
-				{/each}
-			</div>
-		{/if}
+		<div class="foot"><TimeAxis /></div>
 
 		<dl class="legend">
 			{#each areas as area (area.id)}
@@ -91,36 +86,12 @@
 		grid-template-rows: minmax(4rem, 1fr) auto auto;
 	}
 
-	.canvas {
-		position: relative;
-		grid-column: 2;
-		min-height: 0;
-	}
-
-	/* Out of flow: left in, the svg would claim a height from its own aspect ratio
-	   and set how tall the row is. */
-	svg {
-		position: absolute;
-		display: block;
-		inset: 0;
-		width: 100%;
-		height: 100%;
-	}
-
 	path {
 		fill: currentcolor;
 		fill-opacity: 0.75;
 		stroke: currentcolor;
 		stroke-width: 0.5;
 		vector-effect: non-scaling-stroke;
-	}
-
-	/* Spread across the drawing, since the ends of the row are the ends of the
-	   window. */
-	.ticks {
-		display: flex;
-		justify-content: space-between;
-		text-transform: uppercase;
 	}
 
 	/* One entry a band, along the foot of the chart: what it is, and what it comes

@@ -3,6 +3,7 @@
 	import { bytes, pct, perDay, untilFull } from '$lib/format.js';
 	import { MONTH_RANGE } from '$lib/server.svelte.js';
 	import { bucket } from '$lib/stats.js';
+	import Panel from './Panel.svelte';
 	import Placeholder from './Placeholder.svelte';
 
 	/* Where the volumes have been and where that puts them. `volumes` are shaped
@@ -109,10 +110,9 @@
 
 {#if traces.length}
 	<div class="horizon">
-		<div class="head">
-			<!-- The window the series was asked for, read from the request itself, so
-			     the caption cannot claim a history that was never fetched. -->
-			<h3 class="caption eyebrow">{MONTH_RANGE} used space history &amp; projection</h3>
+		<!-- The window the series was asked for, read from the request itself, so
+		     the title cannot claim a history that was never fetched. -->
+		<Panel label="{MONTH_RANGE} used space history &amp; projection">
 			{#if soonest}
 				<!-- The rate behind this date is the one on that volume's legend row,
 				     so it is not quoted twice. -->
@@ -120,7 +120,7 @@
 			{:else}
 				<strong class="figure steady">No growth to project</strong>
 			{/if}
-		</div>
+		</Panel>
 
 		<div class="plot">
 			<div class="scale">
@@ -180,22 +180,9 @@
 		height: 100%;
 	}
 
-	.head {
-		display: grid;
-		gap: 0.3rem;
-	}
-
-	/* A footnote to the number under it rather than a label on the box, so it is
-	   set a step down from the small caps elsewhere. */
-	.caption {
-		margin: 0;
-		font-size: 0.58rem;
-		letter-spacing: 0.12em;
-	}
-
-	.head strong {
-		font-size: clamp(1.3rem, 2.4vw, 1.9rem);
-		letter-spacing: -0.02em;
+	/* The one place a figure is a sentence rather than a number, so it is the one
+	   that takes the small caps the section headings are set in. */
+	.horizon strong {
 		text-transform: uppercase;
 	}
 
@@ -207,19 +194,6 @@
 	   drawing for the time axis. */
 	.plot {
 		grid-template-rows: minmax(4rem, 1fr) auto;
-	}
-
-	.canvas {
-		position: relative;
-		min-height: 0;
-	}
-
-	svg {
-		position: absolute;
-		display: block;
-		inset: 0;
-		width: 100%;
-		height: 100%;
 	}
 
 	/* Where the measured part ends and the guess begins. Brighter than the grid it

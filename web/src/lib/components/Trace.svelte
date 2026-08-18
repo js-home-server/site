@@ -115,8 +115,6 @@
 	   like every grey line on the page that measures something rather than dividing
 	   it — the solid ones are the sections and their parts. */
 	.canvas {
-		position: relative;
-		grid-column: 2;
 		color: var(--color-border);
 		background-image: var(--dot-row), var(--dot-row);
 		background-position: 0 0, 0 100%;
@@ -124,14 +122,9 @@
 		background-size: 100% 1px;
 	}
 
-	/* Out of flow: left in, the svg would claim a height from its own aspect ratio
-	   and set how tall the row is. */
+	/* A stroke is centred on its path, so half of one drawn along the floor or the
+	   head of the domain falls outside the box. */
 	svg {
-		position: absolute;
-		display: block;
-		inset: 0;
-		width: 100%;
-		height: 100%;
 		overflow: visible;
 	}
 

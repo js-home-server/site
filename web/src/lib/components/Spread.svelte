@@ -209,11 +209,24 @@
 		text-align: right;
 	}
 
-	/* The names cost too much of the lane at this width: they go over it instead. */
+	/* There is no lane worth drawing at this width — eight bounds overlapping in
+	   seventy pixels say nothing, and squeezing one in is what pushed the columns
+	   either side of it off the page. The drawing goes and the readings it was
+	   drawing take the room, which is the same information in the one form that
+	   fits. */
 	@media (max-width: 52rem) {
-		.rows,
+		.rows {
+			grid-template-columns: minmax(0, 1fr) var(--read-w) var(--note-w);
+		}
+
+		.name {
+			text-align: left;
+		}
+
+		.lane,
+		.zero,
 		.scale {
-			--name-w: 5.5rem;
+			display: none;
 		}
 	}
 </style>
