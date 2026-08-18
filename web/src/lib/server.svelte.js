@@ -49,11 +49,34 @@ async function load(key, url, apply) {
 
 const loadSnapshot = () => load('snapshot', '/api/status', (data) => (server.snapshot = data));
 
+/* The public history contract is grouped by failure domain. Components still
+   consume named series, so flatten that contract once at the boundary rather
+   than teaching every chart where its metric happens to live. Keep the group
+   metadata alongside it for diagnostics and future unavailable-state UI. */
+function historySeries(data) {
+	const flattened = {
+		generatedAt: data?.generatedAt,
+		range: data?.range,
+		stepSeconds: data?.stepSeconds,
+		state: data?.state,
+		groups: data?.groups
+	};
+
+	for (const group of Object.values(data?.groups ?? {})) {
+		Object.assign(flattened, group?.series ?? {});
+		for (const device of Object.values(group?.devices ?? {})) {
+			Object.assign(flattened, device?.series ?? {});
+		}
+	}
+
+	return flattened;
+}
+
 const loadSeries = () =>
-	load('series', `/api/history?range=${RANGE}`, (data) => (server.series = data));
+	load('series', `/api/history?range=${RANGE}`, (data) => (server.series = historySeries(data)));
 
 const loadMonth = () =>
-	load('month', `/api/history?range=${MONTH_RANGE}`, (data) => (server.month = data));
+	load('month', `/api/history?range=${MONTH_RANGE}`, (data) => (server.month = historySeries(data)));
 
 /* Poll for as long as the caller lives — `$effect(watch)` in a component, whose
    teardown is the returned function. The headline numbers move every poll; the

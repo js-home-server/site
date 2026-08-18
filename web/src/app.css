@@ -3,110 +3,37 @@
 @import '@fontsource/inter/latin-500.css';
 @import '@fontsource/inter/latin-700.css';
 
-@custom-variant dark (&:is(.dark *));
-
+/* The four surfaces the site is actually painted on. What started here as a full
+   generated palette had a token for every part of a component library this site
+   does not use — a card, a popover, five chart colours — none of which anything
+   ever read. These four are the ones the pages and the base layer below name, and
+   the accents further down are the rest of the paint. */
 :root {
-	--radius: 0.6rem;
 	--background: #f9f9f7;
 	--foreground: #0b0b0b;
-	--card: #fcfcfb;
-	--card-foreground: #0b0b0b;
-	--popover: #fcfcfb;
-	--popover-foreground: #0b0b0b;
-	--primary: #0b0b0b;
-	--primary-foreground: #f9f9f7;
-	--secondary: #f0f0ec;
-	--secondary-foreground: #0b0b0b;
-	--muted: #f0f0ec;
-	--muted-foreground: #52514e;
-	--accent: #f0f0ec;
-	--accent-foreground: #0b0b0b;
-	--destructive: #e34948;
-	--destructive-foreground: #fcfcfb;
-	--success: #006300;
-	--success-foreground: #fcfcfb;
 	--border: #e1e0d9;
-	--input: #e1e0d9;
 	--ring: #898781;
-
-	--chart-1: #2a78d6;
-	--chart-2: #eb6834;
-	--chart-3: #1baf7a;
-	--chart-4: #eda100;
-	--chart-5: #e87ba4;
 }
 
+/* The site as it is actually served: app.html carries this class, and the light
+   values above are what a viewer would get without it. */
 .dark {
 	color-scheme: dark;
 
-	/* The site is painted on this black and this off-white: the shell, the
-	   status cards and the hero all read them from here rather than repeating
-	   literals. */
 	--background: #090909;
 	--foreground: #f3f3ef;
-	--card: #1a1a19;
-	--card-foreground: #ffffff;
-	--popover: #1a1a19;
-	--popover-foreground: #ffffff;
-	--primary: #ffffff;
-	--primary-foreground: #0d0d0d;
-	--secondary: #232322;
-	--secondary-foreground: #ffffff;
-	--muted: #232322;
-	--muted-foreground: #c3c2b7;
-	--accent: #232322;
-	--accent-foreground: #ffffff;
-	--destructive: #e66767;
-	--destructive-foreground: #1a1a19;
-	--success: #0ca30c;
-	--success-foreground: #1a1a19;
 	--border: #2c2c2a;
-	--input: #2c2c2a;
 	--ring: #898781;
-
-	--chart-1: #3987e5;
-	--chart-2: #d95926;
-	--chart-3: #199e70;
-	--chart-4: #c98500;
-	--chart-5: #d55181;
 }
 
 @theme inline {
-	--radius-sm: calc(var(--radius) - 4px);
-	--radius-md: calc(var(--radius) - 2px);
-	--radius-lg: var(--radius);
-	--radius-xl: calc(var(--radius) + 4px);
-
 	--font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
 	--font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
-	--color-card: var(--card);
-	--color-card-foreground: var(--card-foreground);
-	--color-popover: var(--popover);
-	--color-popover-foreground: var(--popover-foreground);
-	--color-primary: var(--primary);
-	--color-primary-foreground: var(--primary-foreground);
-	--color-secondary: var(--secondary);
-	--color-secondary-foreground: var(--secondary-foreground);
-	--color-muted: var(--muted);
-	--color-muted-foreground: var(--muted-foreground);
-	--color-accent: var(--accent);
-	--color-accent-foreground: var(--accent-foreground);
-	--color-destructive: var(--destructive);
-	--color-destructive-foreground: var(--destructive-foreground);
-	--color-success: var(--success);
-	--color-success-foreground: var(--success-foreground);
 	--color-border: var(--border);
-	--color-input: var(--input);
 	--color-ring: var(--ring);
-
-	--color-chart-1: var(--chart-1);
-	--color-chart-2: var(--chart-2);
-	--color-chart-3: var(--chart-3);
-	--color-chart-4: var(--chart-4);
-	--color-chart-5: var(--chart-5);
 }
 
 @layer base {
@@ -231,19 +158,6 @@
 	text-transform: uppercase;
 }
 
-/* A reading drawn as well as written: its name, the figure, the graphic, and the
-   sizes behind it in a column. What the graphic is — a ring, a bar — is the only
-   part that belongs to the component. */
-.meter {
-	display: flex;
-	flex-direction: column;
-	gap: 0.4rem;
-}
-
-.meter h3 {
-	margin: 0;
-}
-
 /* The one number a reading is known by. */
 .figure {
 	font-size: clamp(1.6rem, 2.8vw, 2.2rem);
@@ -352,8 +266,30 @@
 	min-height: var(--graph-min, 6rem);
 }
 
-/* A graph's foot sits under the drawing, not under the gutter. */
+/* Where a graph is actually drawn: the box beside the gutter, and whatever is
+   painted over it — an svg, the rules, a divider — placed against it. The svg is
+   taken out of flow because in it, it would claim a height from its own aspect
+   ratio and set how tall the row is. */
+.plot .canvas {
+	position: relative;
+	grid-column: 2;
+	min-height: 0;
+}
+
+.plot .canvas svg {
+	position: absolute;
+	display: block;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
+
+/* A graph's foot sits under the drawing, not under the gutter. A container, so
+   what goes in it can answer to the width of the drawing rather than the width of
+   the window — the same axis runs under a panel a fifth of a section wide and one
+   that spans the lot. */
 .plot > .foot {
+	container-type: inline-size;
 	grid-column: 2;
 }
 

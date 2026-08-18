@@ -1,5 +1,6 @@
 <script>
 	import { pct, share } from '$lib/format.js';
+	import Panel from './Panel.svelte';
 
 	/* How full a volume is: the share as a number, as a bar, and the sizes behind
 	   it. `detail` is an em dash where those are not available yet, so a volume
@@ -10,8 +11,7 @@
 	let reading = $derived(pct(filled));
 </script>
 
-<div class="meter" style:color={tone}>
-	<h3 class="eyebrow">{label}</h3>
+<Panel {label} {tone}>
 	<strong class="figure">{reading}</strong>
 
 	<!-- The bar runs the full width whatever the reading: the dashes are the space
@@ -26,7 +26,7 @@
 	</div>
 
 	<p class="readout"><span class="eyebrow">Used</span><span>{detail}</span></p>
-</div>
+</Panel>
 
 <style>
 	.bar {

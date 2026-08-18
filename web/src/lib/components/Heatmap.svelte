@@ -5,14 +5,10 @@
 	/* A row per series, a column per bucket of the window, brightness by value.
 
 	   `rows` is [{ id, now, cells, tone, group }] where a cell is a value in the
-	   series' own units, or null for a bucket nothing was collected for.
-
-	   `ticks` replaces the plain window label with a scale of its own, above the
-	   map rather than below it, for a chart read across a day. */
+	   series' own units, or null for a bucket nothing was collected for. */
 	let {
 		rows = [],
 		note = 'no history yet',
-		ticks = null,
 		/* 'map' stretches one ramp across every row; 'row' gives each row its own. */
 		normalise = 'map',
 		/* Spells out the range the colours were stretched to, in the caller's own
@@ -25,38 +21,37 @@
 
 	let readings = $derived(rows.some((row) => row.now));
 
-	/* The map is painted across the range the data actually covers, not across the
-	   scale it was measured on: a box that idles between 3% and 30% is all but
-	   black on an absolute ramp, and the point of the map is the difference
-	   between one bucket and the next.
+	const collected = (row) => row.cells.filter((cell) => cell !== null);
+	const rangeOf = (values) => (values.length ? [Math.min(...values), Math.max(...values)] : [0, 1]);
 
-	   Over every row at once where the rows are the same quantity, so the rows stay
-	   comparable — cores against cores. Per row where they are not: a read stream
-	   at bytes a second beside a write stream at hundreds of kilobytes would leave
-	   the reads black on a shared ramp, which says nothing about when they ran. */
-	const rangeOf = (values) =>
-		values.length ? [Math.min(...values), Math.max(...values)] : [0, 1];
+	/* Each row with the colour and the scale it is drawn on settled, which is
+	   everything the drawing and its key both need — they cannot disagree about a
+	   lane if they are reading the same one.
 
-	let extent = $derived(
-		rangeOf(rows.flatMap((row) => row.cells.filter((cell) => cell !== null)))
-	);
+	   A scale is the range the data actually covers, not the range it was measured
+	   on: a box that idles between 3% and 30% is all but black on an absolute ramp,
+	   and the point of the map is the difference between one bucket and the next.
+	   Shared across the rows where they are the same quantity, so they stay
+	   comparable — cores against cores. Per row where they are not: a read stream at
+	   bytes a second beside a write stream at hundreds of kilobytes would leave the
+	   reads black on a shared ramp, which says nothing about when they ran. */
+	let lanes = $derived.by(() => {
+		const shared = rangeOf(rows.flatMap(collected));
 
-	let extents = $derived(rows.map((row) => rangeOf(row.cells.filter((cell) => cell !== null))));
+		return rows.map((row) => ({
+			...row,
+			tone: row.tone ?? 'var(--mint)',
+			scale: normalise === 'row' ? rangeOf(collected(row)) : shared
+		}));
+	});
 
 	/* Mid-ramp when there is no range at all: a flat series is neither idle nor
 	   peak, and painting it as either would be a claim the data does not make. */
-	const shade = (cell, row) => {
-		const [lo, hi] = normalise === 'row' ? extents[row] : extent;
-		return hi === lo ? 0.5 : (cell - lo) / (hi - lo);
-	};
+	const shade = (cell, [lo, hi]) => (hi === lo ? 0.5 : (cell - lo) / (hi - lo));
 
 	/* The ends of a ramp: the readings its colours were stretched between where the
 	   caller can write them down, and the words they stand for where it cannot. */
 	const ends = ([lo, hi]) => (format ? [format(lo), format(hi)] : ['Idle', 'Peak']);
-
-	/* The range a given row's own shades cover, which is the map's unless the rows
-	   were each stretched on their own scale. */
-	const rowEnds = (index) => ends(normalise === 'row' ? extents[index] : extent);
 
 	/* One entry per ramp in the map, each spelling out the range its own colours
 	   cover. Rows stretched on their own scale get one each — the same shade means
@@ -65,62 +60,43 @@
 	   per colour, named by the group they belong to. */
 	let ramps = $derived(
 		normalise === 'row'
-			? rows.map((row, index) => ({
-					id: row.id,
-					tone: row.tone ?? 'var(--mint)',
-					label: row.id,
-					ends: ends(extents[index])
-				}))
-			: rows.reduce((list, row) => {
-					const tone = row.tone ?? 'var(--mint)';
-					if (!list.some((ramp) => ramp.tone === tone)) {
-						list.push({ id: tone, tone, label: row.group, ends: ends(extent) });
-					}
-					return list;
-				}, [])
+			? lanes.map((lane) => ({ ...lane, label: lane.id, ends: ends(lane.scale) }))
+			: lanes
+					.filter((lane, i) => lanes.findIndex((first) => first.tone === lane.tone) === i)
+					.map((lane) => ({ ...lane, id: lane.tone, label: lane.group, ends: ends(lane.scale) }))
 	);
 </script>
 
 {#if rows.length}
-	<div class="plot" class:with-ticks={ticks}>
-		{#if ticks}
-			<div class="ticks tick">
-				{#each ticks as tick (tick)}
-					<span>{tick}</span>
-				{/each}
-			</div>
-		{/if}
-
+	<div class="plot">
 		<!-- Two columns or three, depending on whether the rows carry a reading:
 		     rows that emit fewer cells than the grid has columns wrap into the wrong
 		     ones. -->
 		<div class="map" class:bare={!readings}>
-			{#each rows as row, index (row.id)}
-				<span class="row-id tick">{row.id}</span>
+			{#each lanes as lane (lane.id)}
+				<span class="row-id tick">{lane.id}</span>
 				<!-- The lane in words, the way the uptime strip and the capacity bars
 				     are: the id and the current reading either side of it are already
 				     text, but the shades between them are not. -->
-				{@const [lo, hi] = rowEnds(index)}
+				{@const [lo, hi] = ends(lane.scale)}
 				<div
 					class="cells"
-					style:color={row.tone ?? 'var(--mint)'}
+					style:color={lane.tone}
 					role="img"
-					aria-label="{row.id} over the window, {lo} to {hi}"
+					aria-label="{lane.id} over the window, {lo} to {hi}"
 				>
-					{#each row.cells as cell}
+					{#each lane.cells as cell}
 						<i
 							class:unknown={cell === null}
-							style="--v: {cell === null ? 0 : shade(cell, index)}"
+							style="--v: {cell === null ? 0 : shade(cell, lane.scale)}"
 						></i>
 					{/each}
 				</div>
-				{#if readings}<span class="row-now tick">{row.now ?? ''}</span>{/if}
+				{#if readings}<span class="row-now tick">{lane.now ?? ''}</span>{/if}
 			{/each}
 		</div>
 
-		{#if !ticks}
-			<div class="foot"><TimeAxis /></div>
-		{/if}
+		<div class="foot"><TimeAxis /></div>
 
 		<div class="key">
 			{#each ramps as ramp (ramp.id)}
@@ -140,21 +116,6 @@
 {/if}
 
 <style>
-	/* The scale is a line of text and the map takes what is left. Without this the
-	   ticks land in the flexible row and the height goes above the cells. */
-	.plot.with-ticks {
-		grid-template-rows: auto minmax(0, 1fr);
-	}
-
-	/* Spread across the map, since a cell is a bucket and the ends of the row are
-	   the ends of the window. */
-	.ticks {
-		display: flex;
-		justify-content: space-between;
-		grid-column: 2;
-		text-transform: uppercase;
-	}
-
 	.map {
 		display: grid;
 		grid-column: 1 / -1;
@@ -203,6 +164,9 @@
 	/* The key is a footnote to the map and drops below it, in the map's column. */
 	/* Two to a line, so the ramps pair up the way the lanes above them do: a
 	   device's read and its write on one row, the next device under it. */
+	/* Not small-capped like the labels elsewhere: an entry here names the lane it
+	   belongs to, which is written out on the left of that same row, and the two
+	   spellings of one name a few inches apart read as two things. */
 	.key {
 		display: grid;
 		grid-column: 2;
@@ -211,7 +175,6 @@
 		font-size: 0.55rem;
 		font-weight: 500;
 		letter-spacing: 0.1em;
-		text-transform: uppercase;
 	}
 
 	.ramp {
@@ -220,13 +183,10 @@
 		gap: 0.25rem;
 	}
 
-	/* The ends are quiet; the ramp between them carries the colour. Unit symbols
-	   are wrong in any case but their own, so these are left as they were written
-	   while the names beside them take the small caps. */
+	/* The ends are quiet; the ramp between them carries the colour. */
 	.ramp .end {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		text-transform: none;
 	}
 
 	.ramp b {

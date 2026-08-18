@@ -22,16 +22,13 @@ export const degrees = (v) => (Number.isFinite(v) ? `${Math.round(v)}°C` : '—
 /* A clock offset, at the precision a clock is actually disciplined to:
    microseconds. Always signed, because which side of the reference it sits on is
    half the reading. */
-export const seconds = (v) =>
-	Number.isFinite(v) ? `${v < 0 ? '−' : '+'}${Math.abs(v).toFixed(6)}s` : '—';
-
-/* The same quantity unsigned, for the ones that have no side to be on — a
-   dispersion or a delay is a width, not a direction. */
-export const span = (v) => (Number.isFinite(v) ? `${v.toFixed(6)}s` : '—');
-
 export const microseconds = (v) =>
 	Number.isFinite(v) ? `${v < 0 ? '−' : '+'}${Math.round(Math.abs(v) * 1e6)} µs` : '—';
 
+/* The same quantity unsigned, for the ones that have no side to be on — a
+   dispersion or a delay is a width, not a direction. In the same unit as the
+   offsets, because the whole point of reading them together is that a path a
+   hundred times the machine's own error is a path worth noticing. */
 export const microspan = (v) =>
 	Number.isFinite(v) ? `${Math.round(Math.abs(v) * 1e6)} µs` : '—';
 
