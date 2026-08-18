@@ -345,7 +345,7 @@
 				<Trace
 					lines={[
 						{ id: 'rx', points: rx, tone: 'var(--azure)', label: 'RX' },
-						{ id: 'tx', points: tx, tone: 'var(--mint)', label: 'TX' }
+						{ id: 'tx', points: tx, tone: 'var(--violet)', label: 'TX' }
 					]}
 					format={rate}
 				/>
@@ -388,7 +388,7 @@
 				<p class="latency-reading">
 					<strong>{reading('latencyMs', ms)}</strong><span>P95 {summarise(series?.latencyMs, ms)[2][1]}</span>
 				</p>
-				<Trace lines={[{ id: 'latency', points: series?.latencyMs, tone: 'var(--violet)' }]} format={ms} />
+				<Trace lines={[{ id: 'latency', points: series?.latencyMs, tone: 'var(--azure)' }]} format={ms} />
 			</Panel>
 		</div>
 	</div>
@@ -435,7 +435,7 @@
 		<div class="band history">
 			<Panel label="Offset">
 				<Trace
-					lines={[{ id: 'offset', points: clockHistory, tone: 'var(--mint)', area: false }]}
+					lines={[{ id: 'offset', points: clockHistory, tone: 'var(--azure)', area: false }]}
 					domain={[-clockLimit, clockLimit]}
 					marks={[0]}
 					format={microseconds}
