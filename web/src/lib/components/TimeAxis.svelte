@@ -32,10 +32,12 @@
 		text-transform: uppercase;
 	}
 
-	/* The five stops measure 124px of text; under a box that can hold them with air
+	/* The three stops measure 91px of text; under a box that can hold them with air
 	   between, they run together into one word and the axis stops being readable at
-	   all. It falls back to its two ends, which is what it has to say. */
-	@container (max-width: 10rem) {
+	   all. It falls back to its two ends, which is what it has to say. No chart on
+	   the dashboard is currently this narrow — this is here because the axis is
+	   shared and a caller can put it in a box of any width. */
+	@container (max-width: 7rem) {
 		.window span:not(:first-child):not(:last-child) {
 			display: none;
 		}
