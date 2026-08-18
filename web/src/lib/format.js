@@ -29,6 +29,18 @@ export const seconds = (v) =>
    dispersion or a delay is a width, not a direction. */
 export const span = (v) => (Number.isFinite(v) ? `${v.toFixed(6)}s` : '—');
 
+export const microseconds = (v) =>
+	Number.isFinite(v) ? `${v < 0 ? '−' : '+'}${Math.round(Math.abs(v) * 1e6)} µs` : '—';
+
+export const microspan = (v) =>
+	Number.isFinite(v) ? `${Math.round(Math.abs(v) * 1e6)} µs` : '—';
+
+export const clockPosition = (v) => {
+	if (!Number.isFinite(v)) return '—';
+	const distance = Math.round(Math.abs(v) * 1e6);
+	return distance ? `${distance} µs ${v > 0 ? 'ahead' : 'behind'}` : 'On reference';
+};
+
 /* Parts per million, how fast a clock runs rather than where it is. */
 export const ppm = (v) =>
 	Number.isFinite(v) ? `${v < 0 ? '−' : '+'}${Math.abs(v).toFixed(3)} ppm` : '—';
