@@ -3,6 +3,7 @@
 	import AsciiDish from '$lib/components/AsciiDish.svelte';
 	import AsciiShip from '$lib/components/AsciiShip.svelte';
 	import Capacity from '$lib/components/Capacity.svelte';
+	import Dashboard from '$lib/components/Dashboard.svelte';
 	import Dial from '$lib/components/Dial.svelte';
 	import Heatmap from '$lib/components/Heatmap.svelte';
 	import Horizon from '$lib/components/Horizon.svelte';
@@ -85,25 +86,6 @@
 	   same spelling the stats and the map key beside it use, so one number is not
 	   quoted to two precisions in one box. */
 	const reading = (key, format) => format(snapshot?.[key]);
-
-	let current = $state(SECTIONS[0].id);
-
-	/* Which section the rail marks. An observer on the section itself, rather than
-	   scroll maths or a document lookup: it is the platform's own answer to "what
-	   is on screen". Top-biased margin so the mark flips when a heading reaches
-	   the upper third, which is where the eye is, not when the section is half
-	   gone. */
-	const spy = (id) => (element) => {
-		const observer = new IntersectionObserver(
-			([entry]) => {
-				if (entry.isIntersecting) current = id;
-			},
-			{ rootMargin: '-20% 0px -70% 0px' }
-		);
-
-		observer.observe(element);
-		return () => observer.disconnect();
-	};
 
 	/* Read and write on each disk, a lane of the pulse map each. The two sit orders
 	   of magnitude apart on the same drive, so the map normalises per row — a lane
@@ -456,7 +438,7 @@
 				<div><strong>{containerFleet.memory}</strong><span class="eyebrow">In use</span></div>
 			</div>
 
-			<div class="band nested container-band">
+			<div class="band nested fluid container-band">
 				{#each containerFleet.slots as slot (slot.name)}
 					<div class="container-slot">
 						<header class="container-head">
@@ -487,164 +469,25 @@
 	{/if}
 {/snippet}
 
-<div class="server">
-	<aside class="rail" aria-label="Dashboard sections">
-		<div class="rail-art" aria-hidden="true">
-			<Placeholder note="ascii" lines={6} />
-		</div>
+<Dashboard title="Server" sections={SECTIONS}>
+	<!-- Each section's body is the snippet named after it. -->
+	{#snippet body(section)}
+		{@render { uptime, cpu, memory, storage, network, time, containers }[section.id]()}
+	{/snippet}
 
-		<nav>
-			{#each SECTIONS as section, i (section.id)}
-				<a
-					class="eyebrow"
-					href="#{section.id}"
-					aria-current={current === section.id ? 'location' : undefined}
-				>
-					<span class="idx">{String(i).padStart(2, '0')}</span>
-					<span>{section.label}</span>
-					<span class="dot" aria-hidden="true"></span>
-				</a>
-			{/each}
-		</nav>
-
-		<div class="rail-foot">
-			<span class="eyebrow">Last updated</span>
-			<!-- The stamp the snapshot came with, not the clock: this says how fresh
-			     the numbers above are, which is not the same as what time it is. -->
-			<span class="mono">{stamp(snapshot?.generatedAt)}</span>
-		</div>
-	</aside>
-
-	<div class="body">
-		<!-- The page's own heading. The sections carry the titling now, so this is
-		     for the outline rather than the eye: without it the document starts at
-		     h2 and the sections are under nothing. -->
-		<h1>Server</h1>
-
-		<!-- The rail and the page are the one list, so neither can drift from the
-		     other: each section is a box with its own heading, and its body is a
-		     snippet looked up by its id. -->
-		{#each SECTIONS as section (section.id)}
-			<section id={section.id} {@attach spy(section.id)}>
-				<h2>{section.label}</h2>
-				{@render { uptime, cpu, memory, storage, network, time, containers }[section.id]()}
-			</section>
-		{/each}
-	</div>
-</div>
+	{#snippet foot()}
+		<span class="eyebrow">Last updated</span>
+		<!-- The stamp the snapshot came with, not the clock: this says how fresh
+		     the numbers above are, which is not the same as what time it is. -->
+		<span class="mono">{stamp(snapshot?.generatedAt)}</span>
+	{/snippet}
+</Dashboard>
 
 <style>
-	.server {
-		/* The rail is a fixed column and the dashboard takes the rest. Capped and
-		   centred like .page, but wider: this is a dashboard, not prose. */
-		--rail: 13rem;
-		--stick: calc(var(--nav-pad-top) + 0.5rem);
-
-		display: grid;
-		grid-template-columns: var(--rail) minmax(0, 1fr);
-		gap: clamp(1.5rem, 3vw, 3rem);
-		max-width: 82rem;
-		margin-inline: auto;
-		padding: clamp(1.5rem, 4vh, 2.5rem) var(--gutter) clamp(3rem, 10vh, 6rem);
-
-		/* The line dividing the two columns, drawn down the page rather than down the
-		   rail: the rail is sticky and only as tall as its own contents, so its
-		   border would stop partway. Measured on the content box, so it starts level
-		   with the title and ends with the last section rather than running out into
-		   the page's padding. */
-		background: linear-gradient(var(--color-border), var(--color-border)) no-repeat;
-		background-origin: content-box;
-		background-position: var(--rail) 0;
-		background-size: 1px 100%;
-	}
-
-	/* Sticky, not fixed: it stays with the column it belongs to at any width, and
-	   the shell's overflow: clip does not make a scrollport, so this resolves
-	   against the viewport as intended. */
-	.rail {
-		position: sticky;
-		top: var(--stick);
-		display: flex;
-		flex-direction: column;
-		gap: 1.5rem;
-		align-self: start;
-		max-height: calc(100svh - var(--stick) - 1rem);
-		padding-right: 1.25rem;
-	}
-
-	nav {
-		display: flex;
-		flex-direction: column;
-		/* The list is the only part allowed to scroll if the sections ever outgrow
-		   the viewport; the art and the footer stay put. */
-		overflow-y: auto;
-		scrollbar-width: thin;
-	}
-
-	/* The stops on the rail: the same small caps every label on the page is set
-	   in, a size up because this list is navigation rather than a caption. */
-	nav a {
-		display: grid;
-		grid-template-columns: auto 1fr auto;
-		gap: 0.6rem;
-		align-items: center;
-		padding: 0.55rem 0;
-		font-size: 0.7rem;
-		text-decoration: none;
-		transition: color 160ms ease;
-	}
-
-	nav a:hover,
-	nav a:focus-visible {
-		color: var(--color-foreground);
-	}
-
-	nav a[aria-current] {
-		color: var(--mint);
-	}
-
-	.idx {
-		font-family: var(--font-mono);
-		font-size: 0.65rem;
-		letter-spacing: 0.08em;
-	}
-
-	.dot {
-		width: 0.35rem;
-		height: 0.35rem;
-		border-radius: 50%;
-		background: currentcolor;
-		opacity: 0.35;
-	}
-
-	nav a[aria-current] .dot {
-		box-shadow: 0 0 0.7rem currentcolor;
-		opacity: 1;
-	}
-
-	.rail-foot {
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-		margin-top: auto;
-	}
-
 	.mono {
 		color: var(--text-dim);
 		font-family: var(--font-mono);
 		font-size: 0.72rem;
-	}
-
-	/* Read out, never drawn: the sections do the titling, and this is only here so
-	   the document has something to start its outline at. */
-	h1 {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		margin: -1px;
-		overflow: hidden;
-		clip-path: inset(50%);
-		white-space: nowrap;
 	}
 
 	/* A piece of generated ascii art. A character grid has one size — how big one
@@ -697,7 +540,7 @@
 	   rule above and to the left of it and the grid is bled a pixel each way, so
 	   the ones on the outside land on the section's own border — which is the only
 	   version of this that does not have to know how many columns there turned out
-	   to be. */
+	   to be, and is why it is marked `fluid` and left alone on a phone. */
 	.container-band {
 		/* Through --cells, which is how a band is divided: setting the columns
 		   directly is a rule of the same weight as the one it is trying to beat. */
@@ -798,69 +641,6 @@
 	}
 
 
-	/* A section is one box, divided rather than filled with smaller ones: the parts
-	   inside wear no frame of their own and are separated by a rule instead, drawn a
-	   shade under the box's own border so the box stays the strongest line on the
-	   page.
-
-	   Every rule runs the full width or height of what it divides — wall to wall, not
-	   inset by the padding — which it does by bleeding out by --pad and putting the
-	   same back as padding. --divide is the air either side of a rule, and the gap of
-	   whatever lays the parts out, so the two cannot drift apart. */
-	section {
-		--pad: clamp(1rem, 2.5vw, 1.75rem);
-		--rule: 1px solid color-mix(in srgb, var(--color-border) 75%, transparent);
-		--divide: clamp(1rem, 2vw, 1.5rem);
-
-		/* No panel in here is a heading of its own — the section's own h2 is that —
-		   so every one of their titles is turned down to a label. */
-		--title-size: 0.68rem;
-		--title-color: var(--text-faint);
-
-		display: grid;
-		gap: var(--divide);
-		margin-bottom: clamp(2rem, 6vh, 3.5rem);
-		padding: var(--pad);
-		border: 1px solid var(--color-border);
-		border-radius: 0.35rem;
-		/* Clears the sticky rail when a link jumps here. */
-		scroll-margin-top: var(--stick);
-	}
-
-	/* Nothing follows the last one, and the gap it would leave is what the column's
-	   divider would have to run past. */
-	section:last-child {
-		margin-bottom: 0;
-	}
-
-	/* The heading is separated from the section's contents by the same rule that
-	   divides them from each other. */
-	h2 {
-		margin: 0 calc(-1 * var(--pad));
-		padding: 0 var(--pad) var(--divide);
-		border-bottom: var(--rule);
-		font-size: 1.05rem;
-		font-weight: 700;
-		letter-spacing: 0.16em;
-		text-transform: uppercase;
-	}
-
-	/* Readings one under the other with a line between them, run out to the edges
-	   of whatever holds them — the section itself for a column of metric rows, a
-	   band's cell for the volumes, which is the same distance either way. */
-	.stack {
-		display: grid;
-		gap: var(--divide);
-		align-content: start;
-	}
-
-	.stack > :global(*) + :global(*) {
-		margin-inline: calc(-1 * var(--pad));
-		padding-top: var(--divide);
-		padding-inline: var(--pad);
-		border-top: var(--rule);
-	}
-
 	/* Taller than a row's sparkline: this chart is three bands deep and the dial
 	   beside it is a shape of its own, not a line of text. */
 	.memory {
@@ -871,39 +651,6 @@
 	   a line move. */
 	.pressure {
 		--graph-min: 6rem;
-	}
-
-	/* A band across a section: cells side by side, a rule between them and one over
-	   the lot. `--cells` is how they divide; the default is equal shares. Nest one
-	   in a cell of another to divide it again — the inner band is the division, not
-	   a second row, so it drops the rule and the padding it would otherwise wear. */
-	.band {
-		display: grid;
-		grid-template-columns: var(--cells, repeat(auto-fit, minmax(0, 1fr)));
-		border-top: var(--rule);
-	}
-
-	/* :global, because a cell is often a component's own root — Panel's — and a
-	   scoped selector cannot reach one. */
-	.band > :global(*) {
-		padding: var(--divide) var(--pad);
-	}
-
-	.band > :global(* + *) {
-		border-left: var(--rule);
-	}
-
-	.band.nested {
-		padding: 0;
-		border-top: 0;
-	}
-
-	/* Out to the section's own edges, which is where a band's rules have to end,
-	   and down to the bottom one, which the section's padding would otherwise hold
-	   it off. */
-	.bleed {
-		margin-inline: calc(-1 * var(--pad));
-		margin-bottom: calc(-1 * var(--pad));
 	}
 
 	/* Every reading that sits in a band, at one size: these are rows of figures
@@ -1049,59 +796,4 @@
 		color: var(--violet);
 	}
 
-	/* Under this the rail cannot hold its column and its labels at once. It goes
-	   horizontal along the top instead, still sticky, still the way through the
-	   page. */
-	@media (max-width: 52rem) {
-		.server {
-			grid-template-columns: minmax(0, 1fr);
-			gap: 1rem;
-			/* One column, nothing to divide. */
-			background: none;
-		}
-
-		.rail {
-			z-index: 2;
-			flex-direction: row;
-			align-items: center;
-			gap: 1rem;
-			max-height: none;
-			padding: 0.5rem 0;
-			border-bottom: 1px solid var(--color-border);
-			background: var(--color-background);
-		}
-
-		.rail-art,
-		.rail-foot {
-			display: none;
-		}
-
-		nav {
-			flex-direction: row;
-			gap: 1.25rem;
-			overflow-x: auto;
-		}
-
-		nav a {
-			padding: 0.25rem 0;
-			white-space: nowrap;
-		}
-
-		.stack {
-			--graph-min: 5rem;
-		}
-
-		/* No band holds its cells side by side at this width: they stack, and the
-		   rule between them lies down with them. The containers are the exception —
-		   that grid already fits itself to whatever width it is given. */
-		.band:not(.container-band) {
-			grid-template-columns: minmax(0, 1fr);
-		}
-
-		.band:not(.container-band) > :global(* + *) {
-			border-top: var(--rule);
-			border-left: 0;
-		}
-
-	}
 </style>
