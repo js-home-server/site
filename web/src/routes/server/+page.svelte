@@ -194,13 +194,12 @@
 	     of digits to a screen reader. -->
 	<div class="art dish" aria-hidden="true"><AsciiDish /></div>
 
-	<div class="band bleed centred">
+	<div class="band bleed headline">
 		<Panel label="Uptime">
-			<!-- The state is the dot and the word both, not the colour: "up" and "down"
-			     are the reading, and the dot only agrees with them. -->
-			<strong class:down={!online}>
-				<i></i>{online ? `Up ${duration(snapshot.uptimeSeconds)}` : 'Down'}
-			</strong>
+			<!-- How long it has been up is the reading; a machine that is not says so
+			     in the word rather than in the colour, which is never the only thing
+			     saying which way this reads. -->
+			<strong class:down={!online}>{online ? duration(snapshot.uptimeSeconds) : 'Down'}</strong>
 		</Panel>
 
 		<Panel label="{RANGE} availability">
@@ -719,7 +718,6 @@
 	.container-summary > div {
 		display: flex;
 		align-items: baseline;
-		justify-content: center;
 		gap: 0.8rem;
 		color: var(--mint);
 	}
@@ -908,19 +906,12 @@
 		margin-bottom: calc(-1 * var(--pad));
 	}
 
-	/* A whole band of headline readings rather than one beside a chart: they line
-	   up on their centres, since there is nothing in the cell to range against. */
-	.centred > :global(*) {
-		align-items: center;
-		text-align: center;
-	}
-
 	/* Every reading that sits in a band, at one size: these are rows of figures
 	   read across and compared down the page, so a cell does not get to pick a
 	   size of its own. Mono, unlike the .figure a whole section is known by —
 	   these are counts, not headlines. The colour is the band's, since a reading
 	   that is off takes its own. */
-	.centred strong,
+	.headline strong,
 	.rate strong,
 	.latency-reading strong,
 	.container-summary strong {
@@ -928,32 +919,20 @@
 		font-size: 1.45rem;
 	}
 
-	.centred strong,
+	.headline strong,
 	.rate strong {
 		color: var(--mint);
 	}
 
-	.centred strong {
-		display: flex;
-		align-items: center;
-		gap: 0.55rem;
+	.headline strong {
 		text-transform: uppercase;
 	}
 
-	/* The dot only agrees with the word beside it — it is never the only thing
-	   saying which way this reads. */
-	.centred i {
-		width: 0.4rem;
-		height: 0.4rem;
-		border-radius: 50%;
-		background: currentcolor;
-	}
-
-	.centred .down {
+	.headline .down {
 		color: var(--coral);
 	}
 
-	.centred .unknown {
+	.headline .unknown {
 		color: var(--text-faint);
 	}
 

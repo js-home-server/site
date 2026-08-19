@@ -117,8 +117,8 @@
 	);
 </script>
 
-{#snippet metricCard({ label, value, unit, tight, tone, stats, path, strip })}
-	<div class="metric">
+{#snippet metricCard({ label, href, value, unit, tight, tone, stats, path, strip })}
+	<a class="metric" {href}>
 		<h2 class="eyebrow">{label}</h2>
 		<strong class="figure value {tone}">
 			{value}{#if unit}<span class="unit" class:tight>{unit}</span>{/if}
@@ -145,7 +145,7 @@
 			</div>
 		{/if}
 		<TimeAxis range={spanLabel} />
-	</div>
+	</a>
 {/snippet}
 
 <aside class="status-bar" aria-label="Live server status">
@@ -193,7 +193,10 @@
 
 	/* These are the one place on the site that is still a card: they stand on the
 	   bull rather than inside a box, so the frame is what makes each one a card
-	   rather than three columns of loose text. */
+	   rather than three columns of loose text.
+
+	   Each is a link to the section of the dashboard that carries the same reading
+	   in full, so the whole card is the target rather than a word inside it. */
 	.metric {
 		display: flex;
 		flex-direction: column;
@@ -206,6 +209,16 @@
 		/* Opaque: the bull sits directly behind these and a chart drawn over its
 		   texture is unreadable. The gaps between boxes still show it. */
 		background: var(--color-background);
+		color: inherit;
+		text-decoration: none;
+		transition: border-color 160ms ease;
+	}
+
+	/* The frame is the whole affordance: nothing inside moves or changes colour, so
+	   the card reads the same on the way to being clicked as it does at rest. */
+	.metric:hover,
+	.metric:focus-visible {
+		border-color: var(--color-foreground);
 	}
 
 	/* Every card ends in a graphic of the same height, pinned to the foot of the
