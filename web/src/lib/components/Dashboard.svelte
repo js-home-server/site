@@ -5,8 +5,9 @@
 	   the left, the sections themselves down the right, both off one list so
 	   neither can drift from the other. `body` is what goes in a section, rendered
 	   with the section it belongs to; `foot` is the note under the rail, if the
-	   page has one. */
-	let { title, sections, body, foot } = $props();
+	   page has one, and `max` is how wide the whole thing is allowed to get —
+	   `none` for a page that runs to the width of the window. */
+	let { title, sections, body, foot, max = '82rem' } = $props();
 
 	/* The first stop until an observer says otherwise, which is where the page
 	   opens. */
@@ -31,7 +32,7 @@
 	};
 </script>
 
-<div class="dash">
+<div class="dash" style:max-width={max}>
 	<aside class="rail" aria-label="Page sections">
 		<div class="rail-art" aria-hidden="true">
 			<Placeholder note="ascii" lines={6} />
@@ -73,15 +74,15 @@
 
 <style>
 	.dash {
-		/* The rail is a fixed column and the page takes the rest. Capped and
-		   centred like .page, but wider: this is a dashboard, not prose. */
+		/* The rail is a fixed column and the page takes the rest. Centred like
+		   .page; the cap on it is the caller's, since a dashboard and a page of
+		   prose do not want the same one. */
 		--rail: 13rem;
 		--stick: calc(var(--nav-pad-top) + 0.5rem);
 
 		display: grid;
 		grid-template-columns: var(--rail) minmax(0, 1fr);
 		gap: clamp(1.5rem, 3vw, 3rem);
-		max-width: 82rem;
 		margin-inline: auto;
 		padding: clamp(1.5rem, 4vh, 2.5rem) var(--gutter) clamp(3rem, 10vh, 6rem);
 

@@ -483,7 +483,7 @@
 	{/if}
 {/snippet}
 
-<Dashboard title="Server" sections={SECTIONS}>
+<Dashboard title="Server" sections={SECTIONS} max="none">
 	<!-- Each section's body is the snippet named after it. -->
 	{#snippet body(section)}
 		{@render { uptime, cpu, memory, storage, network, time, containers }[section.id]()}
