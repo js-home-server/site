@@ -37,10 +37,11 @@ export function fleet(containers = []) {
 			status: container.status,
 			healthy: operational(container.status),
 			uptime: duration(container.uptimeSeconds),
+			/* In the order the table's columns name them: each is a reading and the
+			   allowance it is drawn against, so one entry fills two cells. */
 			resources: [
 				{
 					id: 'cpu',
-					label: 'CPU',
 					tone: 'var(--mint)',
 					value: pct(container.cpuPercent),
 					limit: allocation(container.cpuLimitCores, cores),
@@ -48,7 +49,6 @@ export function fleet(containers = []) {
 				},
 				{
 					id: 'memory',
-					label: 'Memory',
 					tone: 'var(--violet)',
 					value: bytes(container.memoryBytes),
 					limit: allocation(container.memoryLimitBytes, bytes),

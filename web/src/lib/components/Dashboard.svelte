@@ -204,6 +204,7 @@
 		padding: var(--pad);
 		border: 1px solid var(--color-border);
 		border-radius: 0.35rem;
+		background: var(--surface);
 		/* Clears the sticky rail when a link jumps here. */
 		scroll-margin-top: var(--stick);
 	}
@@ -327,13 +328,12 @@
 		}
 
 		/* No band holds its cells side by side at this width: they stack, and the
-		   rule between them lies down with them. A band that already fits itself to
-		   whatever width it is given says so, and is left alone. */
-		.body :global(.band:not(.fluid)) {
+		   rule between them lies down with them. */
+		.body :global(.band) {
 			grid-template-columns: minmax(0, 1fr);
 		}
 
-		.body :global(.band:not(.fluid) > * + *) {
+		.body :global(.band > * + *) {
 			border-top: var(--rule);
 			border-left: 0;
 		}
