@@ -64,6 +64,12 @@
 	--text-dim: #a09f98;
 	--text-faint: #8a8a84;
 
+	/* A box that holds something, lifted just off the page it stands on. Mixed
+	   from the foreground rather than written as a colour, so it is the same
+	   slight lift either side of the theme and cannot drift from the two surfaces
+	   it sits between. */
+	--surface: color-mix(in srgb, var(--foreground) 3%, var(--background));
+
 	/* One perceptual lightness and chroma, six distinct hues. Colour stays rare:
 	   mint/amber/coral carry state, the others distinguish related data. */
 	--mint: #95d6ab;

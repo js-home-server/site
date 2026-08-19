@@ -438,30 +438,44 @@
 				<div><strong>{containerFleet.memory}</strong><span class="eyebrow">In use</span></div>
 			</div>
 
-			<div class="band nested fluid container-band">
-				{#each containerFleet.slots as slot (slot.name)}
-					<div class="container-slot">
-						<header class="container-head">
-							<h3>{slot.name}</h3>
-							<span class="eyebrow" class:warning={!slot.healthy}>{slot.status}</span>
-						</header>
+			<!-- One row a container, one column a reading: the names of the readings
+			     are the header, so no row has to repeat them. Scrolls sideways rather
+			     than reflowing, because a row read across is the whole point of it. -->
+			<div class="fleet">
+				<table>
+					<thead>
+						<tr>
+							{#each ['Container', 'Status', 'CPU', 'CPU limit', 'Memory', 'Memory limit', 'Uptime'] as column (column)}
+								<th class="eyebrow" scope="col">{column}</th>
+							{/each}
+						</tr>
+					</thead>
 
-						<!-- What it is using of what it was given, in that resource's own
-						     colour: the reading, the allowance, and the share between them. -->
-						{#each slot.resources as resource (resource.id)}
-							<div class="container-resource" style:color={resource.tone}>
-								<div class="container-reading">
-									<span class="eyebrow">{resource.label}</span>
-									<strong>{resource.value}</strong>
-									<span>{resource.limit}</span>
-								</div>
-								<i class="resource-bar"><i style:width="{resource.fill}%"></i></i>
-							</div>
+					<tbody>
+						{#each containerFleet.slots as slot (slot.name)}
+							<tr>
+								<!-- The name docker knows it by, set as the literal it is. -->
+								<th class="name" scope="row">{slot.name}</th>
+								<td class="state" class:warning={!slot.healthy}>
+									<i aria-hidden="true"></i>{slot.status}
+								</td>
+
+								<!-- What it is using of what it was given, in that resource's own
+								     colour: the reading with the share it comes to under it, then
+								     the allowance that share is measured against. -->
+								{#each slot.resources as resource (resource.id)}
+									<td class="usage" style:color={resource.tone}>
+										{resource.value}
+										<i class="resource-bar"><i style:width="{resource.fill}%"></i></i>
+									</td>
+									<td class="limit">{resource.limit}</td>
+								{/each}
+
+								<td>{slot.uptime}</td>
+							</tr>
 						{/each}
-
-						<div class="container-uptime"><span class="eyebrow">Uptime</span><strong>{slot.uptime}</strong></div>
-					</div>
-				{/each}
+					</tbody>
+				</table>
 			</div>
 		</div>
 	{:else}
@@ -531,31 +545,92 @@
 	}
 
 	.container-shell {
+		/* A grid item takes its minimum from its contents, which for a table means
+		   the width of the widest row — it would stand the table outside the box
+		   rather than let it scroll inside one. */
+		min-width: 0;
 		margin-inline: calc(-1 * var(--pad));
 		border-top: var(--rule);
 	}
 
-	/* As many containers across as fit, not a fixed four: between a phone and a
-	   desktop, four columns is four columns of collisions. Every slot carries the
-	   rule above and to the left of it and the grid is bled a pixel each way, so
-	   the ones on the outside land on the section's own border — which is the only
-	   version of this that does not have to know how many columns there turned out
-	   to be, and is why it is marked `fluid` and left alone on a phone. */
-	.container-band {
-		/* Through --cells, which is how a band is divided: setting the columns
-		   directly is a rule of the same weight as the one it is trying to beat. */
-		--cells: repeat(auto-fill, minmax(13rem, 1fr));
-
-		margin-top: -1px;
-		margin-left: -1px;
+	/* A row is read across, so it is never broken up to fit: under the width the
+	   columns need, the table keeps its shape and the box scrolls. */
+	.fleet {
+		/* On the box rather than on the table, so it divides the summary from the
+		   fleet wall to wall and stays put when the columns scroll under it. */
+		border-top: var(--rule);
+		overflow-x: auto;
+		scrollbar-width: thin;
 	}
 
-	.container-slot {
-		display: grid;
-		gap: 1rem;
-		min-height: 11rem;
+	.fleet table {
+		width: 100%;
+		border-collapse: collapse;
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+	}
+
+	/* Left, like everything else on the page, and never wrapped: a reading broken
+	   over two lines stops being one. The gutter is on the right of every cell, and
+	   the section's own padding on the two outside ones, so the rules still run wall
+	   to wall. */
+	.fleet th,
+	.fleet td {
+		padding: 0.65rem 1.5rem 0.65rem 0;
+		font-weight: 400;
+		text-align: left;
+		white-space: nowrap;
+	}
+
+	.fleet tr > :first-child {
+		padding-left: var(--pad);
+	}
+
+	.fleet tr > :last-child {
+		padding-right: var(--pad);
+	}
+
+	/* The header names the columns once. It is the one row set in the page's small
+	   caps rather than mono: it is a label, not a reading. */
+	.fleet thead th {
+		padding-top: var(--divide);
+		padding-bottom: 0.5rem;
+		border-bottom: var(--rule);
+	}
+
+	.fleet tbody tr + tr th,
+	.fleet tbody tr + tr td {
 		border-top: var(--rule);
-		border-left: var(--rule);
+	}
+
+	.name {
+		color: var(--color-foreground);
+	}
+
+	/* A square of the state's own colour, and the word beside it — the colour is
+	   never the only thing saying which way a row reads. */
+	.state {
+		color: var(--mint);
+		text-transform: capitalize;
+	}
+
+	.state i {
+		display: inline-block;
+		width: 0.45rem;
+		height: 0.45rem;
+		margin-right: 0.5rem;
+		background: currentcolor;
+	}
+
+	/* The allowance the reading beside it is drawn against, set back from it: the
+	   number that moves is the one worth reading down the column. */
+	.limit {
+		color: var(--text-dim);
+	}
+
+	/* Wide enough that the share under the reading is a bar rather than a mark. */
+	.usage {
+		min-width: 5rem;
 	}
 
 	.container-summary > div {
@@ -569,53 +644,11 @@
 		color: var(--text-dim);
 	}
 
-	.container-head,
-	.container-reading,
-	.container-uptime {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: 0.75rem;
-	}
-
-	.container-head h3 {
-		margin: 0;
-		font-size: 0.68rem;
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-	}
-
-	.container-head span {
-		color: var(--mint);
-	}
-
-	.container-resource {
-		display: grid;
-		gap: 0.45rem;
-	}
-
-	.container-reading strong,
-	.container-reading > span:last-child,
-	.container-uptime strong {
-		font-family: var(--font-mono);
-		font-size: 0.68rem;
-		font-weight: 400;
-	}
-
-	.container-reading strong {
-		margin-left: auto;
-	}
-
-	.container-reading > span:last-child {
-		min-width: 4.2rem;
-		color: var(--text-dim);
-		text-align: right;
-		text-transform: uppercase;
-	}
-
+	/* Under the reading, the width of the cell it is in. */
 	.resource-bar {
 		display: block;
 		height: 2px;
+		margin-top: 0.4rem;
 		background: var(--color-border);
 	}
 
@@ -626,20 +659,13 @@
 		background: currentcolor;
 	}
 
-	.container-uptime {
-		margin-top: auto;
-		padding-top: 0.75rem;
-		border-top: var(--rule);
-	}
-
 	/* Both as specific as the rule each is turning off, or the cell keeps the mint
 	   it wears when everything is well and a count of unhealthy containers reads
 	   as a good number. */
 	.container-summary > .warning,
-	.container-head span.warning {
+	td.state.warning {
 		color: var(--coral);
 	}
-
 
 	/* Taller than a row's sparkline: this chart is three bands deep and the dial
 	   beside it is a shape of its own, not a line of text. */
