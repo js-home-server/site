@@ -28,7 +28,7 @@
 	<title>About — Joshua Smith</title>
 </svelte:head>
 
-<Dashboard title="About" sections={SECTIONS}>
+<Dashboard title="About" sections={SECTIONS} max="none">
 	{#snippet body(section)}
 		<div class={section.stack ? 'stack' : 'band bleed'}>
 			{#each section.panels as [label, lines], i (i)}

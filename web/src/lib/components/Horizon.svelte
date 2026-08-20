@@ -1,5 +1,4 @@
 <script>
-	import { PERCENT_GRID } from '$lib/chart.js';
 	import { bytes, pct, perDay, untilFull } from '$lib/format.js';
 	import { MONTH_RANGE } from '$lib/server.svelte.js';
 	import { bucket } from '$lib/stats.js';
@@ -8,7 +7,9 @@
 
 	/* Where the volumes have been and where that puts them. `volumes` are shaped
 	   by $lib/storage.js: each carries its own percent series, its current size,
-	   and the rate it is filling. */
+	   and the rate it is filling. Only the first is drawn against the vertical
+	   axis below — a shared 0-100% scale is what a chart of several volumes
+	   would want, but this one narrows to a single volume's own range instead. */
 	let { volumes = [] } = $props();
 
 	const DAY = 86_400;
@@ -39,9 +40,24 @@
 		height: Math.max(0, height - PAD.top - PAD.bottom)
 	});
 
-	/* Seconds either side of now, to a fraction of the axis and then to pixels.
-	   Now is the middle; anything past the ends of the window sits on them. */
-	const along = (seconds) => 0.5 * (1 + Math.max(-1, Math.min(1, seconds / SPAN)));
+	/* Where the axis stops reading as a ruler and starts reading as a horizon: inside
+	   this many seconds of now, a day costs roughly its own width; beyond it, a day
+	   costs less the further out it falls. The history is a month, so a knee of a
+	   few days leaves that month legible without giving the distant projection the
+	   same width a mostly-empty year would otherwise get. */
+	const LOG_KNEE = 4 * DAY;
+	const LOG_SPAN = Math.log1p(SPAN / LOG_KNEE);
+
+	/* Seconds either side of now, to a fraction of the axis and then to pixels. Now
+	   is the middle; anything past the ends of the window sits on them. Symmetric
+	   log rather than linear, so the run of history and the near end of a
+	   projection sit where the resolution is, and a slow drive's ceiling years out
+	   still lands on the chart instead of running off the scale needed to show it. */
+	const along = (seconds) => {
+		const clamped = Math.max(-SPAN, Math.min(SPAN, seconds));
+		const reach = Math.log1p(Math.abs(clamped) / LOG_KNEE) / LOG_SPAN;
+		return 0.5 * (1 + Math.sign(clamped) * reach);
+	};
 
 	/* The volume that runs out first: the headline is its date. */
 	let soonest = $derived(
@@ -51,7 +67,37 @@
 	);
 
 	let x = $derived((seconds) => PAD.left + along(seconds) * plot.width);
-	let y = $derived((percent) => PAD.top + (1 - Math.min(100, Math.max(0, percent)) / 100) * plot.height);
+
+	/* The low and high the axis is drawn against: the floor the data has actually
+	   touched, and where a year of the current rate puts it — both with a tenth of
+	   headroom so a trace never sits flush on the frame. A volume with nothing to
+	   project (no growth, or no data yet) has no year-out point to reach for, so
+	   the ceiling falls back to the highest the history itself has touched — still
+	   the volume's own range rather than a single repeated reading. */
+	let yDomain = $derived.by(() => {
+		const v = drawable[0];
+		if (!v) return [0, 100];
+
+		const values = v.points.map(([, p]) => p).filter(Number.isFinite);
+		const seen = values.length ? values : [v.percentNow ?? 0];
+		const lo = Math.min(...seen);
+		const projected =
+			v.growthPerDay > 0 && v.totalNow
+				? ((v.usedNow + (v.growthPerDay * SPAN) / DAY) / v.totalNow) * 100
+				: Math.max(...seen, v.percentNow ?? lo);
+
+		return [lo * 1.1, projected * 1.1];
+	});
+
+	/* A percent to a fraction of the plot, 0 at the floor and 1 at the ceiling. */
+	let yAlong = $derived((percent) => {
+		const [lo, hi] = yDomain;
+		return (percent - lo) / (hi - lo || 1);
+	});
+
+	let y = $derived(
+		(percent) => PAD.top + (1 - yAlong(Math.min(100, Math.max(0, percent)))) * plot.height
+	);
 
 	/* The past, thinned to a readable number of marks, and the line that joins
 	   them. */
@@ -100,11 +146,37 @@
 		(_, i) => (i + 1) * TICK_MONTHS
 	);
 
-	const ticks = [
-		...[...steps].reverse().map((m) => ({ at: -m * MONTH, label: `-${monthLabel(m)}` })),
+	/* A fixed interval in time bunches up under a log axis the further it runs from
+	   now, so past a point two labels land closer than either is wide. Dropped
+	   rather than shrunk or rotated: a tick with nothing to say is better than one
+	   nobody can read. */
+	const MIN_TICK_GAP = 34;
+
+	let kept = $derived.by(() => {
+		const out = [];
+		let last = x(0);
+		for (const m of steps) {
+			const at = x(m * MONTH);
+			if (at - last < MIN_TICK_GAP) continue;
+			out.push(m);
+			last = at;
+		}
+		return out;
+	});
+
+	let ticks = $derived([
+		...[...kept].reverse().map((m) => ({ at: -m * MONTH, label: `-${monthLabel(m)}` })),
 		{ at: 0, label: 'Now', divider: true },
-		...steps.map((m) => ({ at: m * MONTH, label: `+${monthLabel(m)}` }))
-	];
+		...kept.map((m) => ({ at: m * MONTH, label: `+${monthLabel(m)}` }))
+	]);
+
+	/* The gutter's own rules: an even five-way split of `yDomain`, the same way
+	   the fixed 0-100% scale every other percent chart on the page draws was
+	   always just an even split of its own (fixed) domain. */
+	let yTicks = $derived.by(() => {
+		const [lo, hi] = yDomain;
+		return Array.from({ length: 5 }, (_, i) => lo + ((hi - lo) * i) / 4);
+	});
 
 </script>
 
@@ -123,14 +195,18 @@
 		</Panel>
 
 		<div class="plot">
-			<div class="scale">
-				{#each [...PERCENT_GRID].reverse() as level (level)}
-					<span class="tick">{pct(level)}</span>
+			<!-- Pixel-placed rather than the evenly-spread gutter most graphs on this
+			     page use: `yDomain` moves with the volume, so a label has to sit level
+			     with the rule it names rather than assume every chart's five ticks
+			     land at the same even fifths. -->
+			<div class="y-scale">
+				{#each yTicks as level (level)}
+					<span class="tick" style="top: {y(level)}px">{pct(level)}</span>
 				{/each}
 			</div>
 
 			<div class="canvas" bind:clientWidth={width} bind:clientHeight={height}>
-				{#each PERCENT_GRID as level (level)}
+				{#each yTicks as level (level)}
 					<i class="gridline" style="top: {y(level)}px; left: {PAD.left}px; right: {PAD.right}px"></i>
 				{/each}
 
@@ -194,6 +270,20 @@
 	   drawing for the time axis. */
 	.plot {
 		grid-template-rows: minmax(4rem, 1fr) auto;
+	}
+
+	/* The gutter's own labels, placed at the same height their rule crosses the
+	   canvas rather than spread evenly down the column — the two would drift apart
+	   the moment the axis stopped being linear. */
+	.y-scale {
+		position: relative;
+	}
+
+	.y-scale .tick {
+		position: absolute;
+		right: 0;
+		transform: translateY(-50%);
+		white-space: nowrap;
 	}
 
 	/* Where the measured part ends and the guess begins. Brighter than the grid it
