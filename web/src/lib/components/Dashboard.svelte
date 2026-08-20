@@ -30,6 +30,20 @@
 		observer.observe(element);
 		return () => observer.disconnect();
 	};
+
+	/* Sections sharing a `row` land in the same box-to-box line instead of one under
+	   the other — CPU beside Memory rather than CPU above Memory. Everything else
+	   about a grouped section (its own box, heading, rail stop) stays exactly what
+	   it is on its own; only which line it falls on changes. */
+	let rows = $derived.by(() => {
+		const groups = [];
+		for (const section of sections) {
+			const last = groups.at(-1);
+			if (section.row && last?.[0].row === section.row) last.push(section);
+			else groups.push([section]);
+		}
+		return groups;
+	});
 </script>
 
 <div class="dash" style:max-width={max}>
@@ -63,11 +77,23 @@
 		     h2 and the sections are under nothing. -->
 		<h1>{title}</h1>
 
-		{#each sections as section (section.id)}
-			<section id={section.id} {@attach spy(section.id)}>
-				<h2>{section.label}</h2>
-				{@render body(section)}
-			</section>
+		{#each rows as group (group[0].id)}
+			{#if group.length > 1}
+				<div class="row">
+					{#each group as section (section.id)}
+						<section id={section.id} {@attach spy(section.id)}>
+							<h2>{section.label}</h2>
+							{@render body(section)}
+						</section>
+					{/each}
+				</div>
+			{:else}
+				{@const section = group[0]}
+				<section id={section.id} {@attach spy(section.id)}>
+					<h2>{section.label}</h2>
+					{@render body(section)}
+				</section>
+			{/if}
 		{/each}
 	</div>
 </div>
@@ -220,6 +246,29 @@
 		margin-bottom: 0;
 	}
 
+	/* Two or more boxes on the same line rather than one above the other: each
+	   keeps its own border and heading, so only the margin between them moves off
+	   the sections and onto the row holding them. Equal shares, so a box shrinks
+	   with the line rather than however wide its own content wants to run. */
+	.row {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+		/* Grid's own default stretches every item to the row's tallest box, which
+		   inflates a shorter section's heading to eat the slack — a box keeps
+		   whatever height its own contents ask for instead. */
+		align-items: start;
+		gap: clamp(1.5rem, 3vw, 3rem);
+		margin-bottom: clamp(2rem, 6vh, 3.5rem);
+	}
+
+	.row:last-child {
+		margin-bottom: 0;
+	}
+
+	.row > section {
+		margin-bottom: 0;
+	}
+
 	/* The heading is separated from the section's contents by the same rule that
 	   divides them from each other. */
 	h2 {
@@ -336,6 +385,11 @@
 		   rule between them lies down with them. */
 		.body :global(.band) {
 			grid-template-columns: minmax(0, 1fr);
+		}
+
+		.row {
+			grid-template-columns: minmax(0, 1fr);
+			gap: 1rem;
 		}
 
 		.body :global(.band > * + *) {

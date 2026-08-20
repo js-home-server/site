@@ -39,11 +39,11 @@
 	   its own place in the list. */
 	const SECTIONS = [
 		{ id: 'overview', label: 'Overview' },
-		{ id: 'cpu', label: 'CPU' },
-		{ id: 'memory', label: 'Memory' },
+		{ id: 'cpu', label: 'CPU', row: 'cpu-memory' },
+		{ id: 'memory', label: 'Memory', row: 'cpu-memory' },
 		{ id: 'storage', label: 'Storage' },
-		{ id: 'network', label: 'Network' },
-		{ id: 'time', label: 'Time' },
+		{ id: 'network', label: 'Network', row: 'network-time' },
+		{ id: 'time', label: 'Time', row: 'network-time' },
 		{ id: 'containers', label: 'Containers' }
 	];
 
@@ -88,23 +88,28 @@
 	   quoted to two precisions in one box. */
 	const reading = (key, format) => format(snapshot?.[key]);
 
-	/* Read and write on each disk, a lane of the pulse map each. The two sit orders
-	   of magnitude apart on the same drive, so the map normalises per row — a lane
-	   says when that stream was busy, not how it compares to the one under it. The
-	   current rate is on the right of each lane for that. */
-	let io = $derived(
-		DISKS.flatMap(({ id, label, tone }) =>
-			['Read', 'Write'].map((direction) => {
-				const points = series?.[`${id}${direction}BytesPerSecond`];
-				return {
-					id: `${label} ${direction.toLowerCase()}`,
-					group: label,
-					tone,
-					now: rate(last(points)),
-					cells: bucket(points, HEAT_COLUMNS)
-				};
-			})
-		).filter((lane) => lane.cells.length)
+	/* Read and write on each disk, a lane of that disk's own pulse map — the two
+	   sit orders of magnitude apart on the same drive, so the map normalises per
+	   row: a lane says when that stream was busy, not how it compares to the one
+	   under it. Keyed by disk, since each now draws in its own column rather than
+	   sharing one map between both drives. */
+	let ioByDisk = $derived(
+		Object.fromEntries(
+			DISKS.map(({ id, tone }) => [
+				id,
+				['Read', 'Write']
+					.map((direction) => {
+						const points = series?.[`${id}${direction}BytesPerSecond`];
+						return {
+							id: direction,
+							tone,
+							now: rate(last(points)),
+							cells: bucket(points, HEAT_COLUMNS)
+						};
+					})
+					.filter((lane) => lane.cells.length)
+			])
+		)
 	);
 
 	/* Per-core utilisation as a map: one row a core, one cell a bucket, straight
@@ -402,13 +407,16 @@
 {/snippet}
 
 {#snippet storage()}
-	<!-- The volumes take the first third; the horizon takes the rest, because it is
-	     the one chart that reads them together. Everything else about the disks runs
-	     along the bottom. -->
-	<div class="bleed bands">
-		<div class="band" style="--cells: minmax(0, 1fr) minmax(0, 2fr)">
+	<!-- One column a disk, mirrored either side of the rule between them: capacity
+	     at the top, the history it came from beneath, the traffic filling it at the
+	     foot. -->
+	<div class="band bleed" style="--cells: minmax(0, 1fr) minmax(0, 1fr)">
+		{#each volumes as vol (vol.id)}
 			<div class="stack">
-				{#each volumes as vol (vol.id)}
+				<!-- A quarter of the column each: capacity and the pulse are a reading
+				     and a map, the horizon between them is the one chart worth twice the
+				     room. -->
+				<div class="capacity">
 					<!-- The series' last percent, or the live snapshot's until the history
 					     has one: the reading is the same either way. -->
 					<Capacity
@@ -417,25 +425,32 @@
 						tone={vol.tone}
 						detail={vol.totalNow ? `${bytes(vol.usedNow)} / ${bytes(vol.totalNow)}` : '—'}
 					/>
-				{/each}
+				</div>
+
+				<div class="disk-horizon">
+					<!-- Bounded to this disk's own floor and year-out projection rather
+					     than a fixed 0-100%, so the two columns read their own slope
+					     instead of each fighting the whole drive for room. -->
+					<Horizon volumes={[vol]} />
+				</div>
+
+				<div class="io">
+					<Panel label="I/O pulse">
+						<!-- Read and write, stretched to this disk's own busiest quarter-hour,
+						     so the key quotes that lane's own floor and ceiling in bytes a
+						     second. -->
+						<Heatmap rows={ioByDisk[vol.id]} normalise="row" format={rate} note="no io history yet" />
+					</Panel>
+				</div>
 			</div>
-
-			<Horizon {volumes} />
-		</div>
-
-		<div class="band io">
-			<Panel label="I/O pulse">
-				<!-- Each lane is stretched to its own busiest quarter-hour, so the key
-				     quotes that lane's own floor and ceiling in bytes a second. -->
-				<Heatmap rows={io} normalise="row" format={rate} note="no io history yet" />
-			</Panel>
-		</div>
+		{/each}
 	</div>
 {/snippet}
 
 {#snippet network()}
-	<!-- Two bands across the section rather than a grid of panels: the throughput
-	     and what is left of the link on top, the counts and the probe under it. -->
+	<!-- Three bands down the section: the throughput and what is left of the link
+	     on top, the counts under that, the probe on its own row at the foot —
+	     it carries a chart the counts don't, and earns the width for it. -->
 	<div class="bleed bands">
 		<div class="band" style="--cells: minmax(0, 3fr) minmax(10rem, 1fr)">
 			<Panel label="Throughput">
@@ -456,11 +471,7 @@
 			/>
 		</div>
 
-		<!-- One band of four rather than three nested beside one: the counts are
-		     peers of the probe, not a group set against it, and the extra level of
-		     division was costing each count the width its name needs. The probe
-		     takes half again, since it carries a chart and they carry a number. -->
-		<div class="band quality" style="--cells: repeat(3, minmax(0, 1fr)) minmax(0, 1.6fr)">
+		<div class="band quality">
 			<!-- Both directions to a count, the way the errors beside them already
 			     read: a packet lost on the way out is the same fault as one lost on
 			     the way in, and which end it happened at is not something this box
@@ -480,7 +491,9 @@
 					</p>
 				</Panel>
 			{/each}
+		</div>
 
+		<div class="band probe">
 			<Panel label="HTTP probe latency">
 				<p class="latency-reading">
 					<strong>{reading('latencyMs', ms)}</strong><span>P95 {summarise(series?.latencyMs, ms)[2][1]}</span>
@@ -493,7 +506,7 @@
 
 {#snippet time()}
 	<div class="bleed bands">
-		<div class="band" style="--cells: minmax(0, 2.2fr) minmax(13rem, 1fr)">
+		<div class="band" style="--cells: minmax(0, 2fr) minmax(13rem, 1fr)">
 			<Panel label="Source offsets">
 				<!-- The bar is what each source admits it could be wrong by, so a short
 				     one is a source worth following. They agree on the offset to a
@@ -521,9 +534,11 @@
 						['Stratum', clock?.stratum ?? '—'],
 						['Leap status', clock?.leapStatus ?? '—']
 					] as [name, value] (name)}
-						<!-- The filler is the dotted rule the rest of the page measures with,
-						     run between the name and its reading. -->
-						<div><dt class="eyebrow">{name}</dt><i></i><dd>{value}</dd></div>
+						<!-- The same ruled readout the stat rows in every trace on the page
+						     use: the dotted rule is the row's own underline, so the reading
+						     sits flush against the box's own edge rather than wherever its
+						     own text happens to end. -->
+						<div class="readout ruled"><dt class="eyebrow">{name}</dt><dd>{value}</dd></div>
 					{/each}
 				</dl>
 			</div>
@@ -892,10 +907,11 @@
 		--graph-min: 9rem;
 	}
 
-	/* A chart read across rather than down: the height only has to be enough to see
-	   a line move. */
+	/* Stretched past the height a lone trace needs, so the box it sits in reaches
+	   the same floor the CPU box beside it does — the two read as one row rather
+	   than one trailing off short. */
 	.pressure {
-		--graph-min: 6rem;
+		--graph-min: 10.6rem;
 	}
 
 	/* Every reading that sits in a band, at one size: these are rows of figures
@@ -917,7 +933,7 @@
 	/* Wall to wall along the foot of the section: a trace this wide is read across,
 	   and the height only has to be enough to see the line move. */
 	.history {
-		--graph-min: 10rem;
+		--graph-min: 14.15rem;
 	}
 
 	.sync {
@@ -943,41 +959,47 @@
 		color: var(--coral);
 	}
 
-	/* Name, reading, and the dots that carry the eye between them. */
+	/* The list these readouts sit in — each row is the same ruled `.readout` the
+	   stat rows elsewhere on the page already draw with, so this list just gives
+	   them the air between one row and the next. */
 	.leaders {
 		display: grid;
-		gap: 0.6rem;
-		margin: 0;
-	}
-
-	.leaders div {
-		display: grid;
-		grid-template-columns: auto minmax(1rem, 1fr) auto;
 		gap: 0.5rem;
-		align-items: baseline;
-	}
-
-	.leaders i {
-		height: 1px;
-		color: var(--color-border);
-		background-image: var(--dot-row);
-		transform: translateY(-0.15em);
-	}
-
-	.leaders dd {
 		margin: 0;
-		color: var(--text-dim);
-		font-family: var(--font-mono);
-		font-size: 0.7rem;
 	}
 
 
 	/* The io map wants a wider gutter than the graphs above it: these row labels are
-	   words, not core numbers. Taller too — four lanes divide the block, so the floor
-	   has to leave each one a cell worth looking at. */
+	   words, not core numbers. The floor is short of the 8rem this row is actually
+	   given — the label above the map and the key below it are their own height on
+	   top of it, so the map's own share has to leave room for both. */
+	/* A quarter of the column, to match: centred, since a label and a bar take less
+	   room than the space this leaves them. The one row with nothing above it, so
+	   the only one of the three whose full height is content. */
+	.capacity {
+		height: 8rem;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+	}
+
+	/* io and the horizon below are both `.stack > * + *`: the rule and the padding
+	   above it are drawn from their own height, same as capacity's, but capacity
+	   has neither to give up. Adding that back is what makes the three read as a
+	   true quarter, half, quarter rather than the divider quietly eating into two
+	   of the three and not the first. */
 	.io {
 		--axis-w: 5rem;
-		--graph-min: 8rem;
+		--graph-min: 5rem;
+		height: calc(8rem + var(--divide) + 1px);
+	}
+
+	/* The horizon chart fills its own box (100% of it) rather than sizing itself,
+	   so that box needs a real height to fill — an auto one, even pinned to a
+	   minimum, resolves its 100% to nothing. Twice capacity's content height, plus
+	   its own share of the divider. */
+	.disk-horizon {
+		height: calc(16rem + var(--divide) + 1px);
 	}
 
 	/* A section that is nothing but bands, stacked. It starts against the rule under
@@ -994,7 +1016,9 @@
 		border-top: 0;
 	}
 
-	.quality {
+	/* The probe's own row: it carries the one chart down here, so the floor only
+	   has to be enough to see that line move. */
+	.probe {
 		--graph-min: 6rem;
 	}
 

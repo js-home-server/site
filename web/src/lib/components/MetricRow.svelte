@@ -21,12 +21,12 @@
 </div>
 
 <style>
-	/* Numbers a third, graph the rest. No frame of its own: the section it sits in
+	/* Numbers a quarter, graph the rest. No frame of its own: the section it sits in
 	   is the box, and the rule above it is what separates one reading from the
 	   next. */
 	.row {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+		grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
 		gap: 0.3rem 1.25rem;
 		align-items: stretch;
 	}
