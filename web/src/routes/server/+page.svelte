@@ -10,6 +10,7 @@
 	import MetricRow from '$lib/components/MetricRow.svelte';
 	import Panel from '$lib/components/Panel.svelte';
 	import Placeholder from '$lib/components/Placeholder.svelte';
+	import Spark from '$lib/components/Spark.svelte';
 	import Spread from '$lib/components/Spread.svelte';
 	import Stack from '$lib/components/Stack.svelte';
 	import Trace from '$lib/components/Trace.svelte';
@@ -37,7 +38,7 @@
 	   per stop on the rail: a section is a box on the page, its own heading, and
 	   its own place in the list. */
 	const SECTIONS = [
-		{ id: 'uptime', label: 'Uptime' },
+		{ id: 'overview', label: 'Overview' },
 		{ id: 'cpu', label: 'CPU' },
 		{ id: 'memory', label: 'Memory' },
 		{ id: 'storage', label: 'Storage' },
@@ -159,6 +160,119 @@
 	});
 	/* The containers as the fleet and its slots, both already written out. */
 	let containerFleet = $derived(fleet(snapshot?.containers));
+
+	/* The fuller of the two drives, which is the one an overview has room to name:
+	   the disk worth pointing at is the one that runs out first. */
+	let disk = $derived(volumes.reduce((a, b) => ((b.percentNow ?? -1) > (a.percentNow ?? -1) ? b : a)));
+
+	/* Whether all is well, in a sentence. The word carrying the verdict is held
+	   apart from the rest of it because that word is the one that takes the colour
+	   — the sentence still says which way it reads with the colour gone. */
+	let health = $derived.by(() => {
+		if (!snapshot)
+			return { word: 'Waiting', rest: 'on the machine', note: 'Nothing has come back yet.' };
+
+		if (!online)
+			return {
+				word: 'No',
+				rest: 'answer from the server',
+				tone: 'var(--coral)',
+				note: 'The probe is not getting a reply. Everything below is the last reading that came back, not what is true now.'
+			};
+
+		if (containerFleet.unhealthy)
+			return {
+				word: `${containerFleet.unhealthy}`,
+				rest: containerFleet.unhealthy === 1 ? 'container unhealthy' : 'containers unhealthy',
+				tone: 'var(--amber)',
+				note: 'The machine itself is answering and its own readings are in band. The containers section has which one, and what it is doing.'
+			};
+
+		return {
+			word: 'All',
+			rest: 'systems operational',
+			tone: 'var(--mint)',
+			note: 'The server is answering, every container is up, and every reading below is inside the band it is normally in.'
+		};
+	});
+
+	/* The dashboard in one row: each section's headline reading, what it is
+	   measured against, and the window behind it where there is one to draw. The
+	   figures are the ones their own sections carry — the same numbers, smaller,
+	   so the head of the page is a summary rather than a second source. */
+	let tiles = $derived([
+		{
+			label: 'Uptime',
+			value: online ? duration(snapshot.uptimeSeconds) : 'Down',
+			detail: online ? 'Since last restart' : 'Not answering',
+			tone: online ? 'var(--mint)' : 'var(--coral)',
+			/* Up is 1 and down is 0, so the trace is a flat line at the top with a
+			   notch cut out of it wherever a poll went unanswered. Unshaded: a line
+			   along the top of its box would otherwise fill the box. */
+			points: statusDay,
+			domain: [0, 1],
+			fill: false
+		},
+		{
+			label: 'Availability',
+			value: nines(availability),
+			detail: `${RANGE} rolling`,
+			tone: 'var(--mint)'
+		},
+		{
+			label: 'Incidents',
+			value: statusDay.length ? incidents : '—',
+			detail: `Last ${RANGE}`,
+			tone: incidents > 0 ? 'var(--coral)' : 'var(--mint)'
+		},
+		{
+			label: 'Planned outage',
+			/* Nothing scheduled is not a reading in the same sense as the rest, and is
+			   set back so it does not read as one. */
+			value: '—',
+			detail: 'None scheduled',
+			tone: 'var(--text-faint)'
+		},
+		{
+			label: 'CPU',
+			value: reading('cpuPercent', pct),
+			detail: reading('cpuTemperatureC', degrees),
+			tone: 'var(--mint)',
+			points: series?.cpuPercent,
+			domain: [0, 100]
+		},
+		{
+			label: 'Memory',
+			value: reading('memoryPercent', pct),
+			detail: snapshot
+				? `${bytes(snapshot.memoryUsedBytes)} / ${bytes(snapshot.memoryTotalBytes)}`
+				: '—',
+			tone: 'var(--violet)',
+			points: series?.memoryUsedBytes
+		},
+		{
+			label: 'Storage',
+			value: pct(disk.percentNow),
+			detail: disk.totalNow ? `${disk.label} ${bytes(disk.usedNow)} / ${bytes(disk.totalNow)}` : '—',
+			tone: disk.tone,
+			/* The 30d series it was worked out from: used space moves over weeks, and
+			   a day of it is a flat line. */
+			points: disk.points
+		},
+		{
+			label: 'Latency',
+			value: reading('latencyMs', ms),
+			detail: `P95 ${summarise(series?.latencyMs, ms)[2][1]}`,
+			tone: 'var(--azure)',
+			points: series?.latencyMs
+		},
+		{
+			label: 'Containers',
+			value: containerFleet.running,
+			detail: containerFleet.unhealthy ? `${containerFleet.unhealthy} unhealthy` : 'All healthy',
+			tone: containerFleet.unhealthy ? 'var(--coral)' : 'var(--mint)'
+		}
+	]);
 </script>
 
 <svelte:head>
@@ -171,32 +285,34 @@
 	</Panel>
 {/snippet}
 
-{#snippet uptime()}
-	<!-- Decorative: the section is named by its heading, and the art is thousands
-	     of digits to a screen reader. -->
-	<div class="art dish" aria-hidden="true"><AsciiDish /></div>
+{#snippet overview()}
+	<!-- The verdict, standing on the machine it is about: the art is a picture
+	     rather than a chart, so the notice is laid over the empty half of it
+	     instead of being given a box beside it. Decorative — the section is named
+	     by its heading, and the art is thousands of digits to a screen reader. -->
+	<div class="notify">
+		<div class="art dish" aria-hidden="true"><AsciiDish /></div>
 
-	<div class="band bleed headline">
-		<Panel label="Uptime">
-			<!-- How long it has been up is the reading; a machine that is not says so
-			     in the word rather than in the colour, which is never the only thing
-			     saying which way this reads. -->
-			<strong class:down={!online}>{online ? duration(snapshot.uptimeSeconds) : 'Down'}</strong>
-		</Panel>
+		<div class="notice" style:color={health.tone}>
+			<p class="verdict">
+				<i class="mark" aria-hidden="true"></i><strong>{health.word}</strong>
+				<span>{health.rest}</span>
+			</p>
+			<p class="note">{health.note}</p>
+		</div>
+	</div>
 
-		<Panel label="{RANGE} availability">
-			<strong>{nines(availability)}</strong>
-		</Panel>
-
-		<Panel label="Incidents">
-			<strong class:down={incidents > 0}>{statusDay.length ? incidents : '—'}</strong>
-		</Panel>
-
-		<Panel label="Next planned outage">
-			<!-- Nothing scheduled is not a reading in the same sense as the three
-			     beside it, and is set back so it does not read as one. -->
-			<strong class="unknown">—</strong>
-		</Panel>
+	<!-- Every section of the page in one reading each, in the order they come. -->
+	<div class="tiles bleed">
+		{#each tiles as tile (tile.label)}
+			<div class="tile">
+				<Panel label={tile.label}>
+					<strong>{tile.value}</strong>
+					<span class="detail">{tile.detail}</span>
+					<Spark points={tile.points} domain={tile.domain} tone={tile.tone} fill={tile.fill ?? true} />
+				</Panel>
+			</div>
+		{/each}
 	</div>
 {/snippet}
 
@@ -486,7 +602,7 @@
 <Dashboard title="Server" sections={SECTIONS} max="none">
 	<!-- Each section's body is the snippet named after it. -->
 	{#snippet body(section)}
-		{@render { uptime, cpu, memory, storage, network, time, containers }[section.id]()}
+		{@render { overview, cpu, memory, storage, network, time, containers }[section.id]()}
 	{/snippet}
 
 	{#snippet foot()}
@@ -543,6 +659,109 @@
 	.ship {
 		margin-bottom: 0.75rem;
 	}
+
+	/* The picture runs out to the section's right edge and takes the right of the
+	   frame; the notice is laid over the left of it, which is sky. */
+	.notify {
+		position: relative;
+		margin-right: calc(-1 * var(--pad));
+	}
+
+	/* A picture is as tall as its width, and this one heads a band rather than
+	   filling one: capped, or a wide window turns the head of the page into a
+	   poster of a satellite dish. */
+	.notify .art {
+		width: min(55%, 44rem);
+		margin-left: auto;
+	}
+
+	.notice {
+		position: absolute;
+		top: 0;
+		left: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		/* Short of the dish at every width the art is drawn at. */
+		max-width: min(34rem, 55%);
+	}
+
+	/* The verdict in the section's own colour, the sentence it is part of in the
+	   page's: the reading is one word and the rest is what it is about. */
+	.verdict {
+		margin: 0;
+		font-size: clamp(1.2rem, 2.1vw, 1.85rem);
+		font-weight: 600;
+		letter-spacing: -0.01em;
+	}
+
+	.verdict span {
+		color: var(--color-foreground);
+	}
+
+	/* The same lit dot the rail marks the section you are in with. */
+	.mark {
+		display: inline-block;
+		width: 0.6em;
+		height: 0.6em;
+		margin-right: 0.45em;
+		border-radius: 50%;
+		background: currentcolor;
+		box-shadow: 0 0 0.75em currentcolor;
+	}
+
+	.note {
+		margin: 0;
+		max-width: 46ch;
+		color: var(--text-dim);
+		font-size: 0.82rem;
+		line-height: 1.55;
+	}
+
+	/* One reading per section along the foot of the box. The lattice between them
+	   is the grid's own gaps over the rule's colour rather than a border on each
+	   cell: at a width that cannot hold nine of them the row wraps, and lines drawn
+	   this way still meet wherever the cells land. */
+	.tiles {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+		gap: 1px;
+		border-top: var(--rule);
+		background: var(--rule-color);
+	}
+
+	.tile {
+		/* Shallower traces than the cards on the landing page: this is a row of
+		   nine, not three across the width of the bull. */
+		--spark: 1.4rem;
+
+		display: grid;
+		padding: var(--divide) 1rem;
+		background: var(--surface);
+	}
+
+	/* The outermost cells keep the section's own padding, so the labels down the
+	   left of the page all start on one line. */
+	.tile:first-child {
+		padding-left: var(--pad);
+	}
+
+	.tile:last-child {
+		padding-right: var(--pad);
+	}
+
+	.tile strong {
+		color: var(--color-foreground);
+		font-family: var(--font-mono);
+		font-size: 1.15rem;
+	}
+
+	.tile .detail {
+		margin-bottom: 0.35rem;
+		color: var(--text-dim);
+		font-size: 0.68rem;
+	}
+
 
 	.container-shell {
 		/* A grid item takes its minimum from its contents, which for a table means
@@ -684,7 +903,6 @@
 	   size of its own. Mono, unlike the .figure a whole section is known by —
 	   these are counts, not headlines. The colour is the band's, since a reading
 	   that is off takes its own. */
-	.headline strong,
 	.rate strong,
 	.latency-reading strong,
 	.container-summary strong {
@@ -692,21 +910,8 @@
 		font-size: 1.45rem;
 	}
 
-	.headline strong,
 	.rate strong {
 		color: var(--mint);
-	}
-
-	.headline strong {
-		text-transform: uppercase;
-	}
-
-	.headline .down {
-		color: var(--coral);
-	}
-
-	.headline .unknown {
-		color: var(--text-faint);
 	}
 
 	/* Wall to wall along the foot of the section: a trace this wide is read across,
@@ -818,8 +1023,17 @@
 		color: var(--violet);
 	}
 
-	.latency-reading strong {
-		color: var(--violet);
-	}
+	/* Where the shell lays its rail down, the overview gives up its picture: at this
+	   width the art is a strip a few characters tall and the notice has nowhere to
+	   stand clear of the dish. The words are the part that matters. */
+	@media (max-width: 52rem) {
+		.notify .art {
+			display: none;
+		}
 
+		.notice {
+			position: static;
+			max-width: none;
+		}
+	}
 </style>

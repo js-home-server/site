@@ -191,7 +191,11 @@
 	   whatever lays the parts out, so the two cannot drift apart. */
 	section {
 		--pad: clamp(1rem, 2.5vw, 1.75rem);
-		--rule: 1px solid color-mix(in srgb, var(--color-border) 75%, transparent);
+		/* The colour on its own as well as the border it is usually written as: a
+		   lattice drawn with grid gaps needs the one, everything else the other, and
+		   a rule is a rule wherever it turns up. */
+		--rule-color: color-mix(in srgb, var(--color-border) 75%, transparent);
+		--rule: 1px solid var(--rule-color);
 		--divide: clamp(1rem, 2vw, 1.5rem);
 
 		/* No panel in here is a heading of its own — the section's own h2 is that —
