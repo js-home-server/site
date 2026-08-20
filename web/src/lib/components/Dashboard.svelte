@@ -4,9 +4,9 @@
 	/* The shell every dashboard-style page wears: a sticky rail of sections down
 	   the left, the sections themselves down the right, both off one list so
 	   neither can drift from the other. `body` is what goes in a section, rendered
-	   with the section it belongs to; `foot` is the note under the rail, if the
-	   page has one, and `max` is how wide the whole thing is allowed to get —
-	   `none` for a page that runs to the width of the window. */
+	   with the section it belongs to; `foot` is the note pinned to the foot of the
+	   rail, if it has one, and `max` is how wide the whole thing is allowed to get
+	   — `none` for a page that runs to the width of the window. */
 	let { title, sections, body, foot, max = '82rem' } = $props();
 
 	/* The first stop until an observer says otherwise, which is where the page
@@ -95,6 +95,13 @@
 				</section>
 			{/if}
 		{/each}
+
+		{#if foot}
+			<!-- The rail becomes the horizontal bar at this width, and there is no
+			     room in it for a foot of its own — so the note reads from here
+			     instead, below the last section, rather than going unread. -->
+			<div class="body-foot">{@render foot()}</div>
+		{/if}
 	</div>
 </div>
 
@@ -132,8 +139,10 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1.5rem;
-		align-self: start;
-		max-height: calc(100svh - var(--stick) - 1rem);
+		/* No align-self: start here — the rail stretches to the grid row's height
+		   (the page's, since body is the tall one) rather than shrinking to its own
+		   content, so there is a box tall enough for .rail-foot's own stickiness,
+		   below, to have anywhere to stick to. */
 		padding-right: 1.25rem;
 	}
 
@@ -187,11 +196,27 @@
 		opacity: 1;
 	}
 
+	/* The page's own foot, under the last section rather than under the rail: the
+	   same small note, just read at the end of the page instead of at the end of
+	   the column that navigates it. */
+	/* Sticky on its own account, not just carried by the rail's: margin-top: auto
+	   floats it to the bottom of the rail's (page-tall) box at rest, and its own
+	   stickiness holds it there against the viewport once you scroll — rather than
+	   the rail's top offset (which shortens once it stops trailing the header)
+	   dragging it back up with it. */
 	.rail-foot {
+		position: sticky;
+		bottom: 1rem;
 		display: flex;
 		flex-direction: column;
 		gap: 0.25rem;
 		margin-top: auto;
+	}
+
+	/* The rail's own copy is the one read at this width and above; this one only
+	   exists for when the rail has nowhere to put it. */
+	.body-foot {
+		display: none;
 	}
 
 	/* Read out, never drawn: the sections do the titling, and this is only here so
@@ -364,6 +389,14 @@
 		.rail-art,
 		.rail-foot {
 			display: none;
+		}
+
+		.body-foot {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-end;
+			gap: 0.25rem;
+			margin-top: clamp(2rem, 6vh, 3.5rem);
 		}
 
 		nav {
