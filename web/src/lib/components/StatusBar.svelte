@@ -1,5 +1,5 @@
 <script>
-	import { area, chart, VIEW } from '$lib/chart.js';
+	import Spark from './Spark.svelte';
 	import TimeAxis from './TimeAxis.svelte';
 	import { server, watch } from '$lib/server.svelte.js';
 	import { bucket, mean, outages, percentile } from '$lib/stats.js';
@@ -70,7 +70,7 @@
 	let cards = $derived([
 		{
 			label: 'Uptime',
-			href: '/server#uptime',
+			href: '/server#overview',
 			value: online ? Math.floor(snapshot.uptimeSeconds / 3600) : '—',
 			unit: online ? 'h' : '',
 			tone: 'mint',
@@ -95,7 +95,7 @@
 			stats: temps.length
 				? `MIN ${Math.round(Math.min(...valuesOf(temps)))}°C · MAX ${Math.round(Math.max(...valuesOf(temps)))}°C`
 				: 'NO HISTORY YET',
-			path: chart(temps)
+			points: temps
 		},
 		{
 			label: 'Latency',
@@ -106,7 +106,7 @@
 			stats: latencies.length
 				? `AVG ${Math.round(mean(valuesOf(latencies)))} ms · P95 ${Math.round(percentile(valuesOf(latencies), 0.95))} ms`
 				: 'NO HISTORY YET',
-			path: chart(latencies)
+			points: latencies
 		}
 	]);
 
@@ -117,7 +117,7 @@
 	);
 </script>
 
-{#snippet metricCard({ label, href, value, unit, tight, tone, stats, path, strip })}
+{#snippet metricCard({ label, href, value, unit, tight, tone, stats, points, strip })}
 	<a class="metric" {href}>
 		<h2 class="eyebrow">{label}</h2>
 		<strong class="figure value {tone}">
@@ -131,18 +131,7 @@
 				{/each}
 			</div>
 		{:else}
-			<div class="chart {tone}">
-				{#if path}
-					<svg
-						viewBox="0 0 {VIEW.width} {VIEW.height}"
-						preserveAspectRatio="none"
-						aria-hidden="true"
-					>
-						<path class="area" d={area(path)} />
-						<path d={path} vector-effect="non-scaling-stroke" />
-					</svg>
-				{/if}
-			</div>
+			<Spark {points} tone="var(--{tone})" />
 		{/if}
 		<TimeAxis range={spanLabel} />
 	</a>
@@ -223,8 +212,8 @@
 
 	/* Every card ends in a graphic of the same height, pinned to the foot of the
 	   box. The auto margin is what keeps them level when one card's stats line
-	   wraps and another's does not. */
-	.chart,
+	   wraps and another's does not — Spark carries the same pair for the two
+	   cards that end in a trace. */
 	.history {
 		height: 1.85rem;
 		margin-top: auto;
@@ -284,34 +273,8 @@
 		letter-spacing: 0.1em;
 	}
 
-	.chart {
-		position: relative;
-	}
-
-	.chart svg {
-		display: block;
-		width: 100%;
-		height: 100%;
-		overflow: visible;
-	}
-
-	.chart path {
-		fill: none;
-		stroke: currentcolor;
-		stroke-width: 1.25;
-		stroke-linejoin: round;
-	}
-
-	/* The same shading the dashboard's traces carry: enough to give the line a
-	   body, not enough to read as a colour of its own. */
-	.chart path.area {
-		fill: currentcolor;
-		stroke: none;
-		opacity: 0.12;
-	}
-
-	/* One tone class per metric, worn by both the value and its trace: the
-	   stroke is currentcolor, so the two can never drift apart. */
+	/* One tone class per metric, worn by the value; the trace beside it is passed
+	   the same token, so the two can never drift apart. */
 	.mint {
 		color: var(--mint);
 	}
