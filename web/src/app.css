@@ -12,8 +12,7 @@
 	--background: #f9f9f7;
 	--foreground: #0b0b0b;
 	--border: #e1e0d9;
-	--border-ui: #77746f;
-	--ring: var(--border-ui);
+	--ring: #77746f;
 }
 
 /* The site as it is actually served: app.html carries this class, and the light
@@ -24,8 +23,7 @@
 	--background: #090909;
 	--foreground: #f3f3ef;
 	--border: #2c2c2a;
-	--border-ui: #60605a;
-	--ring: var(--border-ui);
+	--ring: #60605a;
 }
 
 @theme inline {
@@ -35,7 +33,6 @@
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
 	--color-border: var(--border);
-	--color-border-ui: var(--border-ui);
 	--color-ring: var(--ring);
 }
 
@@ -70,12 +67,11 @@
 	   it sits between. */
 	--surface: color-mix(in srgb, var(--foreground) 3%, var(--background));
 
-	/* One perceptual lightness and chroma, six distinct hues. Colour stays rare:
+	/* One perceptual lightness and chroma, five distinct hues. Colour stays rare:
 	   mint/amber/coral carry state, the others distinguish related data. */
 	--mint: #95d6ab;
 	--amber: #dfc07f;
 	--coral: #f9aea7;
-	--pink: #efadd1;
 
 	/* The two volumes. One tone each, wherever they appear: a reading is the
 	   drive's colour before it is the panel's. */
@@ -291,6 +287,31 @@
 	inset: 0;
 	width: 100%;
 	height: 100%;
+	/* A stroke is centred on its path, so half of one drawn along the floor or the
+	   head of the domain falls outside the box. */
+	overflow: visible;
+}
+
+/* A drawn series: the line, the shading that gives it a body, and the dashes for
+   one of two lines that has to be told apart by more than its colour. Every chart
+   that strokes a path wears these, so no two of them can drift to different
+   weights. A chart that needs its own weight sets it on top. */
+.trace {
+	fill: none;
+	stroke: currentcolor;
+	stroke-width: 1.25;
+	stroke-linejoin: round;
+}
+
+.trace.area {
+	fill: currentcolor;
+	stroke: none;
+	/* Enough to give the line a body, not enough to read as a colour of its own. */
+	opacity: 0.12;
+}
+
+.trace.dashed {
+	stroke-dasharray: 4 3;
 }
 
 /* A graph's foot sits under the drawing, not under the gutter. A container, so
@@ -302,13 +323,32 @@
 	grid-column: 2;
 }
 
-/* A graph's scale runs down that gutter: spread over the height it measures, right
-   aligned against the drawing, and hanging half a line past each end so the top
-   and bottom labels sit level with the rules they name rather than inside them. */
+/* A graph's scale runs down that gutter, in one of two ways.
+
+   `.scale` spreads its labels evenly over the height it measures, for a chart
+   drawn against a fixed domain whose ticks are even shares of it by definition.
+   They hang half a line past each end, which is what puts the top and bottom
+   labels level with the rules they name rather than inside them. */
 .plot > .scale {
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
 	align-items: flex-end;
 	margin: -0.3rem 0;
+}
+
+/* `.axis` places each label at the height its own value sits at instead, for a
+   chart whose ticks are not even shares — a domain that moves with the data, or
+   one carrying marks at levels the caller chose. Centred on that height, so the
+   two ends overhang the plot exactly as the spread scale's do. */
+.plot > .axis {
+	position: relative;
+	grid-row: 1;
+	grid-column: 1;
+}
+
+.plot > .axis .tick {
+	position: absolute;
+	right: 0;
+	transform: translateY(-50%);
 }

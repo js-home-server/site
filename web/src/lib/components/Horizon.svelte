@@ -5,12 +5,15 @@
 	import Panel from './Panel.svelte';
 	import Placeholder from './Placeholder.svelte';
 
-	/* Where the volumes have been and where that puts them. `volumes` are shaped
-	   by $lib/storage.js: each carries its own percent series, its current size,
-	   and the rate it is filling. Only the first is drawn against the vertical
-	   axis below — a shared 0-100% scale is what a chart of several volumes
-	   would want, but this one narrows to a single volume's own range instead. */
-	let { volumes = [] } = $props();
+	/* Where one volume has been and where that puts it. `volume` is shaped by
+	   $lib/storage.js: it carries its own percent series, its current size, and the
+	   rate it is filling.
+
+	   One volume and not a list of them, because both axes are narrowed to its own
+	   range: a second trace drawn against a scale fitted to the first would be
+	   somewhere it does not belong. Two drives compared is the pair of these the
+	   storage section stands side by side. */
+	let { volume = null } = $props();
 
 	const DAY = 86_400;
 	const MONTH = 30.44 * DAY;
@@ -23,11 +26,13 @@
 	   which is more marks than a line this wide can show apart. */
 	const HISTORY_POINTS = 24;
 
-	let drawable = $derived(volumes.filter((v) => v.points.length > 1));
+	/* Nothing is drawn from a single reading: one point is a position, not a
+	   history, and it has no slope to carry forward. */
+	let disk = $derived(volume?.points?.length > 1 ? volume : null);
 
 	/* Everything is measured from the last reading the API returned, not from the
 	   clock: that is where the history ends and the projection starts. */
-	let now = $derived(Math.max(...drawable.map((v) => v.points.at(-1)[0]), 0));
+	let now = $derived(disk ? disk.points.at(-1)[0] : 0);
 
 	/* The chart is drawn at the size it is rendered, so a dot is round and a dash
 	   is the same length wherever it falls. */
@@ -59,78 +64,69 @@
 		return 0.5 * (1 + Math.sign(clamped) * reach);
 	};
 
-	/* The volume that runs out first: the headline is its date. */
-	let soonest = $derived(
-		drawable
-			.filter((v) => v.daysToFull !== null)
-			.sort((a, b) => a.daysToFull - b.daysToFull)[0] ?? null
-	);
-
 	let x = $derived((seconds) => PAD.left + along(seconds) * plot.width);
+
+	/* Where the volume is headed, as a share of itself, so many seconds out. The
+	   ceiling of the y axis and the dotted line that reaches it are the same
+	   extrapolation and are worked out once. Null for a volume that is not filling,
+	   or does not yet know how big it is: there is no line to draw, and flat dots
+	   to the horizon would claim it stays exactly as it is, which is not what the
+	   numbers say. */
+	let project = $derived(
+		disk?.growthPerDay > 0 && disk.totalNow
+			? (seconds) => ((disk.usedNow + (disk.growthPerDay * seconds) / DAY) / disk.totalNow) * 100
+			: null
+	);
 
 	/* The low and high the axis is drawn against: the floor the data has actually
 	   touched, and where a year of the current rate puts it — both with a tenth of
 	   headroom so a trace never sits flush on the frame. A volume with nothing to
-	   project (no growth, or no data yet) has no year-out point to reach for, so
-	   the ceiling falls back to the highest the history itself has touched — still
-	   the volume's own range rather than a single repeated reading. */
+	   project has no year-out point to reach for, so the ceiling falls back to the
+	   highest the history itself has touched — still the volume's own range rather
+	   than a single repeated reading. */
 	let yDomain = $derived.by(() => {
-		const v = drawable[0];
-		if (!v) return [0, 100];
+		if (!disk) return [0, 100];
 
-		const values = v.points.map(([, p]) => p).filter(Number.isFinite);
-		const seen = values.length ? values : [v.percentNow ?? 0];
-		const lo = Math.min(...seen);
-		const projected =
-			v.growthPerDay > 0 && v.totalNow
-				? ((v.usedNow + (v.growthPerDay * SPAN) / DAY) / v.totalNow) * 100
-				: Math.max(...seen, v.percentNow ?? lo);
+		const seen = disk.points.map(([, p]) => p).filter(Number.isFinite);
+		const values = seen.length ? seen : [disk.percentNow ?? 0];
+		const lo = Math.min(...values);
+		const hi = project ? project(SPAN) : Math.max(...values, disk.percentNow ?? lo);
 
-		return [lo * 1.1, projected * 1.1];
+		return [lo * 1.1, hi * 1.1];
 	});
 
-	/* A percent to a fraction of the plot, 0 at the floor and 1 at the ceiling. */
-	let yAlong = $derived((percent) => {
+	let y = $derived((percent) => {
 		const [lo, hi] = yDomain;
-		return (percent - lo) / (hi - lo || 1);
+		const level = Math.min(100, Math.max(0, percent));
+		return PAD.top + (1 - (level - lo) / (hi - lo || 1)) * plot.height;
 	});
 
-	let y = $derived(
-		(percent) => PAD.top + (1 - yAlong(Math.min(100, Math.max(0, percent)))) * plot.height
-	);
+	/* The past, thinned to a readable number of marks, the line that joins them,
+	   and the projection carrying on from the last of them. The projection stops at
+	   the ceiling rather than running along it: where it meets 100% is when the
+	   volume is full. */
+	let trace = $derived.by(() => {
+		if (!disk) return null;
 
-	/* The past, thinned to a readable number of marks, and the line that joins
-	   them. */
-	let traces = $derived(
-		drawable.map((v) => {
-			const t0 = Math.max(v.points[0][0], now - SPAN);
-			const inWindow = v.points.filter(([t]) => t >= t0);
-			const step = (now - t0) / Math.max(1, Math.min(HISTORY_POINTS, inWindow.length) - 1);
+		const t0 = Math.max(disk.points[0][0], now - SPAN);
+		const inWindow = disk.points.filter(([t]) => t >= t0);
+		const step = (now - t0) / Math.max(1, Math.min(HISTORY_POINTS, inWindow.length) - 1);
 
-			const marks = bucket(inWindow, HISTORY_POINTS)
-				.map((value, i) => (value === null ? null : { x: x(t0 - now + i * step), y: y(value) }))
-				.filter(Boolean);
+		const marks = bucket(inWindow, HISTORY_POINTS)
+			.map((value, i) => (value === null ? null : { x: x(t0 - now + i * step), y: y(value) }))
+			.filter(Boolean);
 
-			/* Straight on from where it is at the rate it has been filling, stopping
-			   at the ceiling rather than running along it: where it meets 100% is
-			   when the volume is full. A volume that is not filling gets no line at
-			   all — flat dots to the horizon would claim it stays exactly as it is,
-			   which is not what the numbers say. */
-			const end = Math.min(SPAN, (v.daysToFull ?? Infinity) * DAY);
-			const projection =
-				v.growthPerDay > 0 && v.totalNow
-					? `M${x(0).toFixed(1)},${y(v.percentNow).toFixed(1)} ` +
-						`L${x(end).toFixed(1)},${y(((v.usedNow + (v.growthPerDay * end) / DAY) / v.totalNow) * 100).toFixed(1)}`
-					: '';
+		const end = Math.min(SPAN, (disk.daysToFull ?? Infinity) * DAY);
 
-			return {
-				...v,
-				marks,
-				line: marks.map((m, i) => `${i ? 'L' : 'M'}${m.x.toFixed(1)},${m.y.toFixed(1)}`).join(' '),
-				projection
-			};
-		})
-	);
+		return {
+			marks,
+			line: marks.map((m, i) => `${i ? 'L' : 'M'}${m.x.toFixed(1)},${m.y.toFixed(1)}`).join(' '),
+			projection: project
+				? `M${x(0).toFixed(1)},${y(disk.percentNow).toFixed(1)} ` +
+					`L${x(end).toFixed(1)},${y(project(end)).toFixed(1)}`
+				: ''
+		};
+	});
 
 	/* The same marks either side of now, so the two halves can be read against
 	   each other. Years once a count of months stops being a length anyone
@@ -170,36 +166,33 @@
 		...kept.map((m) => ({ at: m * MONTH, label: `+${monthLabel(m)}` }))
 	]);
 
-	/* The gutter's own rules: an even five-way split of `yDomain`, the same way
-	   the fixed 0-100% scale every other percent chart on the page draws was
-	   always just an even split of its own (fixed) domain. */
+	/* The gutter's own rules: an even five-way split of `yDomain`, the same way the
+	   fixed 0-100% scale every other percent chart on the page draws was always
+	   just an even split of its own (fixed) domain. */
 	let yTicks = $derived.by(() => {
 		const [lo, hi] = yDomain;
 		return Array.from({ length: 5 }, (_, i) => lo + ((hi - lo) * i) / 4);
 	});
-
 </script>
 
-{#if traces.length}
+{#if trace}
 	<div class="horizon">
 		<!-- The window the series was asked for, read from the request itself, so
 		     the title cannot claim a history that was never fetched. -->
 		<Panel label="{MONTH_RANGE} used space history &amp; projection">
-			{#if soonest}
-				<!-- The rate behind this date is the one on that volume's legend row,
-				     so it is not quoted twice. -->
-				<strong class="figure" style:color={soonest.tone}>{untilFull(soonest.daysToFull)} to full</strong>
+			{#if disk.daysToFull}
+				<!-- The rate behind this date is the one on the legend row below, so it
+				     is not quoted twice. -->
+				<strong class="figure" style:color={disk.tone}>{untilFull(disk.daysToFull)} to full</strong>
 			{:else}
 				<strong class="figure steady">No growth to project</strong>
 			{/if}
 		</Panel>
 
 		<div class="plot">
-			<!-- Pixel-placed rather than the evenly-spread gutter most graphs on this
-			     page use: `yDomain` moves with the volume, so a label has to sit level
-			     with the rule it names rather than assume every chart's five ticks
-			     land at the same even fifths. -->
-			<div class="y-scale">
+			<!-- Placed rather than spread: `yDomain` moves with the volume, so a label
+			     has to sit level with the rule it names. -->
+			<div class="axis">
 				{#each yTicks as level (level)}
 					<span class="tick" style="top: {y(level)}px">{pct(level)}</span>
 				{/each}
@@ -212,17 +205,15 @@
 
 				<i class="divider" style="left: {x(0)}px; top: {PAD.top}px; bottom: {PAD.bottom}px"></i>
 
-				<svg viewBox="0 0 {width} {height}" aria-hidden="true">
-					{#each traces as trace (trace.id)}
-						<g style:color={trace.tone}>
-							<path class="history" d={trace.line} />
-							{#if trace.projection}
-								<path class="projection" d={trace.projection} />
-							{/if}
-							{#each trace.marks as mark}
-								<circle cx={mark.x} cy={mark.y} r="1.8" />
-							{/each}
-						</g>
+				<svg viewBox="0 0 {width} {height}" aria-hidden="true" style:color={disk.tone}>
+					<path class="trace" d={trace.line} />
+					{#if trace.projection}
+						<path class="trace projection" d={trace.projection} />
+					{/if}
+					<!-- Unkeyed: two buckets can land on the same pixel at the far end of
+					     a log axis, so a mark's position is not an identity. -->
+					{#each trace.marks as mark}
+						<circle cx={mark.x} cy={mark.y} r="1.8" />
 					{/each}
 				</svg>
 			</div>
@@ -235,13 +226,11 @@
 		</div>
 
 		<dl class="legend">
-			{#each traces as trace (trace.id)}
-				<div>
-					<dt class="eyebrow" style:color={trace.tone}><i></i>{trace.label}</dt>
-					<dd>{bytes(trace.usedNow)} / {bytes(trace.totalNow)}</dd>
-					<dd>{perDay(trace.growthPerDay)}</dd>
-				</div>
-			{/each}
+			<div>
+				<dt class="eyebrow" style:color={disk.tone}><i></i>{disk.label}</dt>
+				<dd>{bytes(disk.usedNow)} / {bytes(disk.totalNow)}</dd>
+				<dd>{perDay(disk.growthPerDay)}</dd>
+			</div>
 		</dl>
 	</div>
 {:else}
@@ -272,20 +261,6 @@
 		grid-template-rows: minmax(4rem, 1fr) auto;
 	}
 
-	/* The gutter's own labels, placed at the same height their rule crosses the
-	   canvas rather than spread evenly down the column — the two would drift apart
-	   the moment the axis stopped being linear. */
-	.y-scale {
-		position: relative;
-	}
-
-	.y-scale .tick {
-		position: absolute;
-		right: 0;
-		transform: translateY(-50%);
-		white-space: nowrap;
-	}
-
 	/* Where the measured part ends and the guess begins. Brighter than the grid it
 	   crosses rather than a heavier dash, so every dotted line keeps the one
 	   rhythm. */
@@ -296,20 +271,18 @@
 		background-image: var(--dot-column);
 	}
 
-	.history {
-		fill: none;
-		stroke: currentcolor;
-		stroke-linejoin: round;
+	/* Heavier than the traces on the graphs above: this one is a month of history
+	   read at a glance rather than a line in a stack of them. */
+	.trace {
 		stroke-width: 1.5;
 	}
 
-	/* Dotted, because it has not happened. */
+	/* Dotted, because it has not happened. Its own rhythm rather than the shared
+	   dash, which is there to tell two lines apart — this is one line saying that
+	   half of it is a guess. */
 	.projection {
-		fill: none;
-		stroke: currentcolor;
 		stroke-dasharray: 1 4;
 		stroke-linecap: round;
-		stroke-width: 1.5;
 	}
 
 	circle {
@@ -346,5 +319,4 @@
 		gap: 0.75rem;
 		align-items: baseline;
 	}
-
 </style>

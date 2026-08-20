@@ -284,12 +284,6 @@
 	<title>Server — Joshua Smith</title>
 </svelte:head>
 
-{#snippet stub(label, note, lines)}
-	<Panel {label}>
-		<Placeholder {note} {lines} />
-	</Panel>
-{/snippet}
-
 {#snippet overview()}
 	<!-- The verdict, standing on the machine it is about: the art is a picture
 	     rather than a chart, so the notice is laid over the empty half of it
@@ -431,7 +425,7 @@
 					<!-- Bounded to this disk's own floor and year-out projection rather
 					     than a fixed 0-100%, so the two columns read their own slope
 					     instead of each fighting the whole drive for room. -->
-					<Horizon volumes={[vol]} />
+					<Horizon volume={vol} />
 				</div>
 
 				<div class="io">
