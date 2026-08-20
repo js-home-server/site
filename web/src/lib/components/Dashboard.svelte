@@ -77,23 +77,18 @@
 		     h2 and the sections are under nothing. -->
 		<h1>{title}</h1>
 
+		<!-- Every line is a row, whatever is on it: a row of one lays out exactly as
+		     a lone section did, so the sections are written once rather than once
+		     per branch. -->
 		{#each rows as group (group[0].id)}
-			{#if group.length > 1}
-				<div class="row">
-					{#each group as section (section.id)}
-						<section id={section.id} {@attach spy(section.id)}>
-							<h2>{section.label}</h2>
-							{@render body(section)}
-						</section>
-					{/each}
-				</div>
-			{:else}
-				{@const section = group[0]}
-				<section id={section.id} {@attach spy(section.id)}>
-					<h2>{section.label}</h2>
-					{@render body(section)}
-				</section>
-			{/if}
+			<div class="row">
+				{#each group as section (section.id)}
+					<section id={section.id} {@attach spy(section.id)}>
+						<h2>{section.label}</h2>
+						{@render body(section)}
+					</section>
+				{/each}
+			</div>
 		{/each}
 
 		{#if foot}
@@ -256,7 +251,6 @@
 
 		display: grid;
 		gap: var(--divide);
-		margin-bottom: clamp(2rem, 6vh, 3.5rem);
 		padding: var(--pad);
 		border: 1px solid var(--color-border);
 		border-radius: 0.35rem;
@@ -265,16 +259,11 @@
 		scroll-margin-top: var(--stick);
 	}
 
-	/* Nothing follows the last one, and the gap it would leave is what the column's
-	   divider would have to run past. */
-	section:last-child {
-		margin-bottom: 0;
-	}
-
-	/* Two or more boxes on the same line rather than one above the other: each
-	   keeps its own border and heading, so only the margin between them moves off
-	   the sections and onto the row holding them. Equal shares, so a box shrinks
-	   with the line rather than however wide its own content wants to run. */
+	/* One line of the page. A box on it keeps its own border and heading, so all
+	   the row owns is how the boxes divide the width and what follows the line —
+	   which is why no section carries a margin of its own. Equal shares, so a box
+	   shrinks with the line rather than however wide its own content wants to
+	   run. */
 	.row {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
@@ -286,11 +275,9 @@
 		margin-bottom: clamp(2rem, 6vh, 3.5rem);
 	}
 
+	/* Nothing follows the last one, and the gap it would leave is what the column's
+	   divider would have to run past. */
 	.row:last-child {
-		margin-bottom: 0;
-	}
-
-	.row > section {
 		margin-bottom: 0;
 	}
 
@@ -380,7 +367,6 @@
 			flex-direction: row;
 			align-items: center;
 			gap: 1rem;
-			max-height: none;
 			padding: 0.5rem 0;
 			border-bottom: 1px solid var(--color-border);
 			background: var(--color-background);

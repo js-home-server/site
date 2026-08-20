@@ -212,21 +212,18 @@
 
 	/* Every card ends in a graphic of the same height, pinned to the foot of the
 	   box. The auto margin is what keeps them level when one card's stats line
-	   wraps and another's does not — Spark carries the same pair for the two
-	   cards that end in a trace. */
-	.history {
-		height: 1.85rem;
-		margin-top: auto;
-	}
+	   wraps and another's does not — Spark carries the same pair for the two cards
+	   that end in a trace.
 
-	/* Every bar the full height of the box, which is the height of the traces in the
-	   cards beside it: this is a band of colour across the window, not a chart with
-	   a reading to stand at. */
+	   Every bar takes that full height, which is the height of those traces: this is
+	   a band of colour across the window, not a chart with a reading to stand at. */
 	.history {
 		display: grid;
 		grid-auto-flow: column;
 		grid-auto-columns: 1fr;
 		gap: 1px;
+		height: 1.85rem;
+		margin-top: auto;
 	}
 
 	.history i {

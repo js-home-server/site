@@ -50,7 +50,7 @@
 		<!-- The scale sits in its own gutter beside the plot, so no label is ever
 		     painted over the trace it belongs to. -->
 		<div class="axis">
-			{#each scale as { label, offset }}
+			{#each scale as { label, offset } (label + offset)}
 				<span class="tick" style="top: {offset}%">{label}</span>
 			{/each}
 		</div>
@@ -64,9 +64,10 @@
 			<svg viewBox="0 0 {VIEW.width} {VIEW.height}" preserveAspectRatio="none" aria-hidden="true">
 				{#each traces as trace (trace.id)}
 					{#if trace.area !== false}
-						<path class="area" d={area(trace.d)} style:color={trace.tone} />
+						<path class="trace area" d={area(trace.d)} style:color={trace.tone} />
 					{/if}
 					<path
+						class="trace"
 						d={trace.d}
 						class:dashed={trace.dashed}
 						style:color={trace.tone}
@@ -95,21 +96,6 @@
 {/if}
 
 <style>
-	.axis {
-		position: relative;
-		grid-row: 1;
-		grid-column: 1;
-	}
-
-	/* Each label hangs off the height its value sits at, centred on it. The two
-	   ends overhang the plot by half a line, which is what puts them level with the
-	   top and bottom of the box rather than inside it. */
-	.axis span {
-		position: absolute;
-		right: 0;
-		transform: translateY(-50%);
-	}
-
 	/* The trace is drawn against a fixed scale, so the box has to be a fixed box:
 	   a line on the floor and the head of the domain, nothing in between. Dotted,
 	   like every grey line on the page that measures something rather than dividing
@@ -120,29 +106,6 @@
 		background-position: 0 0, 0 100%;
 		background-repeat: no-repeat;
 		background-size: 100% 1px;
-	}
-
-	/* A stroke is centred on its path, so half of one drawn along the floor or the
-	   head of the domain falls outside the box. */
-	svg {
-		overflow: visible;
-	}
-
-	path {
-		fill: none;
-		stroke: currentcolor;
-		stroke-width: 1.25;
-		stroke-linejoin: round;
-	}
-
-	path.area {
-		fill: currentcolor;
-		stroke: none;
-		opacity: 0.12;
-	}
-
-	path.dashed {
-		stroke-dasharray: 4 3;
 	}
 
 	.key {

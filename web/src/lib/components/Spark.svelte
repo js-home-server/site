@@ -18,8 +18,8 @@
 <div class="spark" style:color={tone}>
 	{#if d}
 		<svg viewBox="0 0 {VIEW.width} {VIEW.height}" preserveAspectRatio="none" aria-hidden="true">
-			{#if fill}<path class="area" d={area(d)} />{/if}
-			<path d={d} vector-effect="non-scaling-stroke" />
+			{#if fill}<path class="trace area" d={area(d)} />{/if}
+			<path class="trace" d={d} vector-effect="non-scaling-stroke" />
 		</svg>
 	{/if}
 </div>
@@ -33,24 +33,14 @@
 		margin-top: auto;
 	}
 
+	/* The one part not shared with the charts on the dashboard: this svg is the
+	   whole component rather than a drawing laid inside a `.plot`, so it takes its
+	   box directly. The paths in it wear the same `.trace` every other series
+	   does. */
 	svg {
 		display: block;
 		width: 100%;
 		height: 100%;
 		overflow: visible;
-	}
-
-	path {
-		fill: none;
-		stroke: currentcolor;
-		stroke-width: 1.25;
-		stroke-linejoin: round;
-	}
-
-	/* Enough to give the line a body, not enough to read as a colour of its own. */
-	path.area {
-		fill: currentcolor;
-		stroke: none;
-		opacity: 0.12;
 	}
 </style>
