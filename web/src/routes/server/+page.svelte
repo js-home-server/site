@@ -669,19 +669,19 @@
 		margin-bottom: 0.75rem;
 	}
 
-	/* The picture runs out to the section's right edge and takes the right of the
-	   frame; the notice is laid over the left of it, which is sky. */
+	/* The notice is laid over the left of the picture, which is sky. */
 	.notify {
 		position: relative;
-		margin-right: calc(-1 * var(--pad));
 	}
 
 	/* A picture is as tall as its width, and this one heads a band rather than
 	   filling one: capped, or a wide window turns the head of the page into a
-	   poster of a satellite dish. */
+	   poster of a satellite dish. Centred rather than run out to the section's
+	   edge -- the array is wide enough now that pinning it to one side reads as
+	   off-balance instead of full-bleed. */
 	.notify .art {
 		width: min(55%, 44rem);
-		margin-left: auto;
+		margin-inline: auto;
 	}
 
 	.notice {
