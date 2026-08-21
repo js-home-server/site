@@ -119,7 +119,7 @@
 <style>
 	.hero {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) minmax(12rem, 28%);
+		grid-template-columns: minmax(0, 1fr) 50%;
 		gap: clamp(1.5rem, 4vw, 3rem);
 	}
 
@@ -130,18 +130,18 @@
 	}
 
 	/* A character grid has one size — how big one cell is — so the art is sized by
-	   setting that from the box it sits in, the same way the server page's own
-	   generated pieces are: --cols is the column count times the 0.6021em
-	   JetBrains Mono advances per character, and 166 columns is the count the
-	   bull, ship and dish already share, which is what keeps a digit one size
-	   across the site rather than just across one page. */
+	   setting that from the box it sits in: --cols is the column count times the
+	   0.6021em JetBrains Mono advances per character. This box is half the
+	   section's own width, so it takes more columns than the dashboard pieces'
+	   shared 166 to land a digit at the same size the bull's are set at — 118 is
+	   that count, checked against the rendered page rather than assumed. */
 	.portrait {
 		container-type: inline-size;
 		align-self: center;
 	}
 
 	.portrait :global(pre) {
-		font-size: calc(100cqw / 99.95);
+		font-size: calc(100cqw / 71.05);
 		line-height: round(0.72em, var(--device-px, 1px));
 	}
 
