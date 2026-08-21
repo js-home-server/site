@@ -26,6 +26,11 @@
 	   which is more marks than a line this wide can show apart. */
 	const HISTORY_POINTS = 24;
 
+	/* The projection is straight in time but the axis is not: sampled rather than
+	   drawn end to end, or a line that should curve upward toward the ceiling
+	   would cut the corner as a chord instead. */
+	const PROJECTION_POINTS = 24;
+
 	/* Nothing is drawn from a single reading: one point is a position, not a
 	   history, and it has no slope to carry forward. */
 	let disk = $derived(volume?.points?.length > 1 ? volume : null);
@@ -122,8 +127,10 @@
 			marks,
 			line: marks.map((m, i) => `${i ? 'L' : 'M'}${m.x.toFixed(1)},${m.y.toFixed(1)}`).join(' '),
 			projection: project
-				? `M${x(0).toFixed(1)},${y(disk.percentNow).toFixed(1)} ` +
-					`L${x(end).toFixed(1)},${y(project(end)).toFixed(1)}`
+				? Array.from({ length: PROJECTION_POINTS + 1 }, (_, i) => {
+						const t = (end * i) / PROJECTION_POINTS;
+						return `${i ? 'L' : 'M'}${x(t).toFixed(1)},${y(project(t)).toFixed(1)}`;
+					}).join(' ')
 				: ''
 		};
 	});

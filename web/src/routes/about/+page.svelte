@@ -1,4 +1,5 @@
 <script>
+	import AsciiAstronaut from '$lib/components/AsciiAstronaut.svelte';
 	import Dashboard from '$lib/components/Dashboard.svelte';
 	import Panel from '$lib/components/Panel.svelte';
 	import Placeholder from '$lib/components/Placeholder.svelte';
@@ -83,10 +84,9 @@
 			</p>
 		</div>
 
-		<!-- Decorative once it is a portrait rather than a wireframe box: the name
-		     above already carries what a screen reader needs. -->
+		<!-- Decorative: the name above already carries what a screen reader needs. -->
 		<div class="portrait" aria-hidden="true">
-			<Placeholder note="portrait" lines={14} />
+			<AsciiAstronaut />
 		</div>
 	</div>
 
@@ -127,6 +127,22 @@
 		display: grid;
 		align-content: center;
 		gap: 0.75rem;
+	}
+
+	/* A character grid has one size — how big one cell is — so the art is sized by
+	   setting that from the box it sits in, the same way the server page's own
+	   generated pieces are: --cols is the column count times the 0.6021em
+	   JetBrains Mono advances per character, and 166 columns is the count the
+	   bull, ship and dish already share, which is what keeps a digit one size
+	   across the site rather than just across one page. */
+	.portrait {
+		container-type: inline-size;
+		align-self: center;
+	}
+
+	.portrait :global(pre) {
+		font-size: calc(100cqw / 99.95);
+		line-height: round(0.72em, var(--device-px, 1px));
 	}
 
 	/* The one place on the page a name is the reading: bigger than a section's own
