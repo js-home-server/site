@@ -3,6 +3,7 @@
 	import AsciiAstronaut from '$lib/components/AsciiAstronaut.svelte';
 	import Logo from '$lib/components/Logo.svelte';
 	import Placeholder from '$lib/components/Placeholder.svelte';
+	import { brandColors, websites } from '$lib/logos.js';
 
 	/* Wireframe of the about page: four boxes down the page, nothing filled in.
 	   Every part is a dashed slot standing in the shape and roughly the height the
@@ -115,7 +116,7 @@
 
 	/* What a filled dot is worth, most first. */
 	const LEVELS = [
-		[4, 'Too many'],
+		[4, "I'm never getting my life back"],
 		[3, 'Hundreds'],
 		[2, 'Many'],
 		[1, 'Some']
@@ -242,7 +243,15 @@
 
 						<ul class="chips">
 							{#each tools as [tool, level] (tool)}
-								<li><Logo name={tool} /> {tool} {@render dots(level)}</li>
+								<li style="--brand: {brandColors[tool] ?? 'currentcolor'}">
+									{#if websites[tool]}
+										<a href={websites[tool]} target="_blank" rel="noopener noreferrer">
+											<Logo name={tool} /> {tool} {@render dots(level)}
+										</a>
+									{:else}
+										<Logo name={tool} /> {tool} {@render dots(level)}
+									{/if}
+								</li>
 							{/each}
 						</ul>
 					</div>
@@ -685,7 +694,7 @@
 	/* The groups take the width; the legend is a fixed column beside them. */
 	.tools-body {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) 16rem;
+		grid-template-columns: minmax(0, 1fr) 20rem;
 		gap: clamp(1.5rem, 3vw, 2.5rem);
 	}
 
@@ -732,6 +741,7 @@
 	}
 
 	.chips li {
+		position: relative;
 		display: flex;
 		gap: 0.5rem;
 		align-items: center;
@@ -740,6 +750,30 @@
 		border-radius: 999px;
 		font-family: var(--font-mono);
 		font-size: 0.72rem;
+	}
+
+	/* `display: contents` lays the icon/name/dots out as if they were direct
+	   children of the pill; the `::after` is what actually catches the click,
+	   stretched over the whole pill rather than just the text and icon. */
+	.chips li > :global(a) {
+		display: contents;
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.chips li > :global(a::after) {
+		content: '';
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+	}
+
+	.chips li:has(a):hover {
+		border-color: var(--brand);
+	}
+
+	.chips li:has(a):hover :global(svg) {
+		fill: var(--brand);
 	}
 
 	/* The meter: four dots, filled up to the level. Every one of them is hollow
@@ -792,6 +826,7 @@
 		color: var(--text-dim);
 		font-family: var(--font-mono);
 		font-size: 0.7rem;
+		white-space: nowrap;
 	}
 
 	/* The art that fills the foot of the box, once there is any. */
