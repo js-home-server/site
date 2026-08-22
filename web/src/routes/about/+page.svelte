@@ -1,190 +1,823 @@
 <script>
-	import AsciiAstronaut from '$lib/components/AsciiAstronaut.svelte';
-	import Dashboard from '$lib/components/Dashboard.svelte';
-	import Panel from '$lib/components/Panel.svelte';
+	import Logo from '$lib/components/Logo.svelte';
 	import Placeholder from '$lib/components/Placeholder.svelte';
 
-	/* Wireframe. One entry per section of the page and per stop on the rail, and
-	   the panels it will hold: a label, and roughly how tall the real thing is in
-	   text lines. `stack` is a section read down rather than across — a list of
-	   entries rather than a row of columns. Summary carries no panels of its own:
-	   it has its own snippet below, standing in the shape it will keep once it is
-	   written rather than a generic wireframe grid. */
-	const SECTIONS = [
-		{ id: 'summary', label: 'Summary' },
+	/* Wireframe of the about page: four boxes down the page, nothing filled in.
+	   Every part is a dashed slot standing in the shape and roughly the height the
+	   real thing takes, so the layout can be argued about before a word of it is
+	   written. The numbers are counts of repeated slots, not contents. */
+	/* The strip of readings under the intro: the figure, and what it counts. The
+	   last two are stand-ins until there are real numbers to put there. */
+	const STATS = [
+		['6+', 'Years of Python'],
+		['2', 'Years professional experience'],
+		['10+', 'Projects delivered'],
+		['5', 'Tools built']
+	];
+	/* The stops on the rail, oldest first. `points` is what was actually done in
+	   that stretch; a stop without any is a single line of prose. */
+	const MILESTONES = [
 		{
-			id: 'stack',
-			label: 'Stack',
-			panels: [['Languages', 5], ['Infrastructure', 5], ['Tooling', 5]]
+			period: '2020 — 2023',
+			title: 'BEng Engineering Mathematics',
+			detail: 'University of Bristol, 2:1. Modelling, statistics and scientific computing.'
 		},
 		{
-			id: 'experience',
-			label: 'Experience',
-			stack: true,
-			panels: [['Current role', 4], ['Previous role', 4], ['Before that', 4]]
+			period: '2024 — Present',
+			title: 'Graduate Data Scientist, AWE',
+			points: [
+				'Signal-processing pipeline synchronising 9 distributed sensors to microsecond precision — denoising, unsupervised anomaly detection, waveform clustering and TDOA localisation.',
+				'Onboard navigation system: 580 m median accuracy at 700 km range against a 7.5 km/s target, 4-second end-to-end latency, inside 8 GB of RAM on a consumer CPU.',
+				'Multi-objective optimisation by surrogate modelling: 150,000 function evaluations down to 20,000, CUDA for a 26x cut in wall time, deployed company-wide.'
+			]
 		},
-		{ id: 'projects', label: 'Projects', panels: [['Project', 6], ['Project', 6], ['Project', 6]] }
+		{
+			period: 'The future',
+			title: 'Whatever the next hard problem is',
+			detail:
+				'Continuing to build systems that turn messy data into decisions, and looking for the next one worth working on.'
+		}
+	];
+	/* The three things worth showing. `blurb` is filler until each has been
+	   written properly; the tags are what each is actually built with. */
+	const PROJECTS = [
+		{
+			name: 'Ancestree',
+			blurb:
+				'Zero-dependency Python package that models a data pipeline as a directed acyclic graph, with content-defined chunking over a SQL backend. Published on PyPI and in use by researchers internally.',
+			tags: ['Python', 'SQLite', 'DAGs', 'PyPI']
+		},
+		{
+			name: 'Orderflow analysis',
+			blurb:
+				'Pipeline for Binance futures and spot data, with a dynamic feature registry covering OHLC aggregation, open interest, funding rate and CVD, read back through a multi-panel plotting framework.',
+			tags: ['Python', 'Pandas', 'Plotly', 'Binance API']
+		},
+		{
+			name: 'This server',
+			blurb:
+				'The machine this site is served from, and the site itself: metrics scraped off the box, cached behind a small API, and read back live on the server page.',
+			tags: ['SvelteKit', 'Docker', 'Prometheus', 'Python']
+		}
+	];
+	/* What I work in, grouped by what each thing is for, and how well — a level
+	   from 1 to 4, read against the legend beside them. Every level is 0 for now,
+	   which draws four hollow dots: the shape is here, the ranking is not. */
+	const CATEGORIES = [
+		[
+			'Languages & query',
+			[
+				['Python', 0],
+				['C++', 0],
+				['SQL', 0],
+				['MATLAB', 0],
+				['JavaScript', 0]
+			]
+		],
+		[
+			'ML & modelling',
+			[
+				['PyTorch', 0],
+				['TensorFlow', 0],
+				['scikit-learn', 0]
+			]
+		],
+		[
+			'Data & analytics',
+			[
+				['NumPy', 0],
+				['Pandas', 0],
+				['Polars', 0],
+				['Plotly', 0]
+			]
+		],
+		[
+			'Compute & HPC',
+			[
+				['CUDA', 0],
+				['Slurm', 0],
+				['Linux', 0]
+			]
+		],
+		[
+			'Tooling',
+			[
+				['Git', 0],
+				['Docker', 0],
+				['Svelte', 0]
+			]
+		]
 	];
 
-	/* The one live reading in the strip: the clock where I actually am, not a
-	   fixed "UTC+1" that would go stale the day the UK falls back to GMT. Ticked
-	   every second, since the display carries them. */
-	let now = $state(new Date());
-	$effect(() => {
-		const id = setInterval(() => (now = new Date()), 1000);
-		return () => clearInterval(id);
-	});
-
-	/* DD/MM/YYYY HH:MM:SS and the zone's own current offset, all read off the same
-	   timestamp so none of them can disagree — Intl already knows when the UK is
-	   on summer time and when it is not. */
-	let ukClock = $derived.by(() => {
-		const parts = new Intl.DateTimeFormat('en-GB', {
-			timeZone: 'Europe/London',
-			day: '2-digit',
-			month: '2-digit',
-			year: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit',
-			second: '2-digit',
-			hour12: false,
-			timeZoneName: 'shortOffset'
-		}).formatToParts(now);
-
-		const get = (type) => parts.find((p) => p.type === type)?.value ?? '';
-		const offset = get('timeZoneName').replace('GMT', 'UTC') || 'UTC';
-		const date = `${get('day')}/${get('month')}/${get('year')}`;
-		const time = `${get('hour')}:${get('minute')}:${get('second')}`;
-		return `${date} ${time} ${offset === 'UTC' ? 'UTC+0' : offset}`;
-	});
-
-	/* Placeholder copy for the rest of the strip, in the shape the real figures
-	   will keep: a label, the headline reading, and the line under it. */
-	let STATS = $derived([
-		['Location', 'UK', ukClock],
-		['Focus', 'Data Systems', 'ML · Infra · Tools'],
-		['Experience', '5+ years', '2019 → Present'],
-		['Status', 'Open to new problems', 'Build · Ship · Repeat']
-	]);
+	/* What a filled dot is worth, most first. */
+	const LEVELS = [
+		[4, 'Core'],
+		[3, 'Strong'],
+		[2, 'Working'],
+		[1, 'Familiar']
+	];
 </script>
 
 <svelte:head>
 	<title>About — Joshua Smith</title>
 </svelte:head>
 
-{#snippet summary()}
-	<div class="hero">
+{#snippet dots(level)}
+	<span class="dots" aria-hidden="true">
+		{#each { length: 4 }, i (i)}<i class:on={i < level}></i>{/each}
+	</span>
+{/snippet}
+
+<div class="about">
+	<!-- Read out, never drawn: the boxes carry the titling, and this is only here
+	     so the document outline starts somewhere. -->
+	<h1>About</h1>
+
+	<section class="hero">
 		<div class="intro">
-			<p class="name">Joshua Smith</p>
-			<p class="bio">
-				I am a data science and machine learning engineer at AWE. Outside of work
-				I work on a mixture of projects. I also stand up a home server (if you can
-				read this page it's currently up and running). Please get in contact with
-				me to collaborate. Currently seeking a new role.
+			<h2 class="eyebrow">About me</h2>
+			<p class="headline">Turning Data<br />Into Intelligence</p>
+
+			<p class="lede">
+				I'm a data scientist and AI engineer focused on building intelligent systems that
+				solve real world problems. My work sits at the intersection of data, algorithms
+				and human impact.
+			</p>
+
+			<!-- Nothing behind it yet: a button rather than a link, so it is honestly
+			     inert instead of an anchor pointing nowhere. -->
+			<div class="cta">
+				<button type="button"><span aria-hidden="true">&gt;</span> View my work</button>
+			</div>
+
+			<!-- The strip along the foot: a figure, what it counts, and its trend. -->
+			<div class="stats">
+				{#each STATS as [figure, label] (label)}
+					<div class="stat">
+						<strong>{figure}</strong>
+						<span class="eyebrow">{label}</span>
+						<!-- The trend under each: nothing to plot yet. -->
+						<Placeholder note="" lines={1} />
+					</div>
+				{/each}
+			</div>
+		</div>
+
+		<div class="frame"><Placeholder note="portrait" lines={18} /></div>
+	</section>
+
+	<section class="journey">
+		<div class="timeline">
+			<h2 class="eyebrow">My journey</h2>
+			{#each MILESTONES as { period, title, detail, points } (title)}
+				<div class="milestone">
+					<p class="period">{period}</p>
+					<p class="title">{title}</p>
+					{#if detail}<p class="detail">{detail}</p>{/if}
+					{#if points}
+						<ul>
+							{#each points as point (point)}<li>{point}</li>{/each}
+						</ul>
+					{/if}
+				</div>
+			{/each}
+		</div>
+
+		<div class="visual"><Placeholder note="journey visual" lines={16} /></div>
+	</section>
+
+	<section class="projects">
+		<h2 class="eyebrow">My projects</h2>
+
+		<div class="cards" style="--cells: repeat({PROJECTS.length}, minmax(0, 1fr))">
+			{#each PROJECTS as { name, blurb, tags } (name)}
+				<article class="card">
+					<div class="head">
+						<div class="icon"><Placeholder note="" lines={2} /></div>
+						<h3>{name}</h3>
+					</div>
+
+					<div class="body">
+						<p class="blurb">{blurb}</p>
+
+						<ul class="tags">
+							{#each tags as tag (tag)}<li>{tag}</li>{/each}
+						</ul>
+					</div>
+
+					<!-- Nothing to point at yet. -->
+					<div class="link"><Placeholder note="view project" lines={1} /></div>
+				</article>
+			{/each}
+		</div>
+	</section>
+
+	<section class="tools">
+		<div class="tools-head">
+			<h2 class="eyebrow">Tools &amp; technicalities</h2>
+			<p class="strap">
+				Technologies I work with to build reliable, scalable and intelligent systems.
 			</p>
 		</div>
 
-		<!-- Decorative: the name above already carries what a screen reader needs. -->
-		<div class="portrait" aria-hidden="true">
-			<AsciiAstronaut />
-		</div>
-	</div>
+		<div class="tools-body">
+			<div class="rows">
+				{#each CATEGORIES as [category, tools] (category)}
+					<div class="tool-row">
+						<div class="category">
+							<!-- The mark that goes beside the group, once there is one. -->
+							<div class="icon"><Placeholder note="" lines={2} /></div>
+							<h3>{category}</h3>
+						</div>
 
-	<div class="band bleed stats">
-		{#each STATS as [label, value, detail] (label)}
-			<Panel {label}>
-				<strong>{value}</strong>
-				<span class="detail">{detail}</span>
-			</Panel>
-		{/each}
-	</div>
-{/snippet}
-
-<Dashboard title="About" sections={SECTIONS} max="none">
-	{#snippet body(section)}
-		{#if section.id === 'summary'}
-			{@render summary()}
-		{:else}
-			<div class={section.stack ? 'stack' : 'band bleed'}>
-				{#each section.panels as [label, lines], i (i)}
-					<Panel {label}>
-						<Placeholder note="wireframe" {lines} />
-					</Panel>
+						<ul class="chips">
+							{#each tools as [tool, level] (tool)}
+								<li><Logo name={tool} /> {tool} {@render dots(level)}</li>
+							{/each}
+						</ul>
+					</div>
 				{/each}
 			</div>
-		{/if}
-	{/snippet}
-</Dashboard>
+
+			<aside class="key">
+				<h3 class="eyebrow">Legend</h3>
+
+				<dl>
+					{#each LEVELS as [level, name] (name)}
+						<div><dt>{@render dots(level)}</dt><dd>{name}</dd></div>
+					{/each}
+				</dl>
+
+				<div class="art"><Placeholder note="ascii" lines={5} /></div>
+			</aside>
+		</div>
+	</section>
+</div>
 
 <style>
+	/* The page is the four boxes and the air between them. Wider than .page's
+	   column of prose: these are laid out across rather than read down. */
+	.about {
+		display: grid;
+		gap: clamp(0.75rem, 1.5vh, 1.25rem);
+		max-width: 88rem;
+		margin-inline: auto;
+		padding: clamp(1.5rem, 4vh, 2.5rem) var(--gutter) clamp(3rem, 10vh, 6rem);
+	}
+
+	h1 {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		margin: -1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+
+	/* A box, and the vocabulary the parts inside it divide with: --pad is its own
+	   air, --rule the line anything in it is divided by, drawn a shade under the
+	   box's own border so the box stays the strongest line. */
+	section {
+		--pad: clamp(1rem, 2.5vw, 2rem);
+		--rule: 1px solid color-mix(in srgb, var(--color-border) 75%, transparent);
+
+		padding: var(--pad);
+		border: 1px solid var(--color-border);
+		border-radius: 0.6rem;
+		background: var(--surface);
+	}
+
+	/* --- about me ------------------------------------------------------- */
+
 	.hero {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) 50%;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
 		gap: clamp(1.5rem, 4vw, 3rem);
 	}
 
+	/* Five rows, the last of them the slack: the strip of readings is pushed to
+	   the foot of the column so it lands level with the bottom of the portrait
+	   beside it, however short the copy above turns out to be. */
 	.intro {
 		display: grid;
-		align-content: center;
-		gap: 0.75rem;
+		grid-template-rows: repeat(4, auto) minmax(0, 1fr);
+		gap: clamp(1rem, 2vh, 1.5rem);
 	}
 
-	/* A character grid has one size — how big one cell is — so the art is sized by
-	   setting that from the box it sits in: --cols is the column count times the
-	   0.6021em JetBrains Mono advances per character. This box is half the
-	   section's own width, so it takes more columns than the dashboard pieces'
-	   shared 166 to land a digit at the same size the bull's are set at — 118 is
-	   that count, checked against the rendered page rather than assumed. */
-	.portrait {
-		container-type: inline-size;
-		align-self: center;
-	}
-
-	.portrait :global(pre) {
-		font-size: calc(100cqw / 71.05);
-		line-height: round(0.72em, var(--device-px, 1px));
-	}
-
-	/* The one place on the page a name is the reading: bigger than a section's own
-	   figure and set like the mono headlines elsewhere on the dashboard, since this
-	   is the page's own headline rather than a number in a box. A name, not a
-	   label, so it keeps its own case rather than the small caps everything else
-	   on the dashboard is written in. */
-	.name {
+	/* The page's own headline: the one piece of type here set as large as the
+	   name on the landing page, and the only thing in the box at full strength. */
+	.headline {
 		margin: 0;
 		color: var(--color-foreground);
+		font-size: clamp(2rem, 4vw, 3.25rem);
+		font-weight: 700;
+		letter-spacing: -0.04em;
+		line-height: 1.08;
+	}
+
+	/* Set in the mono face the readings elsewhere on the site are, which is what
+	   keeps a paragraph of prose reading as part of a dashboard. */
+	.lede {
+		margin: 0;
+		max-width: 46ch;
+		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: clamp(1.8rem, 3.4vw, 2.75rem);
+		font-size: 0.85rem;
+		line-height: 1.9;
+	}
+
+	/* A button is a button's width, not the column's. */
+	.cta {
+		width: fit-content;
+	}
+
+	button {
+		padding: 0.7rem 1.1rem;
+		border: 1px solid currentcolor;
+		border-radius: 0.2rem;
+		background: none;
+		color: var(--mint);
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		cursor: pointer;
+		transition: background-color 160ms ease;
+	}
+
+	button:hover,
+	button:focus-visible {
+		background: color-mix(in srgb, var(--mint) 12%, transparent);
+	}
+
+	/* Four readings across the foot, ruled apart, the last of them pushed down to
+	   the bottom of the column so it lands level with the foot of the portrait. */
+	.stats {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 0.35rem 1rem;
+		align-content: end;
+		margin-top: auto;
+	}
+
+	/* Three rows, the middle one taking the slack: the labels run to different
+	   lengths, and the trends under them still have to sit on one line. */
+	.stat {
+		display: grid;
+		grid-template-rows: auto minmax(0, 1fr) auto;
+		gap: 0.35rem;
+	}
+
+	/* The figure in the colour a reading is given everywhere else on the site, the
+	   line under it in the same small caps as every other label. */
+	.stat strong {
+		color: var(--mint);
+		font-family: var(--font-mono);
+		font-size: clamp(1.5rem, 2.4vw, 2rem);
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		line-height: 1;
+	}
+
+	.stat .eyebrow {
+		line-height: 1.5;
+	}
+
+	.stat + .stat {
+		padding-left: 1rem;
+		border-left: var(--rule);
+	}
+
+	/* The corner brackets the portrait sits in: eight hairlines, two to a corner,
+	   drawn as backgrounds rather than elements — the same trick Placeholder draws
+	   its dotted edges with. */
+	.frame {
+		--corner: 1.75rem;
+		--edge: linear-gradient(var(--color-border) 0 0);
+
+		display: grid;
+		padding: 0.75rem;
+		background-image: var(--edge), var(--edge), var(--edge), var(--edge), var(--edge),
+			var(--edge), var(--edge), var(--edge);
+		background-position: 0 0, 0 0, 100% 0, 100% 0, 0 100%, 0 100%, 100% 100%, 100% 100%;
+		background-repeat: no-repeat;
+		background-size: var(--corner) 1px, 1px var(--corner), var(--corner) 1px, 1px var(--corner),
+			var(--corner) 1px, 1px var(--corner), var(--corner) 1px, 1px var(--corner);
+	}
+
+	/* --- my journey ----------------------------------------------------- */
+
+	.journey {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+	}
+
+	/* The two halves are divided by a rule run wall to wall, which is what the
+	   negative margin and the padding put back are for. */
+	.visual {
+		display: grid;
+		margin: calc(-1 * var(--pad)) calc(-1 * var(--pad)) calc(-1 * var(--pad)) 0;
+		padding: var(--pad);
+		border-left: var(--rule);
+	}
+
+	/* The rail the milestones hang off, in the dots every measuring line on the
+	   site is drawn with. */
+	.timeline {
+		display: grid;
+		gap: 1rem;
+		align-content: start;
+		padding-right: var(--pad);
+	}
+
+	.milestone {
+		position: relative;
+		padding-left: 1.5rem;
+		color: var(--color-border);
+		background-image: var(--dot-column);
+		background-position: 0.2rem 0;
+		background-repeat: no-repeat;
+		background-size: 1px 100%;
+	}
+
+	/* When it was, what it was, and what it came to. The rail is drawn in the
+	   border colour, so the type on it sets its own back. */
+	.period {
+		margin: 0;
+		color: var(--mint);
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		letter-spacing: 0.12em;
+	}
+
+	.title {
+		margin: 0.3rem 0 0;
+		color: var(--color-foreground);
+		font-size: 0.9rem;
 		font-weight: 700;
 	}
 
-	.bio {
-		margin: 0;
-		max-width: 44ch;
+	.detail,
+	.milestone li {
 		color: var(--text-dim);
-		font-size: 0.92rem;
-		line-height: 1.6;
-	}
-
-	/* The same shape the overview tiles on the server page read in: a label, the
-	   reading, and the line under it. */
-	.stats strong {
-		display: block;
-		color: var(--color-foreground);
 		font-family: var(--font-mono);
-		font-size: 1.15rem;
+		font-size: 0.72rem;
+		line-height: 1.7;
 	}
 
-	.stats .detail {
+	.detail {
+		margin: 0.3rem 0 0;
+	}
+
+	.milestone ul {
+		display: grid;
+		gap: 0.4rem;
+		margin: 0.4rem 0 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	/* The mark stands in the gutter rather than indenting the text off it. */
+	.milestone li {
+		position: relative;
+		padding-left: 0.9rem;
+	}
+
+	.milestone li::before {
+		position: absolute;
+		left: 0;
+		color: var(--mint);
+		content: '—';
+	}
+
+	/* The stop on the rail, level with the top of the entry beside it. */
+	.milestone::before {
+		position: absolute;
+		top: 0.35rem;
+		left: 0;
+		width: 0.45rem;
+		height: 0.45rem;
+		border-radius: 50%;
+		background: currentcolor;
+		content: '';
+	}
+
+	/* --- my projects ---------------------------------------------------- */
+
+	.projects .eyebrow,
+	.tools .eyebrow {
+		display: block;
+		margin-bottom: var(--pad);
+	}
+
+	/* The one box on the page painted the other way up. The theme's light values
+	   live in app.css but are shadowed by .dark on the document, so the section
+	   restates them for itself: everything inside — the placeholders, the rules,
+	   the quiet text — is written in tokens and follows without being told. */
+	.projects {
+		--color-foreground: #0b0b0b;
+		--color-border: #c9c8c0;
+		--text-dim: #55544f;
+		--text-faint: #6b6a64;
+
+		border-color: #e1e0d9;
+		background: #f9f9f7;
+		color: var(--color-foreground);
+	}
+
+	.cards {
+		display: grid;
+		grid-template-columns: var(--cells);
+	}
+
+	.card h3 {
+		margin: 0;
+		font-size: 1.05rem;
+		font-weight: 700;
+		letter-spacing: -0.01em;
+	}
+
+	.blurb {
+		margin: 0;
 		color: var(--text-dim);
-		font-size: 0.68rem;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		line-height: 1.7;
 	}
 
-	/* Where the rail drops out of the way, the portrait has nowhere to stand
-	   beside the text — it goes under it instead. */
-	@media (max-width: 52rem) {
-		.hero {
+	/* What it is built with, one pill each. */
+	.tags {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.tags li {
+		padding: 0.2rem 0.55rem;
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		color: var(--text-dim);
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		letter-spacing: 0.04em;
+	}
+
+	/* A card is a column of the row, divided from the next by a rule rather than
+	   given a frame of its own. */
+	.card {
+		display: grid;
+		grid-template-rows: auto minmax(0, 1fr) auto;
+		gap: 1rem;
+		padding: 0 var(--pad);
+	}
+
+	.card:first-child {
+		padding-left: 0;
+	}
+
+	.card:last-child {
+		padding-right: 0;
+	}
+
+	.card + .card {
+		border-left: var(--rule);
+	}
+
+	.head {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		gap: 0.75rem;
+		align-items: center;
+	}
+
+	.icon {
+		width: 2.25rem;
+	}
+
+	/* The summary and its tags stand off the left, the way the drawing rules them
+	   in against a line. */
+	.body {
+		display: grid;
+		gap: 0.75rem;
+		align-content: start;
+		padding-left: 0.9rem;
+		border-left: var(--rule);
+	}
+
+	.tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+	}
+
+	/* Pinned to the foot of the card, so the four links sit on one line however
+	   long the summaries above them run. */
+	.link {
+		align-self: end;
+		width: min(100%, 9rem);
+	}
+
+	/* --- tools & technicalities ------------------------------------------ */
+
+	/* The heading and the line under it sit on one row, the way the drawing has
+	   them: what the section is on the left, what it is for beside it. */
+	.tools-head {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem 2rem;
+		align-items: baseline;
+		margin-bottom: var(--pad);
+	}
+
+	.strap {
+		margin: 0;
+		color: var(--text-dim);
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+	}
+
+	/* The groups take the width; the legend is a fixed column beside them. */
+	.tools-body {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 13rem;
+		gap: clamp(1.5rem, 3vw, 2.5rem);
+	}
+
+	.rows {
+		display: grid;
+		align-content: start;
+	}
+
+	/* A group is a line: what it is called on the left, everything in it across
+	   the rest, ruled off from the group under it. */
+	.tool-row {
+		display: grid;
+		grid-template-columns: 14rem minmax(0, 1fr);
+		gap: 1rem;
+		align-items: center;
+		padding: 0.85rem 0;
+	}
+
+	.tool-row + .tool-row {
+		border-top: var(--rule);
+	}
+
+	.category {
+		display: grid;
+		grid-template-columns: 1.75rem minmax(0, 1fr);
+		gap: 0.75rem;
+		align-items: center;
+	}
+
+	.category h3 {
+		margin: 0;
+		font-size: 0.85rem;
+		font-weight: 700;
+	}
+
+	/* One tool, one pill: its name and how much of it there is. */
+	.chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.chips li {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+		padding: 0.35rem 0.8rem;
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+	}
+
+	/* The meter: four dots, filled up to the level. Every one of them is hollow
+	   until the levels are written, which is what says the ranking is not in yet
+	   rather than saying everything is a 0. */
+	.dots {
+		display: inline-flex;
+		gap: 0.22rem;
+		align-items: center;
+		color: var(--mint);
+	}
+
+	.dots i {
+		width: 0.38rem;
+		height: 0.38rem;
+		border: 1px solid currentcolor;
+		border-radius: 50%;
+	}
+
+	.dots i.on {
+		background: currentcolor;
+	}
+
+	/* What the dots are worth, in its own box beside them. Not `.legend`: that is
+	   the chart key in app.css, whose swatch paints itself in, which would fill
+	   every hollow dot in here. */
+	.key {
+		display: grid;
+		align-content: start;
+		gap: 0.75rem;
+		padding: var(--divide, 1rem);
+		border: 1px solid var(--color-border);
+		border-radius: 0.35rem;
+	}
+
+	.key dl {
+		display: grid;
+		gap: 0.4rem;
+		margin: 0;
+	}
+
+	.key dl div {
+		display: flex;
+		gap: 0.6rem;
+		align-items: center;
+	}
+
+	.key dd {
+		margin: 0;
+		color: var(--text-dim);
+		font-family: var(--font-mono);
+		font-size: 0.7rem;
+	}
+
+	/* The art that fills the foot of the box, once there is any. */
+	.key .art {
+		margin-top: auto;
+	}
+
+	/* --- narrow ---------------------------------------------------------- */
+
+	/* Below this nothing holds its columns: the portrait goes under the copy, the
+	   journey's halves stack, and the four-across rows become two. */
+	@media (max-width: 60rem) {
+		.hero,
+		.journey {
 			grid-template-columns: minmax(0, 1fr);
+		}
+
+		.visual {
+			margin: 0 calc(-1 * var(--pad)) calc(-1 * var(--pad));
+			border-top: var(--rule);
+			border-left: 0;
+		}
+
+		.timeline {
+			padding-right: 0;
+			padding-bottom: var(--pad);
+		}
+
+		.cards {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: var(--pad) 0;
+		}
+
+		.card:nth-child(odd) {
+			padding-left: 0;
+			border-left: 0;
+		}
+
+		.card:nth-child(even) {
+			padding-right: 0;
+		}
+
+		/* The legend has nowhere to stand beside the groups: it goes under them. */
+		.tools-body {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
+		/* And a group's name goes above what is in it rather than beside it. */
+		.tool-row {
+			grid-template-columns: minmax(0, 1fr);
+			gap: 0.6rem;
+		}
+	}
+
+	@media (max-width: 40rem) {
+		.stats {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+
+		.stat:nth-child(odd) {
+			padding-left: 0;
+			border-left: 0;
+		}
+
+		.cards {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
+		.card {
+			padding-inline: 0;
+			border-left: 0;
 		}
 	}
 </style>
