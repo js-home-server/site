@@ -66,10 +66,11 @@
 			url: 'https://github.com/js-home-server'
 		},
 		{
-			name: 'Placeholder Project',
+			name: 'ascii-art',
 			blurb:
-				'Generic filler entry so the second row of the grid can be seen. Swap this out for something real, or delete it.',
-			tags: ['Foo', 'Bar', 'Baz']
+				'C11 CLI that converts raster images into ASCII art for the terminal or the web: block-averaged sampling, tone curve and glyph selection as separable, individually tested stages. Generates the art on this site, including the astronaut above.',
+			tags: ['C', 'stb_image', 'HTML/ANSI/TXT'],
+			url: 'https://github.com/JS195/asciiArt'
 		}
 	];
 	/* What I work in, grouped by what each thing is for, and how well — a level
@@ -630,56 +631,26 @@
 		border-left: 0;
 	}
 
-	/* A background line rather than a border: border-left would span the
-	   card's full border-box, running up into the padding-top rows past the
-	   first reserve for their own horizontal rule above. Positioned/sized
-	   off the border-box, same x as a plain border-left would sit (the
-	   column gap, left of the icon — distinct from .body's own rule further
-	   right); rows past the first pull the top in and shorten it to match,
-	   so it still starts and ends flush with the content — icon to link. */
 	.card:nth-child(even) {
 		padding-right: 0;
-		background-image: linear-gradient(color-mix(in srgb, var(--color-border) 75%, transparent) 0 0);
-		background-repeat: no-repeat;
-		background-origin: border-box;
-		background-position: left top;
-		background-size: 1px 100%;
 	}
 
-	.card:nth-child(even):nth-child(n + 3) {
-		background-position: left var(--pad);
-		background-size: 1px calc(100% - var(--pad));
-	}
-
-	/* Rows past the first are divided from the one above by a rule the width of
-	   the card's own content, not the full row — it stops short of the vertical
-	   divider rather than running into it. */
+	/* Rows past the first are divided from the one above by a rule, centred in
+	   the full gap between the row above and this one — the grid's own
+	   row-gap plus the padding-top this rule reserves for itself — not just
+	   dropped at the top of the padding. */
 	.card:nth-child(n + 3) {
 		position: relative;
 		padding-top: var(--pad);
 	}
 
-	/* Centred in the full gap between the row above and this one — the grid's
-	   own row-gap plus the padding-top this rule reserves for itself — not
-	   just dropped at the top of the padding. */
 	.card:nth-child(n + 3)::before {
 		content: '';
 		position: absolute;
 		top: calc((var(--pad) - var(--divide)) / 2);
-		border-top: var(--rule);
-	}
-
-	/* Bounded by the content, not the box: the odd (left) card's own left
-	   padding is 0, so its rule starts flush; the even (right) card's is
-	   var(--pad), so its rule starts there instead of at the column divider. */
-	.card:nth-child(odd):nth-child(n + 3)::before {
 		left: 0;
-		right: var(--pad);
-	}
-
-	.card:nth-child(even):nth-child(n + 3)::before {
-		left: var(--pad);
 		right: 0;
+		border-top: var(--rule);
 	}
 
 	.head {
