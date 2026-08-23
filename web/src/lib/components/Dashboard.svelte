@@ -4,10 +4,19 @@
 	/* The shell every dashboard-style page wears: a sticky rail of sections down
 	   the left, the sections themselves down the right, both off one list so
 	   neither can drift from the other. `body` is what goes in a section, rendered
-	   with the section it belongs to; `foot` is the note pinned to the foot of the
-	   rail, if it has one, and `max` is how wide the whole thing is allowed to get
-	   — `none` for a page that runs to the width of the window. */
-	let { title, sections, body, foot, max = '82rem' } = $props();
+	   with the section it belongs to; `rail` is extra content stood under the
+	   nav list, if the caller has any; `foot` is the note pinned to the foot of
+	   the rail, if it has one, and `max` is how wide the whole thing is allowed
+	   to get — `none` for a page that runs to the width of the window. */
+	let { title, sections, body, rail, foot, max = '82rem' } = $props();
+
+	/* The rail is fixed rather than laid out in a grid column, so its own left
+	   edge has to be worked out rather than handed to it: this is the same
+	   length `max-width` resolves to, just readable from a custom property so
+	   .rail's `left` calc can centre against it too. `none` has no width to
+	   measure against — 100vw stands for "the page's own full width" instead,
+	   which collapses that calc to the gutter alone. */
+	let dashMax = $derived(max === 'none' ? '100vw' : max);
 
 	/* The first stop until an observer says otherwise, which is where the page
 	   opens. */
@@ -46,7 +55,7 @@
 	});
 </script>
 
-<div class="dash" style:max-width={max}>
+<div class="dash" style="max-width: {max}; --dash-max: {dashMax}">
 	<aside class="rail" aria-label="Page sections">
 		<div class="rail-art" aria-hidden="true">
 			<Placeholder note="ascii" lines={6} />
@@ -66,6 +75,10 @@
 			{/each}
 		</nav>
 
+		{#if rail}
+			<div class="rail-status">{@render rail()}</div>
+		{/if}
+
 		{#if foot}
 			<div class="rail-foot">{@render foot()}</div>
 		{/if}
@@ -83,7 +96,12 @@
 		{#each rows as group (group[0].id)}
 			<div class="row">
 				{#each group as section (section.id)}
-					<section id={section.id} {@attach spy(section.id)}>
+					<section
+						id={section.id}
+						class:bare={section.bare}
+						class:hide-title={section.hideTitle}
+						{@attach spy(section.id)}
+					>
 						<h2>{section.label}</h2>
 						{@render body(section)}
 					</section>
@@ -106,46 +124,77 @@
 		   .page; the cap on it is the caller's, since a dashboard and a page of
 		   prose do not want the same one. */
 		--rail: 13rem;
-		--stick: calc(var(--nav-pad-top) + 0.5rem);
+		--dash-gap: clamp(1.5rem, 3vw, 3rem);
+		--row-gap: clamp(2rem, 6vh, 3.5rem);
+		--dash-pad-top: clamp(1.5rem, 4vh, 2.5rem);
+		/* Where the rail sits, fixed to the viewport: under the site header and
+		   this box's own top padding, same as it would land in normal flow —
+		   fixed positioning does not care about flow, so this is worked out by
+		   hand instead of inherited from it. */
+		--stick: calc(var(--header-height) + var(--dash-pad-top));
 
-		display: grid;
-		grid-template-columns: var(--rail) minmax(0, 1fr);
-		gap: clamp(1.5rem, 3vw, 3rem);
 		margin-inline: auto;
-		padding: clamp(1.5rem, 4vh, 2.5rem) var(--gutter) clamp(3rem, 10vh, 6rem);
+		padding: var(--dash-pad-top) var(--gutter) clamp(3rem, 10vh, 6rem);
 
-		/* The line dividing the two columns, drawn down the page rather than down the
-		   rail: the rail is sticky and only as tall as its own contents, so its
-		   border would stop partway. Measured on the content box, so it starts level
-		   with the title and ends with the last section rather than running out into
-		   the page's padding. */
+		/* The line dividing the rail from the page, drawn down the page rather than
+		   down the rail: the rail is fixed and only as tall as the viewport, so its
+		   own border would stop short of a page taller than one screen. Measured on
+		   the content box, so it starts level with the title and ends with the last
+		   section rather than running out into the page's padding. */
 		background: linear-gradient(var(--color-border), var(--color-border)) no-repeat;
 		background-origin: content-box;
 		background-position: var(--rail) 0;
 		background-size: 1px 100%;
 	}
 
-	/* Sticky, not fixed: it stays with the column it belongs to at any width, and
-	   the shell's overflow: clip does not make a scrollport, so this resolves
-	   against the viewport as intended. */
+	/* Fixed, not sticky: a sticky rail only holds its position while its own
+	   containing block (here, as tall as the page's every section) has room
+	   left to be stuck in, and runs out of it — and starts visibly scrolling —
+	   in the last screen of a page this long. Fixed has no such range to run
+	   out of. Its left edge is worked out by hand to land where the grid
+	   column it replaced used to: half of whatever space is left over past
+	   --dash-max, plus the page's own gutter. */
 	.rail {
-		position: sticky;
+		position: fixed;
 		top: var(--stick);
+		left: calc(max(0px, (100vw - min(100vw, var(--dash-max))) / 2) + var(--gutter));
+		width: var(--rail);
+		height: calc(100vh - var(--stick) - 1rem);
 		display: flex;
 		flex-direction: column;
 		gap: 1.5rem;
-		/* No align-self: start here — the rail stretches to the grid row's height
-		   (the page's, since body is the tall one) rather than shrinking to its own
-		   content, so there is a box tall enough for .rail-foot's own stickiness,
-		   below, to have anywhere to stick to. */
 		padding-right: 1.25rem;
+	}
+
+	/* The page's own column: pushed clear of the fixed rail beside it by hand,
+	   since the rail no longer holds that width open in a grid track. */
+	.body {
+		margin-left: calc(var(--rail) + var(--dash-gap));
+		min-width: 0;
+	}
+
+	/* Whatever the caller stands under the nav — a page-specific reading or two,
+	   stacked the same way the rail's other parts are. The boxes themselves are
+	   the caller's own styling, carried in from wherever the snippet is written.
+	   Pushed to the foot of the rail's own (viewport-capped) box, so it and the
+	   foot below it sit together at the bottom of the panel rather than
+	   trailing straight under the nav's own short list. */
+	.rail-status {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		margin-top: auto;
 	}
 
 	nav {
 		display: flex;
 		flex-direction: column;
 		/* The list is the only part allowed to scroll if the sections ever outgrow
-		   the viewport; the art and the footer stay put. */
+		   the viewport; the art and the footer stay put. min-height: 0 overrides
+		   a flex column's default of never shrinking a child under its content
+		   size, which is what lets this scroll instead of just pushing the
+		   capped rail taller than its own max-height. */
+		min-height: 0;
 		overflow-y: auto;
 		scrollbar-width: thin;
 	}
@@ -193,19 +242,14 @@
 
 	/* The page's own foot, under the last section rather than under the rail: the
 	   same small note, just read at the end of the page instead of at the end of
-	   the column that navigates it. */
-	/* Sticky on its own account, not just carried by the rail's: margin-top: auto
-	   floats it to the bottom of the rail's (page-tall) box at rest, and its own
-	   stickiness holds it there against the viewport once you scroll — rather than
-	   the rail's top offset (which shortens once it stops trailing the header)
-	   dragging it back up with it. */
+	   the column that navigates it. No sticky trick of its own needed now — the
+	   rail itself is the fixed box, so sitting last in it (after .rail-status'
+	   own margin-top: auto) is enough to land at the panel's foot and stay
+	   there. */
 	.rail-foot {
-		position: sticky;
-		bottom: 1rem;
 		display: flex;
 		flex-direction: column;
 		gap: 0.25rem;
-		margin-top: auto;
 	}
 
 	/* The rail's own copy is the one read at this width and above; this one only
@@ -263,8 +307,11 @@
 	   the row owns is how the boxes divide the width and what follows the line —
 	   which is why no section carries a margin of its own. Equal shares, so a box
 	   shrinks with the line rather than however wide its own content wants to
-	   run. */
+	   run. Positioned for the seam tick below: a row's own left edge sits
+	   --dash-gap clear of the rail's divider, which is what that tick reaches
+	   back across to touch it. */
 	.row {
+		position: relative;
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
 		/* Grid's own default stretches every item to the row's tallest box, which
@@ -272,13 +319,26 @@
 		   whatever height its own contents ask for instead. */
 		align-items: start;
 		gap: clamp(1.5rem, 3vw, 3rem);
-		margin-bottom: clamp(2rem, 6vh, 3.5rem);
+		margin-bottom: var(--row-gap);
 	}
 
 	/* Nothing follows the last one, and the gap it would leave is what the column's
 	   divider would have to run past. */
 	.row:last-child {
 		margin-bottom: 0;
+	}
+
+	/* A short tick off the rail's own divider, one per seam between sections:
+	   the same line that separates the rail from the page, echoed a little way
+	   into the page at each place one section ends and the next begins. */
+	.row + .row::before {
+		content: '';
+		position: absolute;
+		left: calc(-1 * var(--dash-gap));
+		top: calc(-1 * var(--row-gap) / 2);
+		width: calc(var(--dash-gap) + 2rem);
+		height: 1px;
+		background: var(--color-border);
 	}
 
 	/* The heading is separated from the section's contents by the same rule that
@@ -291,6 +351,28 @@
 		font-weight: 700;
 		letter-spacing: 0.16em;
 		text-transform: uppercase;
+	}
+
+	/* A section that builds its own boxes in its own content rather than wearing
+	   the generic frame every other section does — overview's row of dials, cpu's
+	   headline band and its own graph boxes. No border, no background; what the
+	   body renders is the whole of it. */
+	section.bare {
+		border: 0;
+		background: none;
+	}
+
+	/* Dropped to screen-reader-only: the body supplies its own visible title
+	   (cpu's headline band names itself), so the generic heading would only
+	   double it up. Same technique as the page's own hidden h1. */
+	section.hide-title h2 {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		margin: -1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
 	}
 
 	/* How a section is divided, wherever the parts themselves are written: the
@@ -335,6 +417,26 @@
 		margin-bottom: calc(-1 * var(--pad));
 	}
 
+	/* A standalone card: bordered and given its own background, set apart from
+	   whatever holds it by a gap rather than a rule it shares with its
+	   neighbour. Where a band's cells touch, a run of these does not — each
+	   graph gets its own frame instead of a slice of one shared box. */
+	.body :global(.box) {
+		padding: var(--pad);
+		border: 1px solid var(--color-border);
+		border-radius: 0.35rem;
+		background: var(--surface);
+	}
+
+	/* A row of .box cards. Divides the same way .band does — `--cells`, equal
+	   shares by default — but gapped instead of ruled, since the boxes already
+	   carry their own edge. */
+	.body :global(.grid) {
+		display: grid;
+		grid-template-columns: var(--cells, repeat(auto-fit, minmax(0, 1fr)));
+		gap: var(--divide);
+	}
+
 	/* Readings one under the other with a line between them, run out to the edges
 	   of whatever holds them — the section itself for a column of metric rows, a
 	   band's cell for the volumes, which is the same distance either way. */
@@ -352,18 +454,34 @@
 	}
 
 	/* Under this the rail cannot hold its column and its labels at once. It goes
-	   horizontal along the top instead, still sticky, still the way through the
-	   page. */
+	   horizontal along the top instead — sticky rather than fixed, since a bar
+	   this short never runs the risk of running out of room to stick in, and
+	   sticky is what leaves it out of the way of a link jumping into a section
+	   underneath it, which is what scroll-margin-top is measured against. */
 	@media (max-width: 52rem) {
 		.dash {
-			grid-template-columns: minmax(0, 1fr);
-			gap: 1rem;
 			/* One column, nothing to divide. */
 			background: none;
 		}
 
+		.body {
+			margin-left: 0;
+		}
+
+		/* Nothing for the tick to reach back to at this width — the divider
+		   itself is gone (.dash's own background, above), so the echo of it
+		   goes too. */
+		.row + .row::before {
+			display: none;
+		}
+
 		.rail {
+			position: sticky;
+			top: 0;
+			left: auto;
+			width: auto;
 			z-index: 2;
+			height: auto;
 			flex-direction: row;
 			align-items: center;
 			gap: 1rem;
@@ -373,6 +491,7 @@
 		}
 
 		.rail-art,
+		.rail-status,
 		.rail-foot {
 			display: none;
 		}
@@ -403,6 +522,12 @@
 		/* No band holds its cells side by side at this width: they stack, and the
 		   rule between them lies down with them. */
 		.body :global(.band) {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
+		/* Same, for a grid of boxes: one column, so a graph keeps its own width
+		   instead of splitting it with its neighbour. */
+		.body :global(.grid) {
 			grid-template-columns: minmax(0, 1fr);
 		}
 
