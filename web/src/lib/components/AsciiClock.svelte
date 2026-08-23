@@ -23,16 +23,38 @@
 	};
 
 	const FILL = '8';
+	const ROWS = 5;
+	const COLS = 3;
 
-	/* A character's glyph, five rows of three columns. ':' gets two dots of its
-	   own rather than a segment set -- there is no seven-segment colon. */
+	/* Where each segment's ink falls on a 3-wide x 5-tall grid, as [row, col]
+	   cells rather than a row of its own: a corner is one cell, not two, so the
+	   top bar's end cell IS the top-left vertical's first cell, not a separate
+	   row above it. Three cells down a side (rows 0-2 or 2-4) reads as the same
+	   weight of stroke as three along a bar -- which is what 1, 4 and 7 collapsed
+	   out of when the sides were one cell tall instead of sharing the corner. */
+	const SEGMENTS = {
+		a: [[0, 0], [0, 1], [0, 2]],
+		f: [[0, 0], [1, 0], [2, 0]],
+		b: [[0, 2], [1, 2], [2, 2]],
+		g: [[2, 0], [2, 1], [2, 2]],
+		e: [[2, 0], [3, 0], [4, 0]],
+		c: [[2, 2], [3, 2], [4, 2]],
+		d: [[4, 0], [4, 1], [4, 2]]
+	};
+
 	function glyph(char) {
-		if (char === ':') return ['   ', ` ${FILL} `, '   ', ` ${FILL} `, '   '];
+		const grid = Array.from({ length: ROWS }, () => Array(COLS).fill(false));
 
-		const on = new Set(DIGITS[char] ?? '');
-		const bar = (seg) => (on.has(seg) ? FILL.repeat(3) : '   ');
-		const side = (l, r) => `${on.has(l) ? FILL : ' '} ${on.has(r) ? FILL : ' '}`;
-		return [bar('a'), side('f', 'b'), bar('g'), side('e', 'c'), bar('d')];
+		if (char === ':') {
+			grid[1][1] = true;
+			grid[3][1] = true;
+		} else {
+			for (const seg of DIGITS[char] ?? '') {
+				for (const [row, col] of SEGMENTS[seg]) grid[row][col] = true;
+			}
+		}
+
+		return grid.map((row) => row.map((on) => (on ? FILL : ' ')).join(''));
 	}
 
 	// Built server-side with no clock to read; the real time takes over once
@@ -59,7 +81,7 @@
 	/* One text row per glyph row, every character's row of its own glyph joined
 	   side by side with a one-space gutter. */
 	let lines = $derived(
-		Array.from({ length: 5 }, (_, row) => chars.map((c) => glyph(c)[row]).join(' ')).join('\n')
+		Array.from({ length: ROWS }, (_, row) => chars.map((c) => glyph(c)[row]).join(' ')).join('\n')
 	);
 
 	/* Three columns a glyph, one gutter between them, no trailing gutter: the
