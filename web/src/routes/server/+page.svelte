@@ -428,6 +428,19 @@
 					<Horizon volume={vol} />
 				</div>
 
+				<div class="temperature">
+					<Panel label="Temperature">
+						<!-- Same fixed floor as the CPU's temperature trace: nothing here
+						     runs near ambient either. -->
+						<Trace
+							lines={[{ id: 'temperature', points: series?.[`${vol.id}TemperatureC`], tone: vol.tone }]}
+							domain={[20, 90]}
+							format={degrees}
+							marks={[50, 70]}
+						/>
+					</Panel>
+				</div>
+
 				<div class="io">
 					<Panel label="I/O pulse">
 						<!-- Read and write, stretched to this disk's own busiest quarter-hour,
@@ -994,6 +1007,10 @@
 	   its own share of the divider. */
 	.disk-horizon {
 		height: calc(16rem + var(--divide) + 1px);
+	}
+
+	.temperature {
+		height: calc(8rem + var(--divide) + 1px);
 	}
 
 	/* A section that is nothing but bands, stacked. It starts against the rule under

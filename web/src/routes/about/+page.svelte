@@ -63,6 +63,12 @@
 				'The machine this site is served from, and the site itself: metrics scraped off the box, cached behind a small API, and read back live on the server page.',
 			tags: ['SvelteKit', 'Docker', 'Prometheus', 'Python'],
 			url: 'https://github.com/js-home-server'
+		},
+		{
+			name: 'Placeholder Project',
+			blurb:
+				'Generic filler entry so the second row of the grid can be seen. Swap this out for something real, or delete it.',
+			tags: ['Foo', 'Bar', 'Baz']
 		}
 	];
 	/* What I work in, grouped by what each thing is for, and how well — a level
@@ -196,7 +202,7 @@
 	<section class="projects" id="projects">
 		<h2 class="eyebrow">My projects</h2>
 
-		<div class="cards" style="--cells: repeat({PROJECTS.length}, minmax(0, 1fr))">
+		<div class="cards">
 			{#each PROJECTS as { name, blurb, tags, url } (name)}
 				<article class="card">
 					<div class="head">
@@ -562,15 +568,20 @@
 		--color-border: #c9c8c0;
 		--text-dim: #55544f;
 		--text-faint: #6b6a64;
+		/* How far the body's rule stands off its text; reused below the row
+		   divider so both gaps read as the same unit of air. */
+		--divide: 0.9rem;
 
 		border-color: #e1e0d9;
 		background: #f9f9f7;
 		color: var(--color-foreground);
 	}
 
+	/* Two up, wrapping into as many rows as there are projects. */
 	.cards {
 		display: grid;
-		grid-template-columns: var(--cells);
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--divide) 0;
 	}
 
 	.card h3 {
@@ -614,16 +625,42 @@
 		padding: 0 var(--pad);
 	}
 
-	.card:first-child {
+	.card:nth-child(odd) {
 		padding-left: 0;
+		border-left: 0;
 	}
 
-	.card:last-child {
+	.card:nth-child(even) {
 		padding-right: 0;
+		border-left: var(--rule);
 	}
 
-	.card + .card {
-		border-left: var(--rule);
+	/* Rows past the first are divided from the one above by a rule the width of
+	   the card's own content, not the full row — it stops short of the vertical
+	   divider rather than running into it. */
+	.card:nth-child(n + 3) {
+		position: relative;
+		padding-top: var(--pad);
+	}
+
+	.card:nth-child(n + 3)::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		border-top: var(--rule);
+	}
+
+	/* Bounded by the content, not the box: the odd (left) card's own left
+	   padding is 0, so its rule starts flush; the even (right) card's is
+	   var(--pad), so its rule starts there instead of at the column divider. */
+	.card:nth-child(odd):nth-child(n + 3)::before {
+		left: 0;
+		right: var(--pad);
+	}
+
+	.card:nth-child(even):nth-child(n + 3)::before {
+		left: var(--pad);
+		right: 0;
 	}
 
 	.head {
@@ -643,7 +680,7 @@
 		display: grid;
 		gap: 0.75rem;
 		align-content: start;
-		padding-left: 0.9rem;
+		padding-left: var(--divide);
 		border-left: var(--rule);
 	}
 
@@ -855,20 +892,6 @@
 			padding-bottom: var(--pad);
 		}
 
-		.cards {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-			gap: var(--pad) 0;
-		}
-
-		.card:nth-child(odd) {
-			padding-left: 0;
-			border-left: 0;
-		}
-
-		.card:nth-child(even) {
-			padding-right: 0;
-		}
-
 		/* The legend has nowhere to stand beside the groups: it goes under them. */
 		.tools-body {
 			grid-template-columns: minmax(0, 1fr);
@@ -898,6 +921,20 @@
 		.card {
 			padding-inline: 0;
 			border-left: 0;
+		}
+
+		.card:nth-child(n + 2) {
+			position: relative;
+			padding-top: var(--pad);
+		}
+
+		.card:nth-child(n + 2)::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			border-top: var(--rule);
 		}
 	}
 </style>
