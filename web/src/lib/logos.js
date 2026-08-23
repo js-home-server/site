@@ -2,6 +2,7 @@ import {
 	siCplusplus,
 	siDocker,
 	siGit,
+	siGithub,
 	siJavascript,
 	siLinux,
 	siNumpy,
@@ -20,24 +21,38 @@ import {
    simple-icons, which ships each as a single 24x24 path meant to be filled in
    one colour — which is what a monochrome page wants anyway.
 
-   The four below are drawn here because no brand mark exists to use: a stack
+   The five below are drawn here because no brand mark exists to use: a stack
    of bars for SQL, which is a language rather than a product, a flattened
    silhouette of the folded-ribbon/peak MathWorks logo for MATLAB (whose real
    mark is a full-colour gradient render no single-colour path can match), a
-   bar-chart pyramid standing in for Slurm's rounded-square skyline, and a
-   plain ring for anything else without one. */
+   bar-chart pyramid standing in for Slurm's rounded-square skyline, a plain
+   ring for anything else without one, LinkedIn's own badge -- carried here as
+   a literal path rather than a package import because simple-icons dropped
+   the mark after a takedown request; this is simple-icons' own last
+   published 24x24 LinkedIn path (MIT-licensed), not a redrawing -- and a
+   plain envelope for email, Heroicons' 24px solid mark (already a dependency
+   for the about page's category icons), concatenated from its two subpaths
+   since this component takes a single path. */
 const TABLE = 'M3 4h18v4H3zM3 10h18v4H3zM3 16h18v4H3z';
 const MATLAB = 'M2 17 L7 12 L7 20 Z M8 20 L11 5 L13 10 L16 2 L20 12 L22 8 L19 20 L16 12 L13 20 L10 13 Z';
 const SLURM =
 	'M1 22H4V16H1Z M5.5 22H8.5V11H5.5Z M10 22H14V6H10Z M15 22H18V11H15Z M19.5 22H22.5V16H19.5Z';
 const RING = 'M4 4h16v16H4zM7 17h10V7H7z';
+const LINKEDIN =
+	'M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z';
+const ENVELOPE =
+	'M1.5 8.67v8.58a3 3 0 0 0 3 3h15a3 3 0 0 0 3-3V8.67l-8.928 5.493a3 3 0 0 1-3.144 0L1.5 8.67Z ' +
+	'M22.5 6.908V6.75a3 3 0 0 0-3-3h-15a3 3 0 0 0-3 3v.158l9.714 5.978a1.5 1.5 0 0 0 1.572 0L22.5 6.908Z';
 
 export const logos = {
 	'C++': siCplusplus.path,
 	CUDA: siNvidia.path,
 	Docker: siDocker.path,
+	Email: ENVELOPE,
 	Git: siGit.path,
+	GitHub: siGithub.path,
 	JavaScript: siJavascript.path,
+	LinkedIn: LINKEDIN,
 	Linux: siLinux.path,
 	MATLAB,
 	NumPy: siNumpy.path,
