@@ -328,15 +328,18 @@
 		margin-bottom: 0;
 	}
 
-	/* A short tick off the rail's own divider, one per seam between sections:
-	   the same line that separates the rail from the page, echoed a little way
-	   into the page at each place one section ends and the next begins. */
+	/* A tick off the rail's own divider, one per seam between sections: the same
+	   line that separates the rail from the page, echoed all the way across the
+	   boxes below at each place one section ends and the next begins. Full row
+	   width plus the gap back to the divider — it stops at the row's own right
+	   edge, short of the viewport by the page's own gutter, the same margin
+	   every box already keeps. */
 	.row + .row::before {
 		content: '';
 		position: absolute;
 		left: calc(-1 * var(--dash-gap));
 		top: calc(-1 * var(--row-gap) / 2);
-		width: calc(var(--dash-gap) + 2rem);
+		width: calc(100% + var(--dash-gap));
 		height: 1px;
 		background: var(--color-border);
 	}
@@ -354,12 +357,16 @@
 	}
 
 	/* A section that builds its own boxes in its own content rather than wearing
-	   the generic frame every other section does — overview's row of dials, cpu's
-	   headline band and its own graph boxes. No border, no background; what the
-	   body renders is the whole of it. */
+	   the generic frame every other section does — every section now, each with
+	   its own headline band and its own graph boxes. No border, no background,
+	   and no padding either: nothing here has a border left to inset from, and
+	   each piece inside (.headline, .grid) already carries its own padding —
+	   left in, this would only push everything off the edges the rail's art,
+	   the divider, and the seam tick all line up on. */
 	section.bare {
 		border: 0;
 		background: none;
+		padding: 0;
 	}
 
 	/* Dropped to screen-reader-only: the body supplies its own visible title
@@ -377,50 +384,11 @@
 
 	/* How a section is divided, wherever the parts themselves are written: the
 	   markup inside a section belongs to the page rather than to this file, so the
-	   vocabulary it is laid out with has to reach out of this scope to meet it.
-
-	   A band is cells side by side, a rule between them and one over the lot;
-	   `--cells` is how they divide, the default being equal shares. Nest one in a
-	   cell of another to divide it again — the inner band is the division, not a
-	   second row, so it drops the rule and the padding it would otherwise wear. */
-	.body :global(.band) {
-		display: grid;
-		grid-template-columns: var(--cells, repeat(auto-fit, minmax(0, 1fr)));
-		border-top: var(--rule);
-	}
-
-	.body :global(.band > *) {
-		padding: var(--divide) var(--pad);
-	}
-
-	.body :global(.band > * + *) {
-		border-left: var(--rule);
-	}
-
-	/* A band that opens a section: the rule under the heading is its top rule, so it
-	   neither draws a second one nor stands a gap below the first. */
-	.body :global(h2 + .band) {
-		margin-top: calc(-1 * var(--divide));
-		border-top: 0;
-	}
-
-	.body :global(.band.nested) {
-		padding: 0;
-		border-top: 0;
-	}
-
-	/* Out to the section's own edges, which is where a band's rules have to end,
-	   and down to the bottom one, which the section's padding would otherwise hold
-	   it off. */
-	.body :global(.bleed) {
-		margin-inline: calc(-1 * var(--pad));
-		margin-bottom: calc(-1 * var(--pad));
-	}
+	   vocabulary it is laid out with has to reach out of this scope to meet it. */
 
 	/* A standalone card: bordered and given its own background, set apart from
-	   whatever holds it by a gap rather than a rule it shares with its
-	   neighbour. Where a band's cells touch, a run of these does not — each
-	   graph gets its own frame instead of a slice of one shared box. */
+	   whatever holds it by a gap — each graph gets its own frame rather than
+	   sharing one. */
 	.body :global(.box) {
 		padding: var(--pad);
 		border: 1px solid var(--color-border);
@@ -428,29 +396,12 @@
 		background: var(--surface);
 	}
 
-	/* A row of .box cards. Divides the same way .band does — `--cells`, equal
-	   shares by default — but gapped instead of ruled, since the boxes already
-	   carry their own edge. */
+	/* A row of .box cards, `--cells` dividing it the way it divides any grid on
+	   the page — equal shares by default. */
 	.body :global(.grid) {
 		display: grid;
 		grid-template-columns: var(--cells, repeat(auto-fit, minmax(0, 1fr)));
 		gap: var(--divide);
-	}
-
-	/* Readings one under the other with a line between them, run out to the edges
-	   of whatever holds them — the section itself for a column of metric rows, a
-	   band's cell for the volumes, which is the same distance either way. */
-	.body :global(.stack) {
-		display: grid;
-		gap: var(--divide);
-		align-content: start;
-	}
-
-	.body :global(.stack > * + *) {
-		margin-inline: calc(-1 * var(--pad));
-		padding-top: var(--divide);
-		padding-inline: var(--pad);
-		border-top: var(--rule);
 	}
 
 	/* Under this the rail cannot hold its column and its labels at once. It goes
@@ -515,18 +466,8 @@
 			white-space: nowrap;
 		}
 
-		.body :global(.stack) {
-			--graph-min: 5rem;
-		}
-
-		/* No band holds its cells side by side at this width: they stack, and the
-		   rule between them lies down with them. */
-		.body :global(.band) {
-			grid-template-columns: minmax(0, 1fr);
-		}
-
-		/* Same, for a grid of boxes: one column, so a graph keeps its own width
-		   instead of splitting it with its neighbour. */
+		/* One column, so a graph keeps its own width instead of splitting it
+		   with its neighbour. */
 		.body :global(.grid) {
 			grid-template-columns: minmax(0, 1fr);
 		}
@@ -534,11 +475,6 @@
 		.row {
 			grid-template-columns: minmax(0, 1fr);
 			gap: 1rem;
-		}
-
-		.body :global(.band > * + *) {
-			border-top: var(--rule);
-			border-left: 0;
 		}
 	}
 </style>
