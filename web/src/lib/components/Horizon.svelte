@@ -12,8 +12,9 @@
 	   One volume and not a list of them, because both axes are narrowed to its own
 	   range: a second trace drawn against a scale fitted to the first would be
 	   somewhere it does not belong. Two drives compared is the pair of these the
-	   storage section stands side by side. */
-	let { volume = null } = $props();
+	   storage section stands side by side. `label` names which one, since a box
+	   standing apart from the other has to say that itself. */
+	let { volume = null, label = `${MONTH_RANGE} used space history & projection` } = $props();
 
 	const DAY = 86_400;
 	const MONTH = 30.44 * DAY;
@@ -186,7 +187,7 @@
 	<div class="horizon">
 		<!-- The window the series was asked for, read from the request itself, so
 		     the title cannot claim a history that was never fetched. -->
-		<Panel label="{MONTH_RANGE} used space history &amp; projection">
+		<Panel {label}>
 			{#if disk.daysToFull}
 				<!-- The rate behind this date is the one on the legend row below, so it
 				     is not quoted twice. -->
