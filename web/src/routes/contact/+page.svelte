@@ -3,6 +3,7 @@
 	import AsciiRadioDish from '$lib/components/AsciiRadioDish.svelte';
 	import Logo from '$lib/components/Logo.svelte';
 	import Placeholder from '$lib/components/Placeholder.svelte';
+	import { PUBLIC_WEB3FORMS_KEY } from '$env/static/public';
 
 	/* The clock, kept live rather than stamped at build time. Europe/London
 	   carries its own BST/GMT switch -- the formatters below read it straight
@@ -44,7 +45,12 @@
 	   dashed slots — no copy written for them yet. The channels are real where an
 	   address exists and a dashed slot where it doesn't. */
 	const CHANNELS = [
-		{ key: 'email' },
+		{
+			key: 'email',
+			icon: 'Email',
+			label: 'js-195@outlook.com',
+			href: 'mailto:js-195@outlook.com'
+		},
 		{
 			key: 'github',
 			icon: 'GitHub',
@@ -56,9 +62,45 @@
 			icon: 'LinkedIn',
 			label: 'linkedin.com/in/joshua-smith-487846181',
 			href: 'https://www.linkedin.com/in/joshua-smith-487846181/'
-		},
-		{ key: 'ssh' }
+		}
 	];
+
+	/* The form itself, posted straight to Web3Forms from the browser: this site
+	   builds to static files, so there's no server route of its own to receive
+	   it. The honeypot is a field a real visitor never sees or fills; Web3Forms
+	   drops the submission if it comes back non-empty. */
+	let name = $state('');
+	let email = $state('');
+	let message = $state('');
+	let honeypot = $state('');
+	let status = $state('idle'); // idle | sending | sent | error
+
+	async function sendMessage(event) {
+		event.preventDefault();
+		status = 'sending';
+		try {
+			const response = await fetch('https://api.web3forms.com/submit', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+				body: JSON.stringify({
+					access_key: PUBLIC_WEB3FORMS_KEY,
+					subject: `New message from ${name} via js195.co.uk`,
+					name,
+					email,
+					message,
+					botcheck: honeypot
+				})
+			});
+			const result = await response.json();
+			if (!result.success) throw new Error(result.message);
+			status = 'sent';
+			name = '';
+			email = '';
+			message = '';
+		} catch {
+			status = 'error';
+		}
+	}
 </script>
 
 <svelte:head>
@@ -87,20 +129,62 @@
 			<ul class="channels">
 				{#each CHANNELS as channel (channel.key)}
 					<li>
-						{#if channel.href}
-							<div class="icon"><Logo name={channel.icon} /></div>
+						<div class="icon"><Logo name={channel.icon} /></div>
+						{#if channel.href.startsWith('mailto:')}
+							<a class="value" href={channel.href}>{channel.label}</a>
+						{:else}
 							<a class="value" href={channel.href} target="_blank" rel="noopener noreferrer">
 								{channel.label} <span aria-hidden="true">↗</span>
 							</a>
-						{:else}
-							<div class="icon"><Placeholder note="" lines={1} /></div>
-							<div class="value"><Placeholder note="channel" lines={1} /></div>
 						{/if}
 					</li>
 				{/each}
 			</ul>
 
-			<div class="status"><Placeholder note="status" lines={1} /></div>
+			<div class="rule"></div>
+
+			<form onsubmit={sendMessage}>
+				<h3 class="eyebrow">Or send a message</h3>
+
+				<!-- Off-screen rather than display:none, which some bots skip filling
+				     because it's known to be inert; a real visitor never tabs to it. -->
+				<input
+					type="text"
+					name="botcheck"
+					class="botcheck"
+					tabindex="-1"
+					autocomplete="off"
+					bind:value={honeypot}
+				/>
+
+				<div class="field">
+					<label for="name">Name</label>
+					<input id="name" type="text" required autocomplete="name" bind:value={name} />
+				</div>
+
+				<div class="field">
+					<label for="email">Email</label>
+					<input id="email" type="email" required autocomplete="email" bind:value={email} />
+				</div>
+
+				<div class="field">
+					<label for="message">Message</label>
+					<textarea id="message" rows="4" required bind:value={message}></textarea>
+				</div>
+
+				<div class="actions">
+					<button type="submit" disabled={status === 'sending'}>
+						{status === 'sending' ? 'Sending…' : 'Send message'}
+					</button>
+					{#if status === 'sent'}
+						<p class="feedback ok">Sent — thanks, I'll get back to you.</p>
+					{:else if status === 'error'}
+						<p class="feedback err">
+							Something went wrong — try again, or email me directly instead.
+						</p>
+					{/if}
+				</div>
+			</form>
 		</div>
 
 		<!-- Decorative: the copy beside it carries the meaning. -->
@@ -113,6 +197,7 @@
 <style>
 	.contact {
 		display: grid;
+		gap: clamp(1.5rem, 3vh, 2rem);
 		max-width: 88rem;
 		margin-inline: auto;
 		padding: clamp(1.5rem, 4vh, 2.5rem) var(--gutter) clamp(3rem, 10vh, 6rem);
@@ -212,11 +297,6 @@
 		text-decoration: underline;
 	}
 
-	.status {
-		width: fit-content;
-		margin-top: 0.5rem;
-	}
-
 	/* The corner brackets the visual sits in, same trick as the about hero's
 	   .frame: eight hairlines drawn as backgrounds, two to a corner. */
 	.frame {
@@ -245,6 +325,110 @@
 	.visual :global(pre) {
 		font-size: calc(100cqw / 82.49);
 		line-height: round(0.72em, var(--device-px, 1px));
+	}
+
+	/* Stacked, not the two-up row the wider standalone box would have room for:
+	   this now lives in the .intro column, which is under half the box's width. */
+	form {
+		display: grid;
+		gap: 1rem;
+	}
+
+	form .eyebrow {
+		display: block;
+		margin-bottom: -0.25rem;
+	}
+
+	.field {
+		display: grid;
+		gap: 0.4rem;
+	}
+
+	label {
+		color: var(--text-dim);
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	input,
+	textarea {
+		border: 1px solid var(--color-border);
+		border-radius: 0.3rem;
+		background: var(--color-background);
+		color: var(--color-foreground);
+		font: inherit;
+		font-family: var(--font-mono);
+		font-size: 0.82rem;
+		padding: 0.6rem 0.7rem;
+	}
+
+	textarea {
+		resize: vertical;
+	}
+
+	input:focus-visible,
+	textarea:focus-visible {
+		outline: none;
+		border-color: var(--mint);
+	}
+
+	/* Off-screen, not display:none or visibility:hidden -- some spam bots skip
+	   filling fields hidden that way but still find this one. */
+	.botcheck {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		margin: -1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+
+	.actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	button {
+		border: 1px solid var(--mint);
+		border-radius: 0.2rem;
+		background: none;
+		color: var(--mint);
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		padding: 0.7rem 1.1rem;
+		cursor: pointer;
+		transition: background-color 160ms ease;
+	}
+
+	button:hover:not(:disabled),
+	button:focus-visible:not(:disabled) {
+		background: color-mix(in srgb, var(--mint) 12%, transparent);
+	}
+
+	button:disabled {
+		opacity: 0.6;
+		cursor: default;
+	}
+
+	.feedback {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+	}
+
+	.feedback.ok {
+		color: var(--mint);
+	}
+
+	.feedback.err {
+		color: var(--coral);
 	}
 
 	@media (max-width: 60rem) {
