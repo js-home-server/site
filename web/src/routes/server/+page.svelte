@@ -35,13 +35,13 @@
 	   per stop on the rail: a section is a box on the page, its own heading, and
 	   its own place in the list. */
 	const SECTIONS = [
-		{ id: 'overview', label: 'Overview', bare: true, hideTitle: true },
-		{ id: 'cpu', label: 'CPU', bare: true, hideTitle: true },
-		{ id: 'memory', label: 'Memory', bare: true, hideTitle: true },
-		{ id: 'storage', label: 'Storage', bare: true, hideTitle: true },
-		{ id: 'network', label: 'Network', bare: true, hideTitle: true },
-		{ id: 'time', label: 'Time', bare: true, hideTitle: true },
-		{ id: 'containers', label: 'Containers', bare: true, hideTitle: true }
+		{ id: 'overview', label: 'Overview', hideTitle: true },
+		{ id: 'cpu', label: 'CPU', hideTitle: true },
+		{ id: 'memory', label: 'Memory', hideTitle: true },
+		{ id: 'storage', label: 'Storage', hideTitle: true },
+		{ id: 'network', label: 'Network', hideTitle: true },
+		{ id: 'time', label: 'Time', hideTitle: true },
+		{ id: 'containers', label: 'Containers', hideTitle: true }
 	];
 
 	/* The two drives. One entry each: the id is the prefix every one of their
@@ -298,8 +298,8 @@
 
 <!-- One row a series, in that series' own tone: every section below renders
      this over its own rows rather than repeating the table markup. -->
-{#snippet statsTable(rows)}
-	<div class="box">
+{#snippet statsTable(rows, span = 'span-12')}
+	<div class="box {span}">
 		<Panel label="24H Statistics">
 			<div class="fleet">
 				<table>
@@ -340,6 +340,10 @@
 				<span class="eyebrow">{metric.label}</span>
 			</div>
 		{/each}
+	</div>
+
+	<div class="grid">
+		<div class="box span-12"><Placeholder note="more overview panels" lines={16} /></div>
 	</div>
 {/snippet}
 
@@ -382,8 +386,8 @@
 
 	<!-- Usage over the window beside how it splits across cores: the one
 	     trace and the one map that read the same reading two ways. -->
-	<div class="grid" style="--cells: minmax(0, 2fr) minmax(0, 3fr)">
-		<div class="box">
+	<div class="grid">
+		<div class="box span-4">
 			<Panel label="CPU Usage (%)">
 				<Trace
 					lines={[{ id: 'usage', points: series?.cpuPercent, tone: 'var(--mint)' }]}
@@ -393,7 +397,7 @@
 			</Panel>
 		</div>
 
-		<div class="box">
+		<div class="box span-8">
 			<!-- The key spells out the band the colours cover, since the map is
 			     stretched to the range the cores actually ran at. -->
 			<Panel label="Per Core Usage">
@@ -402,8 +406,8 @@
 		</div>
 	</div>
 
-	<div class="grid" style="--cells: repeat(2, minmax(0, 1fr))">
-		<div class="box">
+	<div class="grid">
+		<div class="box span-6">
 			<!-- Sustained pressure is the reading that matters rather than any one
 			     spike, so the rules are the two levels worth seeing a trace cross. -->
 			<Panel label="CPU Pressure (%)">
@@ -416,7 +420,7 @@
 			</Panel>
 		</div>
 
-		<div class="box">
+		<div class="box span-6">
 			<!-- Not zero-based like usage and pressure: nothing here runs near an
 			     ambient 0°C, so the bottom 40° of the axis would be empty and the
 			     trace flat against the top of it. -->
@@ -432,6 +436,13 @@
 	</div>
 
 	{@render statsTable(cpuStats)}
+
+	<!-- Wireframe filler: holds the section at a full screen until the sensors
+	     that would fill it (frequency history, per-core temperature, whatever
+	     else the headline's own Freq/Power placeholders end up wired to) land. -->
+	<div class="grid">
+		<div class="box span-12"><Placeholder note="more cpu panels" lines={6} /></div>
+	</div>
 {/snippet}
 
 {#snippet memory()}
@@ -456,8 +467,8 @@
 		</div>
 	</div>
 
-	<div class="grid" style="--cells: minmax(0, 3fr) minmax(0, 2fr)">
-		<div class="box">
+	<div class="grid">
+		<div class="box span-8">
 			<!-- Used, cache and free, which is how the memory is actually divided: the
 			     cache is the part the machine would give back under pressure. -->
 			<Panel label="Memory History">
@@ -465,7 +476,7 @@
 			</Panel>
 		</div>
 
-		<div class="box">
+		<div class="box span-4">
 			<!-- No domain: this reading lives in hundredths of a percent, so the scale
 			     is the range it covered rather than the 0-100 a share could take. Some
 			     is any task waiting on memory, full is every task waiting at once —
@@ -483,6 +494,10 @@
 	</div>
 
 	{@render statsTable(memoryStats)}
+
+	<div class="grid">
+		<div class="box span-12"><Placeholder note="more memory panels" lines={6} /></div>
+	</div>
 {/snippet}
 
 {#snippet storage()}
@@ -504,9 +519,9 @@
 	<!-- One column a disk, so NVMe and SSD line up across the four rows below
 	     rather than each running its own four deep — the same reading on the
 	     two is what is worth reading across, not down. -->
-	<div class="grid" style="--cells: repeat(2, minmax(0, 1fr))">
+	<div class="grid">
 		{#each volumes as vol (vol.id)}
-			<div class="box">
+			<div class="box span-6">
 				<Panel label="{vol.label} Capacity">
 					<Capacity
 						label={vol.label}
@@ -518,9 +533,9 @@
 		{/each}
 	</div>
 
-	<div class="grid" style="--cells: repeat(2, minmax(0, 1fr))">
+	<div class="grid">
 		{#each volumes as vol (vol.id)}
-			<div class="box horizon-box">
+			<div class="box horizon-box span-6">
 				<!-- Bounded to this disk's own floor and year-out projection rather
 				     than a fixed 0-100%, so the two columns read their own slope
 				     instead of each fighting the whole drive for room. -->
@@ -529,9 +544,9 @@
 		{/each}
 	</div>
 
-	<div class="grid" style="--cells: repeat(2, minmax(0, 1fr))">
+	<div class="grid">
 		{#each volumes as vol (vol.id)}
-			<div class="box">
+			<div class="box span-6">
 				<!-- Same fixed floor as the CPU's temperature trace: nothing here
 				     runs near ambient either. -->
 				<Panel label="{vol.label} Temperature (°C)">
@@ -546,9 +561,9 @@
 		{/each}
 	</div>
 
-	<div class="grid" style="--cells: repeat(2, minmax(0, 1fr))">
+	<div class="grid">
 		{#each volumes as vol (vol.id)}
-			<div class="box io">
+			<div class="box io span-6">
 				<Panel label="{vol.label} I/O Pulse">
 					<!-- Read and write, stretched to this disk's own busiest quarter-hour,
 					     so the key quotes that lane's own floor and ceiling in bytes a
@@ -560,9 +575,9 @@
 	</div>
 
 	<!-- One table a drive, same as the three grids above. -->
-	<div class="grid" style="--cells: repeat(2, minmax(0, 1fr))">
+	<div class="grid">
 		{#each volumes as vol (vol.id)}
-			{@render statsTable(storageStats[vol.id])}
+			{@render statsTable(storageStats[vol.id], 'span-6')}
 		{/each}
 	</div>
 {/snippet}
@@ -599,8 +614,8 @@
 		</div>
 	</div>
 
-	<div class="grid" style="--cells: minmax(0, 3fr) minmax(0, 2fr)">
-		<div class="box">
+	<div class="grid">
+		<div class="box span-8">
 			<Panel label="Throughput">
 				<Trace
 					lines={[
@@ -612,7 +627,7 @@
 			</Panel>
 		</div>
 
-		<div class="box">
+		<div class="box span-4">
 			<Panel label="HTTP Probe Latency">
 				<p class="latency-reading">
 					<strong>{reading('latencyMs', ms)}</strong><span>P95 {summarise(series?.latencyMs, ms)[2][1]}</span>
@@ -623,6 +638,10 @@
 	</div>
 
 	{@render statsTable(networkStats)}
+
+	<div class="grid">
+		<div class="box span-12"><Placeholder note="more network panels" lines={6} /></div>
+	</div>
 {/snippet}
 
 {#snippet time()}
@@ -653,8 +672,8 @@
 		{/each}
 	</div>
 
-	<div class="grid" style="--cells: minmax(0, 2fr) minmax(0, 1fr)">
-		<div class="box">
+	<div class="grid">
+		<div class="box span-8">
 			<!-- The bar is what each source admits it could be wrong by, so a short
 			     one is a source worth following. They agree on the offset to a
 			     fraction of a millisecond and differ sevenfold on their confidence,
@@ -664,7 +683,7 @@
 			</Panel>
 		</div>
 
-		<div class="box">
+		<div class="box span-4">
 			<!-- Decorative: the figures beside it above already say what time it is,
 			     down to the microsecond this section is all about. -->
 			<Panel label="UTC">
@@ -685,6 +704,10 @@
 	</div>
 
 	{@render statsTable(timeStats)}
+
+	<div class="grid">
+		<div class="box span-12"><Placeholder note="more time panels" lines={6} /></div>
+	</div>
 {/snippet}
 
 {#snippet containers()}
@@ -762,6 +785,10 @@
 	{:else}
 		<Placeholder note="no container data" lines={3} />
 	{/if}
+
+	<div class="grid">
+		<div class="box span-12"><Placeholder note="more container panels" lines={6} /></div>
+	</div>
 {/snippet}
 
 <Dashboard title="Server" sections={SECTIONS} max="88rem">

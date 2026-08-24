@@ -125,7 +125,8 @@
 		   prose do not want the same one. */
 		--rail: 13rem;
 		--dash-gap: clamp(1.5rem, 3vw, 3rem);
-		--row-gap: clamp(2rem, 6vh, 3.5rem);
+		/* 32px, the standard gap between one section and the next. */
+		--row-gap: 2rem;
 		--dash-pad-top: clamp(1.5rem, 4vh, 2.5rem);
 		/* Where the rail sits, fixed to the viewport: under the site header and
 		   this box's own top padding, same as it would land in normal flow —
@@ -135,16 +136,6 @@
 
 		margin-inline: auto;
 		padding: var(--dash-pad-top) var(--gutter) clamp(3rem, 10vh, 6rem);
-
-		/* The line dividing the rail from the page, drawn down the page rather than
-		   down the rail: the rail is fixed and only as tall as the viewport, so its
-		   own border would stop short of a page taller than one screen. Measured on
-		   the content box, so it starts level with the title and ends with the last
-		   section rather than running out into the page's padding. */
-		background: linear-gradient(var(--color-border), var(--color-border)) no-repeat;
-		background-origin: content-box;
-		background-position: var(--rail) 0;
-		background-size: 1px 100%;
 	}
 
 	/* Fixed, not sticky: a sticky rail only holds its position while its own
@@ -160,10 +151,14 @@
 		left: calc(max(0px, (100vw - min(100vw, var(--dash-max))) / 2) + var(--gutter));
 		width: var(--rail);
 		height: calc(100vh - var(--stick) - 1rem);
+		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
 		gap: 1.5rem;
-		padding-right: 1.25rem;
+		padding: 1.25rem;
+		border: 1px solid var(--color-border);
+		border-radius: 0.4rem;
+		background: var(--surface);
 	}
 
 	/* The page's own column: pushed clear of the fixed rail beside it by hand,
@@ -280,13 +275,15 @@
 	   same back as padding. --divide is the air either side of a rule, and the gap of
 	   whatever lays the parts out, so the two cannot drift apart. */
 	section {
-		--pad: clamp(1rem, 2.5vw, 1.75rem);
+		/* 24px, the standard card padding — every .box below inherits the same
+		   figure, since it reads this custom property off its nearest section. */
+		--pad: 1.5rem;
 		/* The colour on its own as well as the border it is usually written as: a
 		   lattice drawn with grid gaps needs the one, everything else the other, and
 		   a rule is a rule wherever it turns up. */
 		--rule-color: color-mix(in srgb, var(--color-border) 75%, transparent);
 		--rule: 1px solid var(--rule-color);
-		--divide: clamp(1rem, 2vw, 1.5rem);
+		--divide: 1.5rem;
 
 		/* No panel in here is a heading of its own — the section's own h2 is that —
 		   so every one of their titles is turned down to a label. */
@@ -294,11 +291,16 @@
 		--title-color: var(--text-faint);
 
 		display: grid;
+		align-content: start;
 		gap: var(--divide);
 		padding: var(--pad);
 		border: 1px solid var(--color-border);
 		border-radius: 0.35rem;
 		background: var(--surface);
+		/* One screen a section: a stop on the rail is a stop the reader can jump
+		   straight to, which only holds if scrolling to it doesn't leave half of
+		   the last one still on screen above it. */
+		min-height: 100vh;
 		/* Clears the sticky rail when a link jumps here. */
 		scroll-margin-top: var(--stick);
 	}
@@ -307,41 +309,21 @@
 	   the row owns is how the boxes divide the width and what follows the line —
 	   which is why no section carries a margin of its own. Equal shares, so a box
 	   shrinks with the line rather than however wide its own content wants to
-	   run. Positioned for the seam tick below: a row's own left edge sits
-	   --dash-gap clear of the rail's divider, which is what that tick reaches
-	   back across to touch it. */
+	   run. */
 	.row {
-		position: relative;
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
 		/* Grid's own default stretches every item to the row's tallest box, which
 		   inflates a shorter section's heading to eat the slack — a box keeps
 		   whatever height its own contents ask for instead. */
 		align-items: start;
-		gap: clamp(1.5rem, 3vw, 3rem);
+		gap: 1.5rem;
 		margin-bottom: var(--row-gap);
 	}
 
-	/* Nothing follows the last one, and the gap it would leave is what the column's
-	   divider would have to run past. */
+	/* Nothing follows the last one. */
 	.row:last-child {
 		margin-bottom: 0;
-	}
-
-	/* A tick off the rail's own divider, one per seam between sections: the same
-	   line that separates the rail from the page, echoed all the way across the
-	   boxes below at each place one section ends and the next begins. Full row
-	   width plus the gap back to the divider — it stops at the row's own right
-	   edge, short of the viewport by the page's own gutter, the same margin
-	   every box already keeps. */
-	.row + .row::before {
-		content: '';
-		position: absolute;
-		left: calc(-1 * var(--dash-gap));
-		top: calc(-1 * var(--row-gap) / 2);
-		width: calc(100% + var(--dash-gap));
-		height: 1px;
-		background: var(--color-border);
 	}
 
 	/* The heading is separated from the section's contents by the same rule that
@@ -360,9 +342,7 @@
 	   the generic frame every other section does — every section now, each with
 	   its own headline band and its own graph boxes. No border, no background,
 	   and no padding either: nothing here has a border left to inset from, and
-	   each piece inside (.headline, .grid) already carries its own padding —
-	   left in, this would only push everything off the edges the rail's art,
-	   the divider, and the seam tick all line up on. */
+	   each piece inside (.headline, .grid) already carries its own padding. */
 	section.bare {
 		border: 0;
 		background: none;
@@ -396,12 +376,31 @@
 		background: var(--surface);
 	}
 
-	/* A row of .box cards, `--cells` dividing it the way it divides any grid on
-	   the page — equal shares by default. */
+	/* The one grid every card on the page is placed on: 12 columns, 24px apart.
+	   A card picks a width off it with .span-4/6/8/12 (third, half, two-thirds,
+	   full) rather than a bespoke fr ratio, so no two grids on the page are
+	   divided a slightly different way. Unmarked children take the full row —
+	   a card has to opt into being narrower, not the other way round. */
 	.body :global(.grid) {
 		display: grid;
-		grid-template-columns: var(--cells, repeat(auto-fit, minmax(0, 1fr)));
-		gap: var(--divide);
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+		gap: 1.5rem;
+	}
+
+	.body :global(.grid > *) {
+		grid-column: span 12;
+	}
+
+	.body :global(.grid > .span-4) {
+		grid-column: span 4;
+	}
+
+	.body :global(.grid > .span-6) {
+		grid-column: span 6;
+	}
+
+	.body :global(.grid > .span-8) {
+		grid-column: span 8;
 	}
 
 	/* Under this the rail cannot hold its column and its labels at once. It goes
@@ -410,20 +409,8 @@
 	   sticky is what leaves it out of the way of a link jumping into a section
 	   underneath it, which is what scroll-margin-top is measured against. */
 	@media (max-width: 52rem) {
-		.dash {
-			/* One column, nothing to divide. */
-			background: none;
-		}
-
 		.body {
 			margin-left: 0;
-		}
-
-		/* Nothing for the tick to reach back to at this width — the divider
-		   itself is gone (.dash's own background, above), so the echo of it
-		   goes too. */
-		.row + .row::before {
-			display: none;
 		}
 
 		.rail {
@@ -437,7 +424,9 @@
 			align-items: center;
 			gap: 1rem;
 			padding: 0.5rem 0;
+			border: 0;
 			border-bottom: 1px solid var(--color-border);
+			border-radius: 0;
 			background: var(--color-background);
 		}
 
@@ -467,9 +456,9 @@
 		}
 
 		/* One column, so a graph keeps its own width instead of splitting it
-		   with its neighbour. */
-		.body :global(.grid) {
-			grid-template-columns: minmax(0, 1fr);
+		   with its neighbour — whatever span a card picked above this width. */
+		.body :global(.grid > *) {
+			grid-column: 1 / -1;
 		}
 
 		.row {
