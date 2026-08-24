@@ -70,7 +70,7 @@
 	let cards = $derived([
 		{
 			label: 'Uptime',
-			href: '/server#overview',
+			href: '/server',
 			value: online ? Math.floor(snapshot.uptimeSeconds / 3600) : '—',
 			unit: online ? 'h' : '',
 			tone: 'mint',
@@ -85,7 +85,7 @@
 		},
 		{
 			label: 'CPU Temp',
-			href: '/server#cpu',
+			href: '/server/cpu',
 			value: snapshot ? Math.round(snapshot.cpuTemperatureC) : '—',
 			/* Degrees hug their number, word units take a space. Both carry the
 			   unit at every mention, headline and stats alike. */
@@ -99,7 +99,7 @@
 		},
 		{
 			label: 'Latency',
-			href: '/server#network',
+			href: '/server/network',
 			value: snapshot ? Math.round(snapshot.latencyMs) : '—',
 			unit: snapshot ? 'ms' : '',
 			tone: 'azure',
