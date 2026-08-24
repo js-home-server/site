@@ -21,7 +21,14 @@
 	<header>
 		<nav aria-label="Primary navigation">
 			{#each links as link (link.href)}
-				<a href={link.href} aria-current={page.url.pathname === link.href ? 'page' : undefined}>
+				<!-- Exact for "/" (every route starts with it); startsWith for the
+				     rest, so a page under /server/* still marks "Server" as the
+				     section it belongs to. -->
+				{@const active =
+					link.href === '/'
+						? page.url.pathname === '/'
+						: page.url.pathname === link.href || page.url.pathname.startsWith(link.href + '/')}
+				<a href={link.href} aria-current={active ? 'page' : undefined}>
 					{link.label}
 				</a>
 			{/each}
