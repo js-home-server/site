@@ -2,7 +2,8 @@
 	import Placeholder from '$lib/components/Placeholder.svelte';
 
 	/* The work worth showing. `tags` are what each is actually built with; `url`
-	   is where the source is, on the ones that are public. */
+	   is where the source is, on the ones that are public; `live` is where it
+	   actually runs on this site, on the one that runs here. */
 	const PROJECTS = [
 		{
 			name: 'Ancestree',
@@ -22,7 +23,8 @@
 			blurb:
 				'The machine this site is served from, and the site itself: metrics scraped off the box, cached behind a small API, and read back live on the server page.',
 			tags: ['SvelteKit', 'Docker', 'Prometheus', 'Python'],
-			url: 'https://github.com/js-home-server'
+			url: 'https://github.com/js-home-server',
+			live: '/server'
 		},
 		{
 			name: 'ascii-art',
@@ -47,7 +49,7 @@
 		<h2 class="eyebrow">My projects</h2>
 
 		<div class="cards">
-			{#each PROJECTS as { name, blurb, tags, url }, i (name)}
+			{#each PROJECTS as { name, blurb, tags, url, live }, i (name)}
 				<article class="card">
 					<div class="head">
 						<div class="icon">{String(i).padStart(2, '0')}</div>
@@ -62,12 +64,20 @@
 						</ul>
 					</div>
 
-					{#if url}
-						<a class="link" href={url} target="_blank" rel="noopener noreferrer">View project ↗</a>
-					{:else}
-						<!-- Nothing to point at yet. -->
-						<div class="link"><Placeholder note="view project" lines={1} /></div>
-					{/if}
+					<div class="links">
+						{#if url}
+							<a href={url} target="_blank" rel="noopener noreferrer">View project ↗</a>
+						{:else}
+							<!-- Nothing to point at yet. -->
+							<div class="slot"><Placeholder note="view project" lines={1} /></div>
+						{/if}
+
+						<!-- On this site rather than off it: the dashboard is its own app,
+						     and this is the only door to it. -->
+						{#if live}
+							<a href={live}>Open dashboard →</a>
+						{/if}
+					</div>
 				</article>
 			{/each}
 		</div>
@@ -209,23 +219,29 @@
 		border-left: var(--rule);
 	}
 
-	/* Pinned to the foot of the card, so the four links sit on one line however
-	   long the summaries above them run. */
-	.link {
+	/* Pinned to the foot of the card, so the four cards end on one line however
+	   long the summaries above them run. A row, for the one with two links. */
+	.links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem 1.25rem;
 		align-self: end;
-		width: min(100%, 9rem);
 	}
 
-	a.link {
-		width: auto;
+	.links a {
 		color: currentcolor;
 		font-family: var(--font-mono);
 		font-size: 0.75rem;
 		text-decoration: none;
 	}
 
-	a.link:hover {
+	.links a:hover {
 		text-decoration: underline;
+	}
+
+	/* An empty slot stands a link's width, so the four feet line up anyway. */
+	.slot {
+		width: min(100%, 9rem);
 	}
 
 	/* --- narrow ---------------------------------------------------------- */

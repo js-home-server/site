@@ -61,6 +61,12 @@
 	--text-dim: #a09f98;
 	--text-faint: #8a8a84;
 
+	/* The margin every page keeps from the viewport edge, and the distance the
+	   topmost text sits off the top. Set here rather than on the site shell,
+	   since /server is its own app outside it and measures against both. */
+	--gutter: clamp(1rem, 3vw, 1.5rem);
+	--nav-pad-top: clamp(1.75rem, 4vh, 2.5rem);
+
 	/* A box that holds something, lifted just off the page it stands on. Mixed
 	   from the foreground rather than written as a colour, so it is the same
 	   slight lift either side of the theme and cannot drift from the two surfaces

@@ -75,11 +75,6 @@
 		--rail: 13rem;
 		--dash-gap: clamp(1.5rem, 3vw, 3rem);
 		--dash-pad-top: clamp(1.5rem, 4vh, 2.5rem);
-		/* Where the rail sits, fixed to the viewport: under the site header and
-		   this box's own top padding, same as it would land in normal flow —
-		   fixed positioning does not care about flow, so this is worked out by
-		   hand instead of inherited from it. */
-		--stick: calc(var(--header-height) + var(--dash-pad-top));
 
 		margin-inline: auto;
 		/* Same token top and bottom as the header's own padding, so the page ends
@@ -93,16 +88,17 @@
 	   underneath it for a sticky rail to run out of room in — fixed is just the
 	   simpler of the two ways to get the same picture. Its left edge is worked
 	   out by hand to land where a grid column would have: half of whatever
-	   space is left over past --dash-max, plus the page's own gutter. */
+	   space is left over past --dash-max, plus the page's own gutter; its top
+	   is this box's own padding, since fixed positioning does not inherit it. */
 	.rail {
 		position: fixed;
-		top: var(--stick);
+		top: var(--dash-pad-top);
 		left: calc(max(0px, (100vw - min(100vw, var(--dash-max))) / 2) + var(--gutter));
 		width: var(--rail);
 		/* Bottom edge held off the fold by --nav-pad-top — the same distance the
 		   nav's own text sits off the top, so the rail is framed the way the
 		   header is rather than by an unrelated fixed inset. */
-		height: calc(100vh - var(--stick) - var(--nav-pad-top));
+		height: calc(100vh - var(--dash-pad-top) - var(--nav-pad-top));
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
@@ -243,13 +239,13 @@
 		align-content: start;
 		gap: var(--divide);
 		/* A page to a screen, exactly — not a floor a page is free to run past.
-		   The header is always standing above it (there is no scroll to carry it
-		   out of view — a stop on the rail is a fresh page load, not a jump down
-		   one long one), so this is what is actually left under it. Held back
-		   from the bottom edge by --nav-pad-top, the same token the landing
-		   page's own status-bar cards keep off it and the rail now keeps too —
-		   so the three ends line up rather than this one running past the fold. */
-		height: calc(100vh - var(--stick) - var(--nav-pad-top));
+		   There is no scroll to carry anything out of view (a stop on the rail is
+		   a fresh page load, not a jump down one long one), so this is what the
+		   box's own top padding actually leaves. Held back from the bottom edge
+		   by --nav-pad-top, the same token the landing page's own status-bar
+		   cards keep off it and the rail now keeps too — so the three ends line
+		   up rather than this one running past the fold. */
+		height: calc(100vh - var(--dash-pad-top) - var(--nav-pad-top));
 		/* Cut, not scrolled: a route with more in it than one screen holds loses
 		   whatever doesn't fit rather than growing a scrollbar of its own or
 		   pushing the page past the fold. The wireframe is still catching up to

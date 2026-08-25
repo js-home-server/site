@@ -78,6 +78,8 @@
 		<!-- The stamp the snapshot came with, not the clock: this says how fresh
 		     the numbers above are, which is not the same as what time it is. -->
 		<span class="mono">{stamp(snapshot?.generated_at)}</span>
+		<!-- Off the site's nav, so this is the only way back to it. -->
+		<a class="mono back" href="/">← joshuasmith</a>
 	{/snippet}
 </Dashboard>
 
@@ -86,6 +88,18 @@
 		color: var(--text-dim);
 		font-family: var(--font-mono);
 		font-size: 0.72rem;
+	}
+
+	/* Same mono note as the stamp above it, stood off by a line and lit on hover
+	   the way the rail's own stops are. */
+	.back {
+		margin-top: 0.5rem;
+		text-decoration: none;
+	}
+
+	.back:hover,
+	.back:focus-visible {
+		color: var(--mint);
 	}
 
 	/* The two readings stood above the rail's nav: the same card vocabulary
