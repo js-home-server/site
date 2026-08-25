@@ -6,10 +6,20 @@
 	import { gridArea } from '$lib/grid.js';
 	import { server } from '$lib/server.svelte.js';
 
-	let snapshot = $derived(server.snapshot);
+	/* The readings each row is read across, in the order the row below writes
+	   them: name, state, then a used/limit pair per resource, then uptime. */
+	const COLUMNS = [
+		'Container',
+		'Status',
+		'CPU',
+		'CPU limit',
+		'Memory',
+		'Memory limit',
+		'Uptime'
+	];
 
-	/* The containers as the fleet and its slots, both already written out. */
-	let containerFleet = $derived(fleet(snapshot?.containers));
+	/* The containers as the fleet and its slots, both already worked out. */
+	let containers = $derived(fleet(server.snapshot?.containers));
 </script>
 
 <svelte:head>
@@ -19,13 +29,12 @@
 <div class="grid">
 	<!-- Decorative: the page is named by its heading, and the art is thousands
 	     of digits to a screen reader. -->
-	<div class="box ship-box span-3" aria-hidden="true">
+	<div class="box ship-box" aria-hidden="true">
 		<div class="art ship"><AsciiShip /></div>
 	</div>
 
-	<!-- Bottom 4x3, full width: the table. -->
-	{#if containerFleet.slots.length}
-		<div class="box" style={gridArea({ col: 1, row: 2, w: 4, h: 3 })}>
+	<div class="box" style={gridArea({ col: 1, row: 2, w: 4, h: 3 })}>
+		{#if containers.slots.length}
 			<div class="container-shell">
 				<!-- One row a container, one column a reading: the names of the readings
 				     are the header, so no row has to repeat them. Scrolls sideways rather
@@ -34,14 +43,14 @@
 					<table>
 						<thead>
 							<tr>
-								{#each ['Container', 'Status', 'CPU', 'CPU limit', 'Memory', 'Memory limit', 'Uptime'] as column (column)}
+								{#each COLUMNS as column (column)}
 									<th class="eyebrow" scope="col">{column}</th>
 								{/each}
 							</tr>
 						</thead>
 
 						<tbody>
-							{#each containerFleet.slots as slot (slot.name)}
+							{#each containers.slots as slot (slot.name)}
 								<tr>
 									<!-- The name docker knows it by, set as the literal it is. -->
 									<th class="name" scope="row">{slot.name}</th>
@@ -67,15 +76,13 @@
 					</table>
 				</div>
 			</div>
-		</div>
-	{:else}
-		<div class="box" style={gridArea({ col: 1, row: 2, w: 4, h: 3 })}>
+		{:else}
 			<Placeholder note="no container data" lines={6} />
-		</div>
-	{/if}
+		{/if}
+	</div>
 
 	{#each Array(3) as _, i (i)}
-		<div class="box span-3"><Placeholder note="—" lines={6} /></div>
+		<div class="box"><Placeholder note="—" lines={6} /></div>
 	{/each}
 </div>
 
@@ -93,10 +100,10 @@
 		line-height: round(0.72em, var(--device-px, 1px));
 	}
 
-	/* 166 columns, which at the width of a full-width box was the ~9.5px the
-	   bull's own digits are set at on a laptop screen — cropped rather than
-	   rescaled now that the box is a third of that, so the picture reads at
-	   the same cell size everywhere else on the site draws it. */
+	/* The cell size the rest of the site's art is drawn at, not a count of what
+	   is in this picture: the ship is wider than the one cell it sits in, so it
+	   is cropped by .ship-box below rather than shrunk to fit, which keeps a
+	   digit here the same size as a digit in any other piece. */
 	.ship {
 		--cols: 99.95;
 		margin-bottom: 0.75rem;

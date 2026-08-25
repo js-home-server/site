@@ -12,6 +12,16 @@ const TONE = {
    actually following, then the ones it could fall back to, then the rest. */
 const RANK = { selected: 3, candidate: 2, unusable: 1 };
 
+/* Chrony reports the correction needed to reach NTP, so a negative reading
+   means this machine is running fast. Both of these flip that, once, so every
+   page reads a positive offset as the machine being ahead — the headline
+   figure and the history behind it can never disagree on which way is which. */
+export const clockOffset = (time) =>
+	Number.isFinite(time?.systemOffsetSeconds) ? -time.systemOffsetSeconds : null;
+
+export const clockOffsetHistory = (series) =>
+	(series?.timeSystemOffsetSeconds ?? []).map(([at, offset]) => [at, -offset]);
+
 /* Every source as one reading with an uncertainty: where it says the clock is,
    and how far out it admits that could be.
 

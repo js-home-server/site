@@ -19,6 +19,10 @@ export const pct = (v) => {
 
 export const degrees = (v) => (Number.isFinite(v) ? `${Math.round(v)}°C` : '—');
 
+/* A round trip. Whole milliseconds: the probe itself is not accurate to
+   fractions of one, and a column of these is read against each other. */
+export const ms = (v) => (Number.isFinite(v) ? `${Math.round(v)} ms` : '—');
+
 /* A clock offset, at the precision a clock is actually disciplined to:
    microseconds. Always signed, because which side of the reference it sits on is
    half the reading. */
@@ -68,6 +72,12 @@ export function bytes(n) {
 	if (n >= GB) return `${(n / GB).toFixed(1)} GB`;
 	return `${(n / 2 ** 20).toFixed(0)} MB`;
 }
+
+/* The same size pinned to one unit, for the two halves of a ratio: "58.4 /
+   468.4 GB" only reads as a fraction of a whole if both sides are measured in
+   the same thing, which bytes() above will not promise — it scales each figure
+   to whatever unit that figure alone lands in. */
+export const gigabytes = (n) => (Number.isFinite(n) ? (n / GB).toFixed(1) : '—');
 
 /* A rate, signed: a volume that is emptying is as much a fact as one filling.
    Small rates drop to MB, because a headline made of this figure has to be

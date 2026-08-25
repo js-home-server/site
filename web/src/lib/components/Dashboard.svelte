@@ -2,29 +2,21 @@
 	import AsciiClock from './AsciiClock.svelte';
 
 	/* The shell every dashboard-style page wears: a fixed rail of stops down the
-	   left, one stop's own content down the right. Each stop is its own route —
-	   `current` says which one is live, `children` is that route's content,
-	   `rail` is extra content stood under the nav list if the caller has any,
-	   `foot` is the note pinned to the foot of the rail if it has one, and `max`
-	   is how wide the whole thing is allowed to get — `none` for a page that
-	   runs to the width of the window. */
+	   left, one stop's own content down the right. Each stop is its own route,
+	   so `sections` is [{ label, href }] and `current` is the path of the one
+	   being shown — the rail marks it and the heading names it off the same
+	   list, which is what stops the two disagreeing. `children` is that route's
+	   content, `rail` is extra content stood under the nav list if the caller
+	   has any, `foot` is the note pinned to the foot of the rail, and `max` is
+	   how wide the whole thing is allowed to get. */
 	let { title, sections, current, rail, foot, max = '82rem', children } = $props();
 
-	/* The rail is fixed rather than laid out in a grid column, so its own left
-	   edge has to be worked out rather than handed to it: this is the same
-	   length `max-width` resolves to, just readable from a custom property so
-	   .rail's `left` calc can centre against it too. `none` has no width to
-	   measure against — 100vw stands for "the page's own full width" instead,
-	   which collapses that calc to the gutter alone. */
-	let dashMax = $derived(max === 'none' ? '100vw' : max);
-
-	/* The visible name for the hidden h2 below — the current route's own label,
-	   read off the same list the rail is built from so the two can't name a
-	   page two different things. */
-	let currentLabel = $derived(sections.find((section) => section.id === current)?.label ?? title);
+	let currentLabel = $derived(sections.find((section) => section.href === current)?.label ?? title);
 </script>
 
-<div class="dash" style="max-width: {max}; --dash-max: {dashMax}">
+<!-- --dash-max is the same length as max-width, read back as a custom property
+     so the fixed rail's own `left` calc can centre against it too. -->
+<div class="dash" style="max-width: {max}; --dash-max: {max}">
 	<aside class="rail" aria-label="Page sections">
 		<!-- Decorative: the rail's own nav already names the page you're on, and
 		     the digits are ascii art rather than a reading to a screen reader. -->
@@ -33,11 +25,11 @@
 		</div>
 
 		<nav>
-			{#each sections as section, i (section.id)}
+			{#each sections as section, i (section.href)}
 				<a
 					class="eyebrow"
 					href={section.href}
-					aria-current={current === section.id ? 'page' : undefined}
+					aria-current={current === section.href ? 'page' : undefined}
 				>
 					<span class="idx">{String(i).padStart(2, '0')}</span>
 					<span>{section.label}</span>
@@ -309,14 +301,15 @@
 		background: var(--surface);
 	}
 
-	/* Opt-in, on any box merged into more than a single row: a Panel's own
-	   height is normally however tall its content needs, which is a box's
-	   worth of blank space left under a chart that only ever asked for one
-	   row's height. .fill makes the chain down to the chart itself (Panel,
-	   then whichever of .plot — Trace and Heatmap both render one — or
-	   .spread — Spread's own — the panel holds) a flex column so each
-	   stretches to the next, ending in the actual drawing filling the box —
-	   same shape StatsTable already solved for its own table. */
+	/* Opt-in, on any box given more than a single cell: a panel's own height is
+	   otherwise however tall its content needs, which leaves the rest of a
+	   taller box blank under a chart that only ever asked for one row.
+
+	   .fill turns the whole chain down to the drawing into a flex column, so
+	   each link stretches to the one above it — the panel, then whichever of
+	   .plot (Trace and Heatmap both render one), .spread (Spread's) or .fleet
+	   (a table) it holds. The last of those needs to be a flex parent itself
+	   for the table inside it to have anything to stretch against. */
 	.body :global(.box.fill) {
 		display: flex;
 		flex-direction: column;
@@ -324,50 +317,42 @@
 
 	.body :global(.box.fill .panel),
 	.body :global(.box.fill .plot),
-	.body :global(.box.fill .spread) {
+	.body :global(.box.fill .spread),
+	.body :global(.box.fill .fleet) {
 		flex: 1;
 		min-height: 0;
 	}
 
-	/* The one grid every card on the page is placed on: 12 columns, 24px apart.
-	   A card picks a width off it with .span-3/4/6/12 (quarter, third, half,
-	   full) rather than a bespoke fr ratio, so no two grids on the page are
-	   divided a slightly different way. Unmarked children take the full row —
-	   a card has to opt into being narrower, not the other way round. */
+	.body :global(.box.fill .fleet) {
+		display: flex;
+	}
+
+	/* The one board every card on the page is placed on: a 4x4 of equal cells,
+	   24px apart. A card takes one cell unless it says otherwise, and says so
+	   through $lib/grid.js's gridArea() — one vocabulary for both how big a box
+	   is and where it sits, so no two pages divide the same grid a different
+	   way. */
 	.body :global(.grid) {
 		display: grid;
-		grid-template-columns: repeat(12, minmax(0, 1fr));
+		grid-template-columns: repeat(4, minmax(0, 1fr));
 		/* Every row the same height, dividing up whatever the section (above)
 		   handed this grid rather than each row taking its own content's height
-		   — that's what makes a page of boxes at one span all end up the same
-		   size as each other. minmax(0, …), not auto: a box with more in it than
-		   its row is tall isn't allowed to stretch the row to fit — it's cropped
-		   by the box's own overflow: hidden instead. */
+		   — that's what makes a page of one-cell boxes all come out the same
+		   size. minmax(0, …), not auto: a box with more in it than its row is
+		   tall isn't allowed to stretch the row to fit, it's cropped by the
+		   box's own overflow: hidden instead. */
 		grid-auto-rows: minmax(0, 1fr);
-		/* Dense, not the default sparse flow: a card explicitly placed to hold a
-		   bigger span (2x2 in a bottom corner, say) leaves a gap in the normal
-		   reading order behind it — dense is what lets the placeholders after it
-		   in the markup backfill that gap instead of leaving it empty and
-		   pushing everything else one cell later than it needs to be. */
+		/* Dense, not the default sparse flow: a card placed by hand at a later
+		   cell leaves a gap in the normal reading order behind it, and dense is
+		   what lets the boxes after it in the markup back-fill that gap rather
+		   than leaving it empty. */
 		grid-auto-flow: dense;
 		height: 100%;
 		gap: 1.5rem;
 	}
 
 	.body :global(.grid > *) {
-		grid-column: span 12;
-	}
-
-	.body :global(.grid > .span-3) {
-		grid-column: span 3;
-	}
-
-	.body :global(.grid > .span-4) {
-		grid-column: span 4;
-	}
-
-	.body :global(.grid > .span-6) {
-		grid-column: span 6;
+		grid-column: span 1;
 	}
 
 	/* A row is read across, so it is never broken up to fit: under the width
@@ -478,26 +463,17 @@
 		}
 
 		/* One column, so a graph keeps its own width instead of splitting it
-		   with its neighbour — whatever span a card picked above this width.
-		   Matched one for one against .span-3/4/6/12 rather than a bare `*`:
-		   three classes of specificity beats a media query on source order
-		   alone, so a weaker selector here would lose to the span it's
-		   supposed to be cancelling. */
-		.body :global(.grid > .span-3),
-		.body :global(.grid > .span-4),
-		.body :global(.grid > .span-6),
-		.body :global(.grid > .span-12) {
-			grid-column: 1 / -1;
+		   with three neighbours. Collapsing the board itself is what does it:
+		   a box that never asked to be placed already spans its one column,
+		   and only the ones gridArea() put somewhere by hand need undoing. */
+		.body :global(.grid) {
+			grid-template-columns: minmax(0, 1fr);
 		}
 
-		/* The same reset for a box placed by $lib/grid.js's gridArea() instead
-		   of a .span-* class — any merge, on any page. Matched by the inline
-		   style itself (every box gridArea() touches sets grid-column) rather
-		   than a class, so a page doing this never has to remember to add a
-		   mobile hook of its own — this is the one place it's handled, for
-		   every page that will ever call gridArea(). !important because it has
-		   to beat an inline style, which nothing else on this page ranks
-		   above. */
+		/* Any box gridArea() placed, on any page — matched by the inline style
+		   itself rather than a marker class, so a page never has to remember a
+		   mobile hook of its own. !important because an inline style is the one
+		   thing a stylesheet rule cannot otherwise outrank. */
 		.body :global(.grid > .box[style*='grid-column']) {
 			grid-column: 1 / -1 !important;
 			grid-row: auto !important;

@@ -1,11 +1,11 @@
 <script>
 	import { pct, share } from '$lib/format.js';
 
-	/* How full a volume is, compact enough to stand as one figure in a strip of
-	   others: the reading, and a bar showing the same share, in the place a
-	   plain number or a Dial sits in every other headline band. The label is
-	   read here rather than shown, since the caller sets it as the .eyebrow
-	   beside this the same way it does for every other stat. */
+	/* How full a volume is: the reading, and a bar showing the same share under
+	   it. Compact enough to stand either on its own — the drive pages give it a
+	   box — or as one of a pair in the overview's storage card. The label is
+	   read out rather than shown, since whatever holds this already names the
+	   drive beside it. */
 	let { label, percent, tone } = $props();
 
 	let filled = $derived(share(percent));
