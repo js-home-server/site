@@ -307,6 +307,24 @@
 		background: var(--surface);
 	}
 
+	/* Opt-in, on any box merged into more than a single row: a Panel's own
+	   height is normally however tall its content needs, which is a box's
+	   worth of blank space left under a chart that only ever asked for one
+	   row's height. .fill makes the chain down to the chart itself (Panel,
+	   then .plot — Trace and Heatmap both render one) a flex column so each
+	   stretches to the next, ending in the actual drawing filling the box —
+	   same shape StatsTable already solved for its own table. */
+	.body :global(.box.fill) {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.body :global(.box.fill .panel),
+	.body :global(.box.fill .plot) {
+		flex: 1;
+		min-height: 0;
+	}
+
 	/* The one grid every card on the page is placed on: 12 columns, 24px apart.
 	   A card picks a width off it with .span-3/4/6/12 (quarter, third, half,
 	   full) rather than a bespoke fr ratio, so no two grids on the page are

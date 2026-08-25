@@ -1,10 +1,10 @@
 <script>
 	import Heatmap from '$lib/components/Heatmap.svelte';
 	import Panel from '$lib/components/Panel.svelte';
-	import Placeholder from '$lib/components/Placeholder.svelte';
 	import StatsTable from '$lib/components/StatsTable.svelte';
 	import Trace from '$lib/components/Trace.svelte';
 	import { degrees, pct } from '$lib/format.js';
+	import { gridArea } from '$lib/grid.js';
 	import { server } from '$lib/server.svelte.js';
 	import { bucket, last, mean, percentile } from '$lib/stats.js';
 
@@ -60,7 +60,10 @@
 </svelte:head>
 
 <div class="grid">
-	<div class="box span-3">
+	<!-- Top-left 2x2: Usage, swapped up from row 4 — .fill is what actually
+	     stretches the trace down to the box's full height rather than leaving
+	     the bottom of a 2x2 blank under a chart sized for a single row. -->
+	<div class="box fill" style={gridArea({ col: 1, row: 1, w: 2, h: 2 })}>
 		<Panel label="CPU Usage (%)">
 			<Trace
 				lines={[{ id: 'usage', points: series?.cpuPercent, tone: 'var(--mint)' }]}
@@ -70,28 +73,11 @@
 		</Panel>
 	</div>
 
-	<div class="box span-3">
-		<!-- The key spells out the band the colours cover, since the map is
-		     stretched to the range the cores actually ran at. -->
-		<Panel label="Per Core Usage">
-			<Heatmap rows={cores} format={pct} note="no per-core history yet" />
-		</Panel>
-	</div>
-
-	<div class="box span-3">
-		<!-- Sustained pressure is the reading that matters rather than any one
-		     spike, so the rules are the two levels worth seeing a trace cross. -->
-		<Panel label="CPU Pressure (%)">
-			<Trace
-				lines={[{ id: 'pressure', points: series?.cpuPressurePercent, tone: 'var(--coral)' }]}
-				domain={[0, 100]}
-				format={pct}
-				marks={[25, 50]}
-			/>
-		</Panel>
-	</div>
-
-	<div class="box span-3">
+	<!-- Top-right, upper half: Temperature, dropped from 2x2 to 2x1 — Pressure
+	     now takes the half of that square this left behind, so the two long
+	     horizontal boxes read as a stack rather than the square they used to
+	     share. -->
+	<div class="box" style={gridArea({ col: 3, row: 1, w: 2 })}>
 		<!-- Not zero-based like usage and pressure: nothing here runs near an
 		     ambient 0°C, so the bottom 40° of the axis would be empty and the
 		     trace flat against the top of it. -->
@@ -105,12 +91,30 @@
 		</Panel>
 	</div>
 
-	<!-- Bottom-right 2x2: the four boxes that stood there merged into the one
-	     this needed room to actually read in, rather than the quarter-width
-	     cell every other box on the page gets. -->
-	<StatsTable rows={cpuStats} col={3} row={3} w={2} h={2} />
+	<!-- Top-right, lower half: Pressure, moved up from row 3 into the 2x1
+	     Temperature's shrink just opened. -->
+	<div class="box" style={gridArea({ col: 3, row: 2, w: 2 })}>
+		<!-- Sustained pressure is the reading that matters rather than any one
+		     spike, so the rules are the two levels worth seeing a trace cross. -->
+		<Panel label="CPU Pressure (%)">
+			<Trace
+				lines={[{ id: 'pressure', points: series?.cpuPressurePercent, tone: 'var(--coral)' }]}
+				domain={[0, 100]}
+				format={pct}
+				marks={[25, 50]}
+			/>
+		</Panel>
+	</div>
 
-	{#each Array(8) as _, i (i)}
-		<div class="box span-3"><Placeholder note="—" lines={6} /></div>
-	{/each}
+	<!-- Bottom-left 2x2: Per Core Usage, up from a 2x1 in row 4 — .fill
+	     stretches the map to the full box the same way Usage already fills
+	     its own 2x2 above it. -->
+	<div class="box fill" style={gridArea({ col: 1, row: 3, w: 2, h: 2 })}>
+		<Panel label="Per Core Usage">
+			<Heatmap rows={cores} format={pct} note="no per-core history yet" />
+		</Panel>
+	</div>
+
+	<!-- Bottom-right 2x2: unchanged. -->
+	<StatsTable rows={cpuStats} col={3} row={3} w={2} h={2} />
 </div>
