@@ -5,12 +5,11 @@
 	import Placeholder from '$lib/components/Placeholder.svelte';
 	import { brandColors, websites } from '$lib/logos.js';
 
-	/* Wireframe of the about page: four boxes down the page, nothing filled in.
-	   Every part is a dashed slot standing in the shape and roughly the height the
-	   real thing takes, so the layout can be argued about before a word of it is
-	   written. The numbers are counts of repeated slots, not contents. */
-	/* The strip of readings under the intro: the figure, and what it counts. The
-	   last two are stand-ins until there are real numbers to put there. */
+	/* Four boxes down the page: who I am, what I have done, what I have built,
+	   and what I build it with. Each is a list here and a section below, so the
+	   markup stays a shape and the content stays editable in one place.
+
+	   The strip of readings under the intro: the figure, and what it counts. */
 	const STATS = [
 		['6+', 'Years of Python'],
 		['2', 'Years professional experience'],
@@ -41,8 +40,8 @@
 				'Continuing to build systems that turn messy data into decisions, and looking for the next one worth working on.'
 		}
 	];
-	/* The three things worth showing. `blurb` is filler until each has been
-	   written properly; the tags are what each is actually built with. */
+	/* The work worth showing. `tags` are what each is actually built with; `url`
+	   is where the source is, on the ones that are public. */
 	const PROJECTS = [
 		{
 			name: 'Ancestree',
@@ -73,8 +72,8 @@
 		}
 	];
 	/* What I work in, grouped by what each thing is for, and how well — a level
-	   from 1 to 4, read against the legend beside them. Every level is 0 for now,
-	   which draws four hollow dots: the shape is here, the ranking is not. */
+	   from 1 to 4, drawn as that many filled dots and read against the key
+	   beside them. */
 	const CATEGORIES = [
 		[
 			'Languages & query',
@@ -140,12 +139,12 @@
 	</span>
 {/snippet}
 
-<div class="about">
+<div class="page about">
 	<!-- Read out, never drawn: the boxes carry the titling, and this is only here
 	     so the document outline starts somewhere. -->
-	<h1>About</h1>
+	<h1 class="sr-only">About</h1>
 
-	<section class="hero">
+	<section class="surface-box hero">
 		<div class="intro">
 			<h2 class="eyebrow">About me</h2>
 			<p class="headline">Turning Data<br />Into Intelligence</p>
@@ -180,7 +179,7 @@
 		</div>
 	</section>
 
-	<section class="journey">
+	<section class="surface-box journey">
 		<div class="timeline">
 			<h2 class="eyebrow">My journey</h2>
 			{#each MILESTONES as { period, title, detail, points } (title)}
@@ -200,7 +199,7 @@
 		<div class="visual"><Placeholder note="journey visual" lines={16} /></div>
 	</section>
 
-	<section class="projects" id="projects">
+	<section class="surface-box projects" id="projects">
 		<h2 class="eyebrow">My projects</h2>
 
 		<div class="cards">
@@ -230,7 +229,7 @@
 		</div>
 	</section>
 
-	<section class="tools">
+	<section class="surface-box tools">
 		<div class="tools-head">
 			<h2 class="eyebrow">Tools &amp; technicalities</h2>
 			<p class="strap">
@@ -277,37 +276,11 @@
 </div>
 
 <style>
-	/* The page is the four boxes and the air between them. Wider than .page's
-	   column of prose: these are laid out across rather than read down. */
+	/* The page is the four boxes and the air between them: laid out across
+	   rather than read down, so it takes the dashboard's width rather than a
+	   column of prose. */
 	.about {
-		display: grid;
 		gap: clamp(0.75rem, 1.5vh, 1.25rem);
-		max-width: 88rem;
-		margin-inline: auto;
-		padding: clamp(1.5rem, 4vh, 2.5rem) var(--gutter) clamp(3rem, 10vh, 6rem);
-	}
-
-	h1 {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		margin: -1px;
-		overflow: hidden;
-		clip-path: inset(50%);
-		white-space: nowrap;
-	}
-
-	/* A box, and the vocabulary the parts inside it divide with: --pad is its own
-	   air, --rule the line anything in it is divided by, drawn a shade under the
-	   box's own border so the box stays the strongest line. */
-	section {
-		--pad: clamp(1rem, 2.5vw, 2rem);
-		--rule: 1px solid color-mix(in srgb, var(--color-border) 75%, transparent);
-
-		padding: var(--pad);
-		border: 1px solid var(--color-border);
-		border-radius: 0.6rem;
-		background: var(--surface);
 	}
 
 	/* --- about me ------------------------------------------------------- */
@@ -422,15 +395,29 @@
 	   5.72px advance, the same as the bull's. See ../asciiArt's Makefile for how
 	   the 73 and the 70 rows under it were chosen. */
 	.portrait {
+		/* How many characters wide the astronaut is. */
+		--cols: 73;
+
 		container-type: inline-size;
 		width: 66.4%;
 		margin-inline: auto;
 	}
 
+	/* Sized to the box it stands in: a character grid has exactly one size, so
+	   the font size is what scales the picture. --cols above is how many
+	   characters wide the art is and JetBrains Mono advances 0.6021em per
+	   character, so dividing the container's width by that span gives the cell
+	   size that fills it exactly.
+
+	   Scoped here rather than shared in app.css on purpose: the generated art
+	   component carries its own `.ascii-art pre { font-size: 6px }`, and only a
+	   rule with this one's specificity beats it.
+
+	   The line height is rounded to whole device pixels because baselines are
+	   painted on them — a fractional pitch comes out as a 7, 7, 7, 6 rhythm and
+	   bands the picture. */
 	.portrait :global(pre) {
-		font-size: calc(100cqw / 43.95);
-		/* Baselines are painted on whole device pixels, so a fractional row pitch
-		   comes out as a 7, 7, 7, 6 rhythm and bands the picture. */
+		font-size: calc(100cqw / (var(--cols) * 0.6021));
 		line-height: round(0.72em, var(--device-px, 1px));
 	}
 
@@ -596,8 +583,12 @@
 		line-height: 1.7;
 	}
 
-	/* What it is built with, one pill each. */
+	/* What it is built with, one pill each, wrapping onto as many lines as the
+	   card is wide enough for. */
 	.tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
 		margin: 0;
 		padding: 0;
 		list-style: none;
@@ -668,12 +659,6 @@
 		align-content: start;
 		padding-left: var(--divide);
 		border-left: var(--rule);
-	}
-
-	.tags {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.4rem;
 	}
 
 	/* Pinned to the foot of the card, so the four links sit on one line however

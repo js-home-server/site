@@ -30,7 +30,7 @@
 	<!-- Decorative: the page is named by its heading, and the art is thousands
 	     of digits to a screen reader. -->
 	<div class="box ship-box" aria-hidden="true">
-		<div class="art ship"><AsciiShip /></div>
+		<div class="ship"><AsciiShip /></div>
 	</div>
 
 	<div class="box" style={gridArea({ col: 1, row: 2, w: 4, h: 3 })}>
@@ -87,26 +87,33 @@
 </div>
 
 <style>
-	/* A piece of generated ascii art. A character grid has one size — how big one
-	   cell is — so the art is sized by setting that from the box it sits in, and
-	   --cols is how many cells wide the grid measures: its column count times the
-	   0.6021em JetBrains Mono advances per character. */
-	.art {
-		container-type: inline-size;
-	}
-
-	.art :global(pre) {
-		font-size: calc(100cqw / var(--cols));
-		line-height: round(0.72em, var(--device-px, 1px));
-	}
-
-	/* The cell size the rest of the site's art is drawn at, not a count of what
-	   is in this picture: the ship is wider than the one cell it sits in, so it
-	   is cropped by .ship-box below rather than shrunk to fit, which keeps a
-	   digit here the same size as a digit in any other piece. */
+	/* Not this ship's own width (166) but the width every other piece on the
+	   site is drawn at, so a digit here is the same size as a digit anywhere
+	   else. The ship is wider than the cell it sits in and is cropped by
+	   .ship-box below rather than shrunk to fit. */
 	.ship {
-		--cols: 99.95;
+		--cols: 166;
+
+		container-type: inline-size;
 		margin-bottom: 0.75rem;
+	}
+
+	/* Sized to the box it stands in: a character grid has exactly one size, so
+	   the font size is what scales the picture. --cols above is how many
+	   characters wide the art is and JetBrains Mono advances 0.6021em per
+	   character, so dividing the container's width by that span gives the cell
+	   size that fills it exactly.
+
+	   Scoped here rather than shared in app.css on purpose: the generated art
+	   component carries its own `.ascii-art pre { font-size: 6px }`, and only a
+	   rule with this one's specificity beats it.
+
+	   The line height is rounded to whole device pixels because baselines are
+	   painted on them — a fractional pitch comes out as a 7, 7, 7, 6 rhythm and
+	   bands the picture. */
+	.ship :global(pre) {
+		font-size: calc(100cqw / (var(--cols) * 0.6021));
+		line-height: round(0.72em, var(--device-px, 1px));
 	}
 
 	/* Black rather than the surface every other box wears: the art is a picture
