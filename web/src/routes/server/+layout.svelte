@@ -15,7 +15,8 @@
 		{ id: 'overview', label: 'Overview', href: '/server' },
 		{ id: 'cpu', label: 'CPU', href: '/server/cpu' },
 		{ id: 'memory', label: 'Memory', href: '/server/memory' },
-		{ id: 'storage', label: 'Storage', href: '/server/storage' },
+		{ id: 'nvme', label: 'NVMe', href: '/server/nvme' },
+		{ id: 'ssd', label: 'SSD', href: '/server/ssd' },
 		{ id: 'network', label: 'Network', href: '/server/network' },
 		{ id: 'time', label: 'Time', href: '/server/time' },
 		{ id: 'containers', label: 'Containers', href: '/server/containers' }

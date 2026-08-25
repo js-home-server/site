@@ -1,9 +1,9 @@
 <script>
 	import Panel from '$lib/components/Panel.svelte';
-	import Placeholder from '$lib/components/Placeholder.svelte';
 	import StatsTable from '$lib/components/StatsTable.svelte';
 	import Trace from '$lib/components/Trace.svelte';
 	import { rate } from '$lib/format.js';
+	import { gridArea } from '$lib/grid.js';
 	import { server } from '$lib/server.svelte.js';
 	import { mean, percentile, summarise } from '$lib/stats.js';
 
@@ -41,7 +41,9 @@
 </svelte:head>
 
 <div class="grid">
-	<div class="box span-3">
+	<!-- Top-left 2x2: Throughput, shrunk from a 2x3 — .fill stretches the
+	     trace down the box's full height. -->
+	<div class="box fill" style={gridArea({ col: 1, row: 1, w: 2, h: 2 })}>
 		<Panel label="Throughput">
 			<Trace
 				lines={[
@@ -53,7 +55,8 @@
 		</Panel>
 	</div>
 
-	<div class="box span-3">
+	<!-- Top-right 2x2: HTTP Probe Latency, the same. -->
+	<div class="box fill" style={gridArea({ col: 3, row: 1, w: 2, h: 2 })}>
 		<Panel label="HTTP Probe Latency">
 			<p class="latency-reading">
 				<strong>{reading('latencyMs', ms)}</strong><span>P95 {summarise(series?.latencyMs, ms)[2][1]}</span>
@@ -62,11 +65,8 @@
 		</Panel>
 	</div>
 
-	<StatsTable rows={networkStats} />
-
-	{#each Array(13) as _, i (i)}
-		<div class="box span-3"><Placeholder note="—" lines={6} /></div>
-	{/each}
+	<!-- Bottom 4x2, full width: Stats, up from a single row. -->
+	<StatsTable rows={networkStats} col={1} row={3} w={4} h={2} />
 </div>
 
 <style>

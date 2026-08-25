@@ -88,7 +88,15 @@
 		   have to stop short of. */
 		--tail: calc(var(--read-w) + var(--note-w) + var(--gap));
 
+		/* 1fr for .rows, auto for .scale under it: when something outside stretches
+		   .spread taller than its own content needs (a box .fill has grown past a
+		   single row), the extra space has somewhere defined to go — into .rows,
+		   whose own grid-auto-rows: minmax(1.1rem, 1fr) is what turns a taller .rows
+		   into evenly taller lanes rather than the same lanes with blank space left
+		   under .scale. Content-sized contexts are unaffected: an indefinite height
+		   resolves 1fr the same as auto. */
 		display: grid;
+		grid-template-rows: 1fr auto;
 		gap: 0.5rem;
 	}
 
