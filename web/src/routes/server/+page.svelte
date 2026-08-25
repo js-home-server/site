@@ -14,7 +14,7 @@
 
 	let snapshot = $derived(server.snapshot);
 	let series = $derived(server.series);
-	let month = $derived(server.month);
+	let month = $derived(server.month ?? server.series);
 
 	/* The one band of the three Memory History stacks that reads as "RAM usage"
 	   on its own — the other two, cache and free, are how the rest of it is
