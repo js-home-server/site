@@ -1,10 +1,10 @@
 <script>
 	import Panel from '$lib/components/Panel.svelte';
-	import Placeholder from '$lib/components/Placeholder.svelte';
 	import Stack from '$lib/components/Stack.svelte';
 	import StatsTable from '$lib/components/StatsTable.svelte';
 	import Trace from '$lib/components/Trace.svelte';
 	import { pct } from '$lib/format.js';
+	import { gridArea } from '$lib/grid.js';
 	import { memoryBands } from '$lib/memory.js';
 	import { server } from '$lib/server.svelte.js';
 	import { mean, percentile } from '$lib/stats.js';
@@ -61,7 +61,11 @@
 </svelte:head>
 
 <div class="grid">
-	<div class="box span-3">
+	<!-- Top half, full width: History, the whole 4x2 rather than a single
+	     quarter-cell — .fill stretches the stack down to the box's full
+	     height, the same way Usage and Per Core Usage fill theirs on the cpu
+	     page. -->
+	<div class="box fill" style={gridArea({ col: 1, row: 1, w: 4, h: 2 })}>
 		<!-- Used, cache and free, which is how the memory is actually divided: the
 		     cache is the part the machine would give back under pressure. -->
 		<Panel label="Memory History">
@@ -69,7 +73,9 @@
 		</Panel>
 	</div>
 
-	<div class="box span-3">
+	<!-- Bottom-left 2x2: Pressure, up from a quarter-cell — .fill for the same
+	     reason History gets it above. -->
+	<div class="box fill" style={gridArea({ col: 1, row: 3, w: 2, h: 2 })}>
 		<!-- No domain: this reading lives in hundredths of a percent, so the scale
 		     is the range it covered rather than the 0-100 a share could take. Some
 		     is any task waiting on memory, full is every task waiting at once —
@@ -85,9 +91,6 @@
 		</Panel>
 	</div>
 
-	<StatsTable rows={memoryStats} />
-
-	{#each Array(13) as _, i (i)}
-		<div class="box span-3"><Placeholder note="—" lines={6} /></div>
-	{/each}
+	<!-- Bottom-right 2x2: Stats, up from a quarter-cell. -->
+	<StatsTable rows={memoryStats} col={3} row={3} w={2} h={2} />
 </div>
