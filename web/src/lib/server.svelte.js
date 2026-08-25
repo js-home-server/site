@@ -7,6 +7,11 @@
    reads this, so no chart can claim a span the request did not make. */
 export const RANGE = '24h';
 
+/* Cells across a heatmap drawn over that window. At the step below it comes to
+   about a quarter-hour a cell: fine enough to see a spike, coarse enough that a
+   cell is still a cell rather than a hairline. */
+export const HEAT_COLUMNS = 72;
+
 /* The window the capacity history is asked for: used space moves over weeks, not
    minutes, so it is a second request with a step to match. */
 export const MONTH_RANGE = '30d';

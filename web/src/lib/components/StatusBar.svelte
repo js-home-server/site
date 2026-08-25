@@ -1,8 +1,9 @@
 <script>
 	import Spark from './Spark.svelte';
 	import TimeAxis from './TimeAxis.svelte';
+	import { degrees, ms } from '$lib/format.js';
 	import { server, watch } from '$lib/server.svelte.js';
-	import { bucket, mean, outages, percentile } from '$lib/stats.js';
+	import { bucket, mean, minMax, outages, percentile, values } from '$lib/stats.js';
 
 	const BAR_PITCH = 2; /* px a bar needs to read as one: its ink and its gap */
 	const MAX_SEGMENTS = 96;
@@ -17,8 +18,6 @@
 	let online = $derived(snapshot?.server === 'online');
 
 	const pointsOf = (key) => (Array.isArray(series?.[key]) ? series[key] : []);
-	/* The readings on their own, which is all the summaries below need. */
-	const valuesOf = (points) => points.map((p) => p[1]);
 
 	let temps = $derived(pointsOf('cpuTemperatureC'));
 	let latencies = $derived(pointsOf('latencyMs'));
@@ -92,9 +91,7 @@
 			unit: snapshot ? '°C' : '',
 			tight: true,
 			tone: 'amber',
-			stats: temps.length
-				? `MIN ${Math.round(Math.min(...valuesOf(temps)))}°C · MAX ${Math.round(Math.max(...valuesOf(temps)))}°C`
-				: 'NO HISTORY YET',
+			stats: minMax(temps, degrees),
 			points: temps
 		},
 		{
@@ -103,8 +100,11 @@
 			value: snapshot ? Math.round(snapshot.latencyMs) : '—',
 			unit: snapshot ? 'ms' : '',
 			tone: 'azure',
+			/* Average and tail rather than the floor and ceiling the card beside
+			   it shows: a slow probe is a slow probe, and the best case a link
+			   ever managed says nothing about the one you are on. */
 			stats: latencies.length
-				? `AVG ${Math.round(mean(valuesOf(latencies)))} ms · P95 ${Math.round(percentile(valuesOf(latencies), 0.95))} ms`
+				? `AVG ${ms(mean(values(latencies)))} · P95 ${ms(percentile(values(latencies), 0.95))}`
 				: 'NO HISTORY YET',
 			points: latencies
 		}

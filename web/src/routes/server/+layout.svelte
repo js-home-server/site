@@ -8,18 +8,17 @@
 
 	let { children } = $props();
 
-	/* One entry per stop on the rail and per route under this layout: the id is
-	   what a page names itself when it asks for the rail's mark, the href is
-	   where the link actually goes. */
+	/* One entry per stop on the rail, in the order they are read down it, and
+	   one per route under this layout. */
 	const SECTIONS = [
-		{ id: 'overview', label: 'Overview', href: '/server' },
-		{ id: 'cpu', label: 'CPU', href: '/server/cpu' },
-		{ id: 'memory', label: 'Memory', href: '/server/memory' },
-		{ id: 'nvme', label: 'NVMe', href: '/server/nvme' },
-		{ id: 'ssd', label: 'SSD', href: '/server/ssd' },
-		{ id: 'network', label: 'Network', href: '/server/network' },
-		{ id: 'time', label: 'Time', href: '/server/time' },
-		{ id: 'containers', label: 'Containers', href: '/server/containers' }
+		{ label: 'Overview', href: '/server' },
+		{ label: 'CPU', href: '/server/cpu' },
+		{ label: 'Memory', href: '/server/memory' },
+		{ label: 'NVMe', href: '/server/nvme' },
+		{ label: 'SSD', href: '/server/ssd' },
+		{ label: 'Network', href: '/server/network' },
+		{ label: 'Time', href: '/server/time' },
+		{ label: 'Containers', href: '/server/containers' }
 	];
 
 	/* Bars in the rail's uptime strip: a much narrower box than any dashboard
@@ -29,8 +28,6 @@
 	/* Polled here rather than in any one route, so paging between them doesn't
 	   restart the fetch cycle — the layout outlives every child page under it. */
 	$effect(watch);
-
-	let current = $derived(SECTIONS.find((section) => section.href === page.url.pathname)?.id);
 
 	let snapshot = $derived(server.snapshot);
 	let online = $derived(snapshot?.server === 'online');
@@ -45,7 +42,7 @@
 	);
 </script>
 
-<Dashboard title="Server" sections={SECTIONS} {current} max="88rem">
+<Dashboard title="Server" sections={SECTIONS} current={page.url.pathname} max="88rem">
 	{@render children()}
 
 	{#snippet rail()}
