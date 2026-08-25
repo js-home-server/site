@@ -7,12 +7,11 @@ export default defineConfig({
 	server: {
 		port: 5199,
 		proxy: {
-			/* The API sends no Access-Control-Allow-Origin, so the browser can only
-			   reach it same-origin. Everything under /api goes through here. */
+			/* Production CORS allows js195.co.uk; local development stays same-origin. */
 			'/api': {
 				target: 'https://status-api.js195.co.uk',
 				changeOrigin: true,
-				rewrite: (path) => path.replace(/^\/api/, '')
+				rewrite: (path) => path.replace(/^\/api/, '/api/v1')
 			}
 		}
 	},

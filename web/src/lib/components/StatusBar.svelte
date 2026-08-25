@@ -1,8 +1,9 @@
 <script>
-	import { area, chart, VIEW } from '$lib/chart.js';
+	import Spark from './Spark.svelte';
 	import TimeAxis from './TimeAxis.svelte';
+	import { degrees, ms } from '$lib/format.js';
 	import { server, watch } from '$lib/server.svelte.js';
-	import { bucket, mean, outages, percentile } from '$lib/stats.js';
+	import { bucket, mean, minMax, outages, percentile, values } from '$lib/stats.js';
 
 	const BAR_PITCH = 2; /* px a bar needs to read as one: its ink and its gap */
 	const MAX_SEGMENTS = 96;
@@ -14,15 +15,11 @@
 	   1 for up, 0 for down, fractional for part of a bucket. */
 	let series = $derived(server.series);
 
-	let online = $derived(snapshot?.server === 'online');
+	let online = $derived(snapshot?.availability.server_status === 'online');
 
-	const pointsOf = (key) => (Array.isArray(series?.[key]) ? series[key] : []);
-	/* The readings on their own, which is all the summaries below need. */
-	const valuesOf = (points) => points.map((p) => p[1]);
-
-	let temps = $derived(pointsOf('cpuTemperatureC'));
-	let latencies = $derived(pointsOf('latencyMs'));
-	let uptime = $derived(pointsOf('status'));
+	let temps = $derived(series?.cpu.temperature_c ?? []);
+	let latencies = $derived(series?.availability.latency_ms ?? []);
+	let uptime = $derived(series?.availability.status ?? []);
 
 	/* All three graphics share one x axis: the span the API actually returned,
 	   which is at most `range` but less until it has been collecting that long.
@@ -70,9 +67,11 @@
 	let cards = $derived([
 		{
 			label: 'Uptime',
-			href: '/server#uptime',
-			value: online ? Math.floor(snapshot.uptimeSeconds / 3600) : '—',
-			unit: online ? 'h' : '',
+			href: '/server',
+			value: online && Number.isFinite(snapshot.availability.uptime_seconds)
+				? Math.floor(snapshot.availability.uptime_seconds / 3600)
+				: '—',
+			unit: online && Number.isFinite(snapshot.availability.uptime_seconds) ? 'h' : '',
 			tone: 'mint',
 			/* Silence is not the same as a clean record: with no series behind it
 			   the strip cannot say anything about incidents either way. */
@@ -85,28 +84,31 @@
 		},
 		{
 			label: 'CPU Temp',
-			href: '/server#cpu',
-			value: snapshot ? Math.round(snapshot.cpuTemperatureC) : '—',
+			href: '/server/cpu',
+			value: Number.isFinite(snapshot?.cpu.temperature_c) ? Math.round(snapshot.cpu.temperature_c) : '—',
 			/* Degrees hug their number, word units take a space. Both carry the
 			   unit at every mention, headline and stats alike. */
-			unit: snapshot ? '°C' : '',
+			unit: Number.isFinite(snapshot?.cpu.temperature_c) ? '°C' : '',
 			tight: true,
 			tone: 'amber',
-			stats: temps.length
-				? `MIN ${Math.round(Math.min(...valuesOf(temps)))}°C · MAX ${Math.round(Math.max(...valuesOf(temps)))}°C`
-				: 'NO HISTORY YET',
-			path: chart(temps)
+			stats: minMax(temps, degrees),
+			points: temps
 		},
 		{
 			label: 'Latency',
-			href: '/server#network',
-			value: snapshot ? Math.round(snapshot.latencyMs) : '—',
-			unit: snapshot ? 'ms' : '',
+			href: '/server/network',
+			value: Number.isFinite(snapshot?.availability.latency_ms)
+				? Math.round(snapshot.availability.latency_ms)
+				: '—',
+			unit: Number.isFinite(snapshot?.availability.latency_ms) ? 'ms' : '',
 			tone: 'azure',
+			/* Average and tail rather than the floor and ceiling the card beside
+			   it shows: a slow probe is a slow probe, and the best case a link
+			   ever managed says nothing about the one you are on. */
 			stats: latencies.length
-				? `AVG ${Math.round(mean(valuesOf(latencies)))} ms · P95 ${Math.round(percentile(valuesOf(latencies), 0.95))} ms`
+				? `AVG ${ms(mean(values(latencies)))} · P95 ${ms(percentile(values(latencies), 0.95))}`
 				: 'NO HISTORY YET',
-			path: chart(latencies)
+			points: latencies
 		}
 	]);
 
@@ -117,7 +119,7 @@
 	);
 </script>
 
-{#snippet metricCard({ label, href, value, unit, tight, tone, stats, path, strip })}
+{#snippet metricCard({ label, href, value, unit, tight, tone, stats, points, strip })}
 	<a class="metric" {href}>
 		<h2 class="eyebrow">{label}</h2>
 		<strong class="figure value {tone}">
@@ -131,18 +133,7 @@
 				{/each}
 			</div>
 		{:else}
-			<div class="chart {tone}">
-				{#if path}
-					<svg
-						viewBox="0 0 {VIEW.width} {VIEW.height}"
-						preserveAspectRatio="none"
-						aria-hidden="true"
-					>
-						<path class="area" d={area(path)} />
-						<path d={path} vector-effect="non-scaling-stroke" />
-					</svg>
-				{/if}
-			</div>
+			<Spark {points} tone="var(--{tone})" />
 		{/if}
 		<TimeAxis range={spanLabel} />
 	</a>
@@ -223,21 +214,18 @@
 
 	/* Every card ends in a graphic of the same height, pinned to the foot of the
 	   box. The auto margin is what keeps them level when one card's stats line
-	   wraps and another's does not. */
-	.chart,
-	.history {
-		height: 1.85rem;
-		margin-top: auto;
-	}
+	   wraps and another's does not — Spark carries the same pair for the two cards
+	   that end in a trace.
 
-	/* Every bar the full height of the box, which is the height of the traces in the
-	   cards beside it: this is a band of colour across the window, not a chart with
-	   a reading to stand at. */
+	   Every bar takes that full height, which is the height of those traces: this is
+	   a band of colour across the window, not a chart with a reading to stand at. */
 	.history {
 		display: grid;
 		grid-auto-flow: column;
 		grid-auto-columns: 1fr;
 		gap: 1px;
+		height: 1.85rem;
+		margin-top: auto;
 	}
 
 	.history i {
@@ -284,34 +272,8 @@
 		letter-spacing: 0.1em;
 	}
 
-	.chart {
-		position: relative;
-	}
-
-	.chart svg {
-		display: block;
-		width: 100%;
-		height: 100%;
-		overflow: visible;
-	}
-
-	.chart path {
-		fill: none;
-		stroke: currentcolor;
-		stroke-width: 1.25;
-		stroke-linejoin: round;
-	}
-
-	/* The same shading the dashboard's traces carry: enough to give the line a
-	   body, not enough to read as a colour of its own. */
-	.chart path.area {
-		fill: currentcolor;
-		stroke: none;
-		opacity: 0.12;
-	}
-
-	/* One tone class per metric, worn by both the value and its trace: the
-	   stroke is currentcolor, so the two can never drift apart. */
+	/* One tone class per metric, worn by the value; the trace beside it is passed
+	   the same token, so the two can never drift apart. */
 	.mint {
 		color: var(--mint);
 	}

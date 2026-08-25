@@ -2,10 +2,6 @@
    stretched to whatever box it is given, so a caller only ever deals in the
    series' own units. */
 
-/* The levels a percentage is read against: quarters, which is as fine as a scale
-   can be labelled at these heights and still be read. */
-export const PERCENT_GRID = [0, 25, 50, 75, 100];
-
 /* The viewBox the paths below are written in. */
 export const VIEW = { width: 100, height: 30 };
 

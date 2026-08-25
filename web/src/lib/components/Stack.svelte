@@ -1,5 +1,5 @@
 <script>
-	import { markY, PERCENT_GRID, VIEW } from '$lib/chart.js';
+	import { markY, VIEW } from '$lib/chart.js';
 	import { bytes, pct } from '$lib/format.js';
 	import Placeholder from './Placeholder.svelte';
 	import TimeAxis from './TimeAxis.svelte';
@@ -12,6 +12,10 @@
 	   question this chart answers — how the whole is divided — is only a question
 	   about that scale. */
 	let { bands = [], note = 'no history yet' } = $props();
+
+	/* The levels the whole is read against: quarters, which is as fine as a scale
+	   can be labelled at these heights and still be read. */
+	const GRID = [0, 25, 50, 75, 100];
 
 	/* Everything here is a share of one whole, so the scale is the whole and the
 	   projection onto it is the one every chart uses. */
@@ -45,14 +49,14 @@
 {#if areas.length}
 	<div class="plot">
 		<div class="scale">
-			{#each [...PERCENT_GRID].reverse() as level (level)}
+			{#each [...GRID].reverse() as level (level)}
 				<span class="tick">{pct(level)}</span>
 			{/each}
 		</div>
 
 		<div class="canvas">
 			<!-- Under the bands, and a level to read them against. -->
-			{#each PERCENT_GRID as level (level)}
+			{#each GRID as level (level)}
 				<i class="gridline" style="top: {100 - level}%"></i>
 			{/each}
 

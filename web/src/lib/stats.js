@@ -1,7 +1,14 @@
-/* Summaries over a [unixSeconds, value] series. Nothing here knows what the
-   numbers are or how they are drawn. */
+/* Summaries over a [unixSeconds, value] series. Nothing here knows what any of
+   the numbers mean; the few that hand back finished text take the formatter
+   that does as an argument. */
 
-export const mean = (values) => values.reduce((sum, v) => sum + v, 0) / values.length;
+/* A series stripped to its readings, which is what everything below works on.
+   An absent series is an empty one, so nothing has to guard before summarising.
+   The rest of this file takes those readings rather than the series itself, and
+   calls them `readings` so nothing shadows this. */
+export const values = (points) => (points ?? []).map((point) => point[1]);
+
+export const mean = (readings) => readings.reduce((sum, v) => sum + v, 0) / readings.length;
 
 /* The reading at the end of a series: what it says now. Null where there is no
    series yet, which every formatter in $lib/format.js writes as an em dash. */
@@ -16,8 +23,8 @@ export const outages = (points) =>
 		0
 	);
 
-export const percentile = (values, p) => {
-	const sorted = [...values].sort((a, b) => a - b);
+export const percentile = (readings, p) => {
+	const sorted = [...readings].sort((a, b) => a - b);
 	return sorted[Math.min(sorted.length - 1, Math.ceil(p * sorted.length) - 1)];
 };
 
@@ -41,20 +48,38 @@ export function bucket(points, count) {
 	return buckets.map((b) => (b.length ? mean(b) : null));
 }
 
-/* The four numbers a metric is read by, formatted and ready to render. An empty
-   series needs no guard here: every formatter writes a number it has not got as
-   an em dash, so a card that gains its data later keeps its shape until it
-   does. */
-export function summarise(points, format) {
-	const values = points?.map((p) => p[1]) ?? [];
+/* The columns a 24h statistics table is read across, and the figures under
+   them, in one place: StatsTable renders the first and every page fills the
+   second, so a column can never end up naming a figure from a different slot.
+
+   An empty series needs no guard: min/max of nothing is ±Infinity, mean and
+   percentile of nothing are NaN, and every formatter writes all three as the
+   same em dash the rest of the page uses for "no history yet" — so a card that
+   gains its data later keeps its shape until it does. */
+export const STAT_COLUMNS = ['Min', 'Median', 'Avg', 'P95', 'Max'];
+
+export function statsRow(points, format) {
+	const readings = values(points);
 
 	return [
-		['Min', format(Math.min(...values))],
-		['Med', format(percentile(values, 0.5))],
-		['P95', format(percentile(values, 0.95))],
-		['Max', format(Math.max(...values))]
+		format(Math.min(...readings)),
+		format(percentile(readings, 0.5)),
+		format(mean(readings)),
+		format(percentile(readings, 0.95)),
+		format(Math.max(...readings))
 	];
 }
+
+/* The window's floor and ceiling as one line, for a card that shows a live
+   figure and wants the range behind it. Cased by hand: the reading keeps
+   whatever case its own unit takes (°C, ms, µs), and only the two words around
+   it are the page's own small caps. */
+export const minMax = (points, format) => {
+	const readings = values(points);
+	return readings.length
+		? `MIN ${format(Math.min(...readings))} · MAX ${format(Math.max(...readings))}`
+		: 'NO HISTORY YET';
+};
 
 /* Least-squares slope over a [unixSeconds, value] series: the rate it is moving,
    in value units per second. Null when there is not enough of it to say — two

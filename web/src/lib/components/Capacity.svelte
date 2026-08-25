@@ -1,37 +1,44 @@
 <script>
 	import { pct, share } from '$lib/format.js';
-	import Panel from './Panel.svelte';
 
-	/* How full a volume is: the share as a number, as a bar, and the sizes behind
-	   it. `detail` is an em dash where those are not available yet, so a volume
-	   that gains them later does not change the shape of the box. */
-	let { label, percent, tone, detail = '—' } = $props();
+	/* How full a volume is: the reading, and a bar showing the same share under
+	   it. Compact enough to stand either on its own — the drive pages give it a
+	   box — or as one of a pair in the overview's storage card. The label is
+	   read out rather than shown, since whatever holds this already names the
+	   drive beside it. */
+	let { label, percent, tone } = $props();
 
 	let filled = $derived(share(percent));
 	let reading = $derived(pct(filled));
 </script>
 
-<Panel {label} {tone}>
-	<strong class="figure">{reading}</strong>
+<div class="capacity" style:color={tone}>
+	<strong class="reading">{reading}</strong>
 
-	<!-- The bar runs the full width whatever the reading: the dashes are the space
-	     that is left, so the box says how much room there is, not just how much is
-	     gone. -->
-	<div
-		class="bar"
-		role="img"
-		aria-label="{label}: {filled === null ? 'unknown' : `${reading} used`}"
-	>
+	<!-- The bar runs the full width whatever the reading: the dashes are the
+	     space that is left, so the box says how much room there is, not just
+	     how much is gone. -->
+	<div class="bar" role="img" aria-label="{label}: {filled === null ? 'unknown' : `${reading} used`}">
 		<i style="width: {filled ?? 0}%"></i>
 	</div>
-
-	<p class="readout"><span class="eyebrow">Used</span><span>{detail}</span></p>
-</Panel>
+</div>
 
 <style>
+	.capacity {
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+		min-width: 6rem;
+	}
+
+	.reading {
+		color: var(--color-foreground);
+		font-size: 1.3rem;
+	}
+
 	.bar {
 		position: relative;
-		height: 0.55rem;
+		height: 0.4rem;
 	}
 
 	/* The empty part of the volume, dotted in the same tone as the fill so the two
@@ -49,6 +56,6 @@
 		position: absolute;
 		inset: 0 auto 0 0;
 		background: currentcolor;
+		border-radius: 1px;
 	}
-
 </style>

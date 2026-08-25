@@ -12,8 +12,7 @@
 	--background: #f9f9f7;
 	--foreground: #0b0b0b;
 	--border: #e1e0d9;
-	--border-ui: #77746f;
-	--ring: var(--border-ui);
+	--ring: #77746f;
 }
 
 /* The site as it is actually served: app.html carries this class, and the light
@@ -24,8 +23,7 @@
 	--background: #090909;
 	--foreground: #f3f3ef;
 	--border: #2c2c2a;
-	--border-ui: #60605a;
-	--ring: var(--border-ui);
+	--ring: #60605a;
 }
 
 @theme inline {
@@ -35,7 +33,6 @@
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
 	--color-border: var(--border);
-	--color-border-ui: var(--border-ui);
 	--color-ring: var(--ring);
 }
 
@@ -70,12 +67,11 @@
 	   it sits between. */
 	--surface: color-mix(in srgb, var(--foreground) 3%, var(--background));
 
-	/* One perceptual lightness and chroma, six distinct hues. Colour stays rare:
+	/* One perceptual lightness and chroma, five distinct hues. Colour stays rare:
 	   mint/amber/coral carry state, the others distinguish related data. */
 	--mint: #95d6ab;
 	--amber: #dfc07f;
 	--coral: #f9aea7;
-	--pink: #efadd1;
 
 	/* The two volumes. One tone each, wherever they appear: a reading is the
 	   drive's colour before it is the panel's. */
@@ -128,28 +124,43 @@
 	}
 }
 
-/* The standard column for a content page. The landing page opts out: it is
-   full-bleed and sizes itself from the hero. */
+/* A content page: boxes stacked down one centred column, at the same width and
+   inset the dashboard uses, so the three pages line up with each other however
+   differently they are filled. The gap between the boxes is each page's own —
+   that is the only part they disagree on. The landing page opts out entirely:
+   it is full-bleed and sizes itself from the hero. */
 .page {
-	max-width: 62rem;
+	display: grid;
+	max-width: 88rem;
 	margin-inline: auto;
-	padding: clamp(2rem, 7vh, 4.5rem) var(--gutter) clamp(3rem, 10vh, 6rem);
+	padding: clamp(1.5rem, 4vh, 2.5rem) var(--gutter) clamp(3rem, 10vh, 6rem);
 }
 
-.page h1 {
-	margin: 0;
-	font-size: clamp(2.25rem, 6vw, 4rem);
-	font-weight: 700;
-	letter-spacing: -0.045em;
-	line-height: 1;
+/* Read out, never drawn. Every page carries an h1 for the document outline
+   while its own boxes do the visible titling, so all of them wear this. */
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
 }
 
-.page h1 + p {
-	margin: clamp(1rem, 2vw, 1.5rem) 0 0;
-	max-width: 44ch;
-	color: var(--text-dim);
-	font-size: clamp(1rem, 1.4vw, 1.15rem);
-	line-height: 1.6;
+/* A box holding something, lifted off the page it stands on. The two sizes it
+   comes in differ only in how tight they are: the dashboard sets --pad and
+   --radius down for a board of many small boxes, the content pages leave them
+   at the roomier default. --rule is the line anything inside is divided by,
+   drawn a shade under the box's own border so the box stays the strongest. */
+.surface-box {
+	--pad: clamp(1rem, 2.5vw, 2rem);
+	--rule: 1px solid color-mix(in srgb, var(--color-border) 75%, transparent);
+
+	padding: var(--pad);
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius, 0.6rem);
+	background: var(--surface);
 }
 
 /* --- dashboard parts -----------------------------------------------------
@@ -211,47 +222,6 @@
 	font-size: 0.62rem;
 }
 
-/* A reading written out beside its name: what it is called on the left, what it
-   comes to on the right. One under a figure is the sizes behind it; a column of
-   them ruled is that reading's summary. */
-.readout {
-	display: flex;
-	justify-content: space-between;
-	gap: 0.5rem;
-	margin: 0.15rem 0 0;
-	color: var(--text-dim);
-	font-family: var(--font-mono);
-	font-size: 0.66rem;
-	line-height: 1.5;
-}
-
-/* Its label keeps the sans face the rest of the small caps are set in. */
-.readout .eyebrow {
-	font-family: var(--font-sans);
-	font-size: 0.56rem;
-	letter-spacing: 0.12em;
-}
-
-.readout dd {
-	margin: 0;
-}
-
-/* Ruled like a table, in the dots every measuring line on the page is drawn with
-   — which take the row's own colour, so the text in it sets its own back. */
-.readout.ruled {
-	margin: 0;
-	color: var(--color-border);
-	background-image: var(--dot-row);
-	background-position: 0 100%;
-	background-repeat: no-repeat;
-	background-size: 100% 1px;
-	line-height: 1.35;
-}
-
-.readout.ruled dd {
-	color: var(--text-dim);
-}
-
 /* A level to read a chart against, laid over the drawing rather than stroked
    into it: an svg stretched to its box would draw the dashes at a size of its
    own. Positioned by whatever places it — a top for a rule across, insets for
@@ -291,6 +261,31 @@
 	inset: 0;
 	width: 100%;
 	height: 100%;
+	/* A stroke is centred on its path, so half of one drawn along the floor or the
+	   head of the domain falls outside the box. */
+	overflow: visible;
+}
+
+/* A drawn series: the line, the shading that gives it a body, and the dashes for
+   one of two lines that has to be told apart by more than its colour. Every chart
+   that strokes a path wears these, so no two of them can drift to different
+   weights. A chart that needs its own weight sets it on top. */
+.trace {
+	fill: none;
+	stroke: currentcolor;
+	stroke-width: 1.25;
+	stroke-linejoin: round;
+}
+
+.trace.area {
+	fill: currentcolor;
+	stroke: none;
+	/* Enough to give the line a body, not enough to read as a colour of its own. */
+	opacity: 0.12;
+}
+
+.trace.dashed {
+	stroke-dasharray: 4 3;
 }
 
 /* A graph's foot sits under the drawing, not under the gutter. A container, so
@@ -302,13 +297,32 @@
 	grid-column: 2;
 }
 
-/* A graph's scale runs down that gutter: spread over the height it measures, right
-   aligned against the drawing, and hanging half a line past each end so the top
-   and bottom labels sit level with the rules they name rather than inside them. */
+/* A graph's scale runs down that gutter, in one of two ways.
+
+   `.scale` spreads its labels evenly over the height it measures, for a chart
+   drawn against a fixed domain whose ticks are even shares of it by definition.
+   They hang half a line past each end, which is what puts the top and bottom
+   labels level with the rules they name rather than inside them. */
 .plot > .scale {
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
 	align-items: flex-end;
 	margin: -0.3rem 0;
+}
+
+/* `.axis` places each label at the height its own value sits at instead, for a
+   chart whose ticks are not even shares — a domain that moves with the data, or
+   one carrying marks at levels the caller chose. Centred on that height, so the
+   two ends overhang the plot exactly as the spread scale's do. */
+.plot > .axis {
+	position: relative;
+	grid-row: 1;
+	grid-column: 1;
+}
+
+.plot > .axis .tick {
+	position: absolute;
+	right: 0;
+	transform: translateY(-50%);
 }
