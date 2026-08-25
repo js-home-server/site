@@ -25,12 +25,12 @@
 		{
 			label: 'Pressure Some (%)',
 			tone: 'var(--amber)',
-			row: statsRow(series?.memoryPressureSomePercent, pct)
+			row: statsRow(series?.memory.pressure_some_percent, pct)
 		},
 		{
 			label: 'Pressure Full (%)',
 			tone: 'var(--coral)',
-			row: statsRow(series?.memoryPressureFullPercent, pct)
+			row: statsRow(series?.memory.pressure_full_percent, pct)
 		}
 	]);
 </script>
@@ -58,13 +58,13 @@
 				lines={[
 					{
 						id: 'some',
-						points: series?.memoryPressureSomePercent,
+						points: series?.memory.pressure_some_percent,
 						tone: 'var(--amber)',
 						label: 'Some'
 					},
 					{
 						id: 'full',
-						points: series?.memoryPressureFullPercent,
+						points: series?.memory.pressure_full_percent,
 						tone: 'var(--coral)',
 						label: 'Full',
 						dashed: true

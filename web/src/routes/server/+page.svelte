@@ -28,14 +28,14 @@
 		DISKS.map((disk) =>
 			volume({
 				...disk,
-				used: month?.[`${disk.id}UsedBytes`],
-				available: month?.[`${disk.id}AvailableBytes`],
-				percent: month?.[`${disk.id}Percent`]
+				used: month?.storage[disk.id].used_bytes,
+				available: month?.storage[disk.id].available_bytes,
+				percent: month?.storage[disk.id].used_percent
 			})
 		)
 	);
 
-	let containers = $derived(fleet(snapshot?.containers));
+	let containers = $derived(fleet(snapshot?.containers.items));
 	let clockHistory = $derived(clockOffsetHistory(series));
 </script>
 
@@ -49,9 +49,9 @@
 			<div class="center">
 				<div class="reading">
 					<strong class="figure" style:color="var(--amber)">
-						{degrees(snapshot?.cpuTemperatureC)}
+						{degrees(snapshot?.cpu.temperature_c)}
 					</strong>
-					<span class="range">{minMax(series?.cpuTemperatureC, degrees)}</span>
+					<span class="range">{minMax(series?.cpu.temperature_c, degrees)}</span>
 				</div>
 			</div>
 		</Panel>
@@ -61,8 +61,8 @@
 		<Panel label="Latency">
 			<div class="center">
 				<div class="reading">
-					<strong class="figure" style:color="var(--azure)">{ms(snapshot?.latencyMs)}</strong>
-					<span class="range">{minMax(series?.latencyMs, ms)}</span>
+					<strong class="figure" style:color="var(--azure)">{ms(snapshot?.availability.latency_ms)}</strong>
+					<span class="range">{minMax(series?.availability.latency_ms, ms)}</span>
 				</div>
 			</div>
 		</Panel>
@@ -87,7 +87,7 @@
 		<Panel label="CPU & RAM Usage (%)">
 			<Trace
 				lines={[
-					{ id: 'cpu', points: series?.cpuPercent, tone: 'var(--mint)', label: 'CPU' },
+					{ id: 'cpu', points: series?.cpu.percent, tone: 'var(--mint)', label: 'CPU' },
 					{ id: 'ram', points: ramUsed, tone: 'var(--violet)', label: 'RAM' }
 				]}
 				domain={[0, 100]}
@@ -111,7 +111,7 @@
 						</div>
 						<Capacity
 							label={vol.label}
-							percent={vol.percentNow ?? snapshot?.[`${vol.id}Percent`]}
+							percent={vol.percentNow ?? snapshot?.storage[vol.id].used_percent}
 							tone={vol.tone}
 						/>
 					</div>

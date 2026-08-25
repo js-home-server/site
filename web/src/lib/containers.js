@@ -24,7 +24,7 @@ const fill = (value, limit) =>
 
 export function fleet(containers = []) {
 	const running = containers.filter((container) => operational(container.status)).length;
-	const used = containers.reduce((total, container) => total + (container.memoryBytes ?? 0), 0);
+	const used = containers.reduce((total, container) => total + (container.memory_bytes ?? 0), 0);
 
 	return {
 		running,
@@ -36,23 +36,23 @@ export function fleet(containers = []) {
 			name: container.name,
 			status: container.status,
 			healthy: operational(container.status),
-			uptime: duration(container.uptimeSeconds),
+			uptime: duration(container.uptime_seconds),
 			/* In the order the table's columns name them: each is a reading and the
 			   allowance it is drawn against, so one entry fills two cells. */
 			resources: [
 				{
 					id: 'cpu',
 					tone: 'var(--mint)',
-					value: pct(container.cpuPercent),
-					limit: allocation(container.cpuLimitCores, cores),
-					fill: fill(container.cpuPercent, (container.cpuLimitCores ?? 0) * 100)
+					value: pct(container.cpu_percent),
+					limit: allocation(container.cpu_limit_cores, cores),
+					fill: fill(container.cpu_percent, (container.cpu_limit_cores ?? 0) * 100)
 				},
 				{
 					id: 'memory',
 					tone: 'var(--violet)',
-					value: bytes(container.memoryBytes),
-					limit: allocation(container.memoryLimitBytes, bytes),
-					fill: fill(container.memoryBytes, container.memoryLimitBytes)
+					value: bytes(container.memory_bytes),
+					limit: allocation(container.memory_limit_bytes, bytes),
+					fill: fill(container.memory_bytes, container.memory_limit_bytes)
 				}
 			]
 		}))

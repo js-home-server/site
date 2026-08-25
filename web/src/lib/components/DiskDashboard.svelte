@@ -28,9 +28,9 @@
 			id,
 			label,
 			tone,
-			used: month?.[`${id}UsedBytes`],
-			available: month?.[`${id}AvailableBytes`],
-			percent: month?.[`${id}Percent`]
+			used: month?.storage[id].used_bytes,
+			available: month?.storage[id].available_bytes,
+			percent: month?.storage[id].used_percent
 		})
 	);
 
@@ -42,8 +42,8 @@
 			.map((direction) => ({
 				id: direction,
 				tone,
-				now: rate(last(series?.[`${id}${direction}BytesPerSecond`])),
-				cells: bucket(series?.[`${id}${direction}BytesPerSecond`], HEAT_COLUMNS)
+				now: rate(last(series?.storage[id][`${direction.toLowerCase()}_bytes_per_second`])),
+				cells: bucket(series?.storage[id][`${direction.toLowerCase()}_bytes_per_second`], HEAT_COLUMNS)
 			}))
 			.filter((lane) => lane.cells.length)
 	);
@@ -51,17 +51,17 @@
 	/* How full it ran, how hot, and its two lanes — the same split the charts
 	   above the table already draw. */
 	let stats = $derived([
-		{ label: 'Used (%)', tone, row: statsRow(series?.[`${id}Percent`], pct) },
-		{ label: 'Temperature (°C)', tone, row: statsRow(series?.[`${id}TemperatureC`], degrees) },
-		{ label: 'Read', tone, row: statsRow(series?.[`${id}ReadBytesPerSecond`], rate) },
-		{ label: 'Write', tone, row: statsRow(series?.[`${id}WriteBytesPerSecond`], rate) }
+		{ label: 'Used (%)', tone, row: statsRow(series?.storage[id].used_percent, pct) },
+		{ label: 'Temperature (°C)', tone, row: statsRow(series?.storage[id].temperature_c, degrees) },
+		{ label: 'Read', tone, row: statsRow(series?.storage[id].read_bytes_per_second, rate) },
+		{ label: 'Write', tone, row: statsRow(series?.storage[id].write_bytes_per_second, rate) }
 	]);
 </script>
 
 <div class="grid">
 	<div class="box" style={gridArea({ col: 1, row: 1, w: 2 })}>
 		<Panel label="Capacity">
-			<Capacity {label} percent={vol.percentNow ?? snapshot?.[`${id}Percent`]} {tone} />
+			<Capacity {label} percent={vol.percentNow ?? snapshot?.storage[id].used_percent} {tone} />
 		</Panel>
 	</div>
 
@@ -77,7 +77,7 @@
 		     near ambient either. -->
 		<Panel label="Temperature (°C)">
 			<Trace
-				lines={[{ id: 'temperature', points: series?.[`${id}TemperatureC`], tone }]}
+				lines={[{ id: 'temperature', points: series?.storage[id].temperature_c, tone }]}
 				domain={[20, 90]}
 				format={degrees}
 				marks={[50, 70]}

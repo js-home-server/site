@@ -15,13 +15,11 @@
 	   1 for up, 0 for down, fractional for part of a bucket. */
 	let series = $derived(server.series);
 
-	let online = $derived(snapshot?.server === 'online');
+	let online = $derived(snapshot?.availability.server_status === 'online');
 
-	const pointsOf = (key) => (Array.isArray(series?.[key]) ? series[key] : []);
-
-	let temps = $derived(pointsOf('cpuTemperatureC'));
-	let latencies = $derived(pointsOf('latencyMs'));
-	let uptime = $derived(pointsOf('status'));
+	let temps = $derived(series?.cpu.temperature_c ?? []);
+	let latencies = $derived(series?.availability.latency_ms ?? []);
+	let uptime = $derived(series?.availability.status ?? []);
 
 	/* All three graphics share one x axis: the span the API actually returned,
 	   which is at most `range` but less until it has been collecting that long.
@@ -70,8 +68,10 @@
 		{
 			label: 'Uptime',
 			href: '/server',
-			value: online ? Math.floor(snapshot.uptimeSeconds / 3600) : '—',
-			unit: online ? 'h' : '',
+			value: online && Number.isFinite(snapshot.availability.uptime_seconds)
+				? Math.floor(snapshot.availability.uptime_seconds / 3600)
+				: '—',
+			unit: online && Number.isFinite(snapshot.availability.uptime_seconds) ? 'h' : '',
 			tone: 'mint',
 			/* Silence is not the same as a clean record: with no series behind it
 			   the strip cannot say anything about incidents either way. */
@@ -85,10 +85,10 @@
 		{
 			label: 'CPU Temp',
 			href: '/server/cpu',
-			value: snapshot ? Math.round(snapshot.cpuTemperatureC) : '—',
+			value: Number.isFinite(snapshot?.cpu.temperature_c) ? Math.round(snapshot.cpu.temperature_c) : '—',
 			/* Degrees hug their number, word units take a space. Both carry the
 			   unit at every mention, headline and stats alike. */
-			unit: snapshot ? '°C' : '',
+			unit: Number.isFinite(snapshot?.cpu.temperature_c) ? '°C' : '',
 			tight: true,
 			tone: 'amber',
 			stats: minMax(temps, degrees),
@@ -97,8 +97,10 @@
 		{
 			label: 'Latency',
 			href: '/server/network',
-			value: snapshot ? Math.round(snapshot.latencyMs) : '—',
-			unit: snapshot ? 'ms' : '',
+			value: Number.isFinite(snapshot?.availability.latency_ms)
+				? Math.round(snapshot.availability.latency_ms)
+				: '—',
+			unit: Number.isFinite(snapshot?.availability.latency_ms) ? 'ms' : '',
 			tone: 'azure',
 			/* Average and tail rather than the floor and ceiling the card beside
 			   it shows: a slow probe is a slow probe, and the best case a link
