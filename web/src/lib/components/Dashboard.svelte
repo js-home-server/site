@@ -1,5 +1,5 @@
 <script>
-	import Placeholder from './Placeholder.svelte';
+	import AsciiClock from './AsciiClock.svelte';
 
 	/* The shell every dashboard-style page wears: a fixed rail of stops down the
 	   left, one stop's own content down the right. Each stop is its own route —
@@ -26,8 +26,10 @@
 
 <div class="dash" style="max-width: {max}; --dash-max: {dashMax}">
 	<aside class="rail" aria-label="Page sections">
+		<!-- Decorative: the rail's own nav already names the page you're on, and
+		     the digits are ascii art rather than a reading to a screen reader. -->
 		<div class="rail-art" aria-hidden="true">
-			<Placeholder note="ascii" lines={6} />
+			<AsciiClock />
 		</div>
 
 		<nav>
@@ -311,7 +313,8 @@
 	   height is normally however tall its content needs, which is a box's
 	   worth of blank space left under a chart that only ever asked for one
 	   row's height. .fill makes the chain down to the chart itself (Panel,
-	   then .plot — Trace and Heatmap both render one) a flex column so each
+	   then whichever of .plot — Trace and Heatmap both render one — or
+	   .spread — Spread's own — the panel holds) a flex column so each
 	   stretches to the next, ending in the actual drawing filling the box —
 	   same shape StatsTable already solved for its own table. */
 	.body :global(.box.fill) {
@@ -320,7 +323,8 @@
 	}
 
 	.body :global(.box.fill .panel),
-	.body :global(.box.fill .plot) {
+	.body :global(.box.fill .plot),
+	.body :global(.box.fill .spread) {
 		flex: 1;
 		min-height: 0;
 	}

@@ -3,6 +3,7 @@
 	import AsciiShip from '$lib/components/AsciiShip.svelte';
 	import Placeholder from '$lib/components/Placeholder.svelte';
 	import { fleet } from '$lib/containers.js';
+	import { gridArea } from '$lib/grid.js';
 	import { server } from '$lib/server.svelte.js';
 
 	let snapshot = $derived(server.snapshot);
@@ -22,8 +23,9 @@
 		<div class="art ship"><AsciiShip /></div>
 	</div>
 
+	<!-- Bottom 4x3, full width: the table. -->
 	{#if containerFleet.slots.length}
-		<div class="box span-3">
+		<div class="box" style={gridArea({ col: 1, row: 2, w: 4, h: 3 })}>
 			<div class="container-shell">
 				<!-- One row a container, one column a reading: the names of the readings
 				     are the header, so no row has to repeat them. Scrolls sideways rather
@@ -67,10 +69,12 @@
 			</div>
 		</div>
 	{:else}
-		<div class="box span-3"><Placeholder note="no container data" lines={6} /></div>
+		<div class="box" style={gridArea({ col: 1, row: 2, w: 4, h: 3 })}>
+			<Placeholder note="no container data" lines={6} />
+		</div>
 	{/if}
 
-	{#each Array(14) as _, i (i)}
+	{#each Array(3) as _, i (i)}
 		<div class="box span-3"><Placeholder note="—" lines={6} /></div>
 	{/each}
 </div>

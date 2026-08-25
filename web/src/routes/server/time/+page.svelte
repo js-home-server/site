@@ -1,11 +1,11 @@
 <script>
-	import AsciiClock from '$lib/components/AsciiClock.svelte';
 	import Panel from '$lib/components/Panel.svelte';
 	import Placeholder from '$lib/components/Placeholder.svelte';
 	import Spread from '$lib/components/Spread.svelte';
 	import StatsTable from '$lib/components/StatsTable.svelte';
 	import Trace from '$lib/components/Trace.svelte';
 	import { microseconds } from '$lib/format.js';
+	import { gridArea } from '$lib/grid.js';
 	import { server } from '$lib/server.svelte.js';
 	import { mean, percentile } from '$lib/stats.js';
 	import { spread } from '$lib/time.js';
@@ -52,7 +52,16 @@
 </svelte:head>
 
 <div class="grid">
-	<div class="box span-3">
+	<!-- Left column, row 1: blank, standing over Offsets the way History's
+	     own 2x3 used to run the full height beside it. -->
+	<div class="box" style={gridArea({ col: 1, row: 1, w: 2 })}>
+		<Placeholder note="—" lines={6} />
+	</div>
+
+	<!-- Left column, rows 2-3: Source Offsets, shrunk from a 2x3 to a 2x2 to
+	     make room for the blank above it — .fill stretches Spread's own rows
+	     down the box's full height. -->
+	<div class="box fill" style={gridArea({ col: 1, row: 2, w: 2, h: 2 })}>
 		<!-- The bar is what each source admits it could be wrong by, so a short
 		     one is a source worth following. They agree on the offset to a
 		     fraction of a millisecond and differ sevenfold on their confidence,
@@ -62,15 +71,8 @@
 		</Panel>
 	</div>
 
-	<div class="box span-3">
-		<!-- Decorative: the figures beside it above already say what time it is,
-		     down to the microsecond this page is all about. -->
-		<Panel label="UTC">
-			<div class="clock-box" aria-hidden="true"><AsciiClock /></div>
-		</Panel>
-	</div>
-
-	<div class="box span-3">
+	<!-- Right 2x3: Offset History, the same. -->
+	<div class="box fill" style={gridArea({ col: 3, row: 1, w: 2, h: 3 })}>
 		<Panel label="Offset History">
 			<Trace
 				lines={[{ id: 'offset', points: clockHistory, tone: 'var(--azure)', area: false }]}
@@ -81,23 +83,6 @@
 		</Panel>
 	</div>
 
-	<StatsTable rows={timeStats} />
-
-	{#each Array(12) as _, i (i)}
-		<div class="box span-3"><Placeholder note="—" lines={6} /></div>
-	{/each}
+	<!-- Row 4, full width: Stats. -->
+	<StatsTable rows={timeStats} col={1} row={4} w={4} />
 </div>
-
-<style>
-	/* Centred vertically in its panel rather than pinned to the top, the way
-	   Spread's rows fill theirs beside it -- but full width, not centred on
-	   that axis too: AsciiClock sizes its own digits off this box's width, so
-	   shrinking it to its content would leave the width it measures against
-	   circular. */
-	.clock-box {
-		display: grid;
-		flex: 1;
-		align-items: center;
-		min-height: 7rem;
-	}
-</style>
