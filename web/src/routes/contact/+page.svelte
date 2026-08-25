@@ -4,6 +4,7 @@
 	import Logo from '$lib/components/Logo.svelte';
 	import Placeholder from '$lib/components/Placeholder.svelte';
 	import { PUBLIC_WEB3FORMS_KEY } from '$env/static/public';
+	import { ticking } from '$lib/clock.svelte.js';
 
 	/* The clock, kept live rather than stamped at build time. Europe/London
 	   carries its own BST/GMT switch -- the formatters below read it straight
@@ -26,24 +27,17 @@
 	});
 	const zonePart = (formatted) => formatted.find((part) => part.type === 'timeZoneName').value;
 
-	// Built server-side with no clock to read; the real time takes over once this
-	// runs in a browser.
-	let now = $state(new Date());
-	$effect(() => {
-		const id = setInterval(() => {
-			now = new Date();
-		}, 30_000);
-		return () => clearInterval(id);
-	});
+	/* Every half minute: this shows hours and minutes only, so there is nothing
+	   a faster tick could change. */
+	const clock = ticking(30_000);
 
-	let localTime = $derived(timeFormat.format(now));
-	let localZone = $derived(zonePart(zoneFormat.formatToParts(now)));
-	let localOffset = $derived(zonePart(offsetFormat.formatToParts(now)).replace('GMT', 'UTC'));
+	let localTime = $derived(timeFormat.format(clock.now));
+	let localZone = $derived(zonePart(zoneFormat.formatToParts(clock.now)));
+	let localOffset = $derived(zonePart(offsetFormat.formatToParts(clock.now)).replace('GMT', 'UTC'));
 
-	/* Wireframe of the contact page: one box, split into the copy/channels column
-	   and the visual frame beside it. The headline, lede and status pill are still
-	   dashed slots — no copy written for them yet. The channels are real where an
-	   address exists and a dashed slot where it doesn't. */
+	/* Where to reach me, in the order I would rather be reached. `icon` is the
+	   mark $lib/logos.js draws for that channel; the headline and lede above
+	   them are still dashed slots, with no copy written for them yet. */
 	const CHANNELS = [
 		{
 			key: 'email',
@@ -107,11 +101,11 @@
 	<title>Contact — Joshua Smith</title>
 </svelte:head>
 
-<div class="contact">
+<div class="page contact">
 	<!-- Read out, never drawn: the box carries its own heading. -->
-	<h1>Contact</h1>
+	<h1 class="sr-only">Contact</h1>
 
-	<section class="panel">
+	<section class="surface-box panel">
 		<div class="intro">
 			<h2 class="eyebrow">Contact</h2>
 
@@ -196,36 +190,16 @@
 
 <style>
 	.contact {
-		display: grid;
 		gap: clamp(1.5rem, 3vh, 2rem);
-		max-width: 88rem;
-		margin-inline: auto;
-		padding: clamp(1.5rem, 4vh, 2.5rem) var(--gutter) clamp(3rem, 10vh, 6rem);
 	}
 
-	h1 {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		margin: -1px;
-		overflow: hidden;
-		clip-path: inset(50%);
-		white-space: nowrap;
-	}
-
-	/* Same box vocabulary as the about page: --pad its own air, --rule the line
-	   anything inside divides with. */
+	/* The copy and its channels down the left, the form and the dish on the
+	   right. The box itself is .surface-box (app.css); this is only how the one
+	   box divides. */
 	.panel {
-		--pad: clamp(1rem, 2.5vw, 2rem);
-		--rule: 1px solid color-mix(in srgb, var(--color-border) 75%, transparent);
-
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) minmax(0, 1.9fr);
 		gap: clamp(1.5rem, 4vw, 3rem);
-		padding: var(--pad);
-		border: 1px solid var(--color-border);
-		border-radius: 0.6rem;
-		background: var(--surface);
 	}
 
 	.intro {
@@ -318,12 +292,28 @@
 	   JetBrains Mono advances per character, which spans this box at the bull's
 	   own digit size. See ../asciiArt's Makefile for how the 137 was measured. */
 	.visual {
+		/* How many characters wide the dish is. */
+		--cols: 137;
+
 		container-type: inline-size;
 		display: grid;
 	}
 
+	/* Sized to the box it stands in: a character grid has exactly one size, so
+	   the font size is what scales the picture. --cols above is how many
+	   characters wide the art is and JetBrains Mono advances 0.6021em per
+	   character, so dividing the container's width by that span gives the cell
+	   size that fills it exactly.
+
+	   Scoped here rather than shared in app.css on purpose: the generated art
+	   component carries its own `.ascii-art pre { font-size: 6px }`, and only a
+	   rule with this one's specificity beats it.
+
+	   The line height is rounded to whole device pixels because baselines are
+	   painted on them — a fractional pitch comes out as a 7, 7, 7, 6 rhythm and
+	   bands the picture. */
 	.visual :global(pre) {
-		font-size: calc(100cqw / 82.49);
+		font-size: calc(100cqw / (var(--cols) * 0.6021));
 		line-height: round(0.72em, var(--device-px, 1px));
 	}
 

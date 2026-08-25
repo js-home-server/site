@@ -51,9 +51,9 @@
 		<!-- The page's own heading. The section carries the titling now, so this is
 		     for the outline rather than the eye: without it the document starts at
 		     h2 and the section is under nothing. -->
-		<h1>{title}</h1>
+		<h1 class="sr-only">{title}</h1>
 
-		<section>
+		<section class="surface-box">
 			<h2>{currentLabel}</h2>
 			{@render children()}
 		</section>
@@ -205,21 +205,9 @@
 		display: none;
 	}
 
-	/* Read out, never drawn: the section carries its own titling, and this is
-	   only here so the document has something to start its outline at. */
-	h1 {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		margin: -1px;
-		overflow: hidden;
-		clip-path: inset(50%);
-		white-space: nowrap;
-	}
-
-	/* The one box every route wears: the parts inside carry no frame of their
-	   own, separated by a rule instead, drawn a shade under the box's own
-	   border so the box stays the strongest line on the page.
+	/* The one box every route wears — .surface-box (app.css) draws it; this is
+	   the tighter of the two sizes it comes in, and everything the parts inside
+	   divide themselves with.
 
 	   Every rule runs the full width of what it divides — wall to wall, not
 	   inset by the padding — which it does by bleeding out by --pad and putting
@@ -229,6 +217,7 @@
 		/* 24px, the standard card padding — every .box below inherits the same
 		   figure, since it reads this custom property off its nearest section. */
 		--pad: 1.5rem;
+		--radius: 0.35rem;
 		/* The colour on its own as well as the border it is usually written as: a
 		   lattice drawn with grid gaps needs the one, everything else the other, and
 		   a rule is a rule wherever it turns up. */
@@ -253,10 +242,6 @@
 		grid-template-rows: auto minmax(0, 1fr);
 		align-content: start;
 		gap: var(--divide);
-		padding: var(--pad);
-		border: 1px solid var(--color-border);
-		border-radius: 0.35rem;
-		background: var(--surface);
 		/* A page to a screen, exactly — not a floor a page is free to run past.
 		   The header is always standing above it (there is no scroll to carry it
 		   out of view — a stop on the rail is a fresh page load, not a jump down

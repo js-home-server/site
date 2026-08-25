@@ -1,4 +1,6 @@
 <script>
+	import { ticking } from '$lib/clock.svelte.js';
+
 	/* A live clock drawn the way the rest of this project's art is drawn: JetBrains
 	   Mono, one ink colour, digits doing the work. The other pieces are sampled
 	   off a photograph; this one has no photograph behind it, so its digits are
@@ -57,15 +59,8 @@
 		return grid.map((row) => row.map((on) => (on ? FILL : ' ')).join(''));
 	}
 
-	// Built server-side with no clock to read; the real time takes over once
-	// this runs in a browser.
-	let now = $state(new Date());
-	$effect(() => {
-		const id = setInterval(() => {
-			now = new Date();
-		}, 1000);
-		return () => clearInterval(id);
-	});
+	/* Every second, since the digits below show them. */
+	const clock = ticking(1000);
 
 	let timeFormat = $derived(
 		new Intl.DateTimeFormat('en-GB', {
@@ -77,7 +72,7 @@
 		})
 	);
 
-	let chars = $derived(timeFormat.format(now).split(''));
+	let chars = $derived(timeFormat.format(clock.now).split(''));
 	/* One text row per glyph row, every character's row of its own glyph joined
 	   side by side with a one-space gutter. */
 	let lines = $derived(
