@@ -9,9 +9,9 @@ import { last } from './stats.js';
    comes to more than the machine has. Free is therefore available less the
    cache, and the three bands add up to the whole. */
 export function memoryBands(history) {
-	const total = history?.memoryTotalBytes;
-	const used = history?.memoryUsedBytes;
-	const cache = history?.memoryCachedBytes;
+	const total = history?.memory.total_bytes;
+	const used = history?.memory.used_bytes;
+	const cache = history?.memory.cached_bytes;
 
 	/* Stacked by index, so the three have to be the same series read three ways —
 	   which they are when they came from one response, and are not worth guessing

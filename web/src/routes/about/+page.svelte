@@ -203,10 +203,10 @@
 		<h2 class="eyebrow">My projects</h2>
 
 		<div class="cards">
-			{#each PROJECTS as { name, blurb, tags, url } (name)}
+			{#each PROJECTS as { name, blurb, tags, url }, i (name)}
 				<article class="card">
 					<div class="head">
-						<div class="icon"><Placeholder note="" lines={2} /></div>
+						<div class="icon">{String(i).padStart(2, '0')}</div>
 						<h3>{name}</h3>
 					</div>
 
@@ -647,8 +647,12 @@
 		align-items: center;
 	}
 
+	/* The card's index rather than an icon: 00, 01, 02 — a count of the work,
+	   not an illustration of it. */
 	.icon {
-		width: 2.25rem;
+		color: var(--text-faint);
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
 	}
 
 	/* The summary and its tags stand off the left, the way the drawing rules them

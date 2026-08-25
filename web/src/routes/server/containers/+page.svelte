@@ -19,7 +19,7 @@
 	];
 
 	/* The containers as the fleet and its slots, both already worked out. */
-	let containers = $derived(fleet(server.snapshot?.containers));
+	let containers = $derived(fleet(server.snapshot?.containers.items));
 </script>
 
 <svelte:head>

@@ -17,10 +17,10 @@ const RANK = { selected: 3, candidate: 2, unusable: 1 };
    page reads a positive offset as the machine being ahead — the headline
    figure and the history behind it can never disagree on which way is which. */
 export const clockOffset = (time) =>
-	Number.isFinite(time?.systemOffsetSeconds) ? -time.systemOffsetSeconds : null;
+	Number.isFinite(time?.system_offset_seconds) ? -time.system_offset_seconds : null;
 
 export const clockOffsetHistory = (series) =>
-	(series?.timeSystemOffsetSeconds ?? []).map(([at, offset]) => [at, -offset]);
+	(series?.time.system_offset_seconds ?? []).map(([at, offset]) => [at, -offset]);
 
 /* Every source as one reading with an uncertainty: where it says the clock is,
    and how far out it admits that could be.
@@ -32,12 +32,12 @@ export const clockOffsetHistory = (series) =>
    by a factor of seven on how sure they are of it. */
 export const spread = (time) =>
 	[...(time?.sources ?? [])]
-		.sort((a, b) => RANK[b.state] - RANK[a.state] || a.errorSeconds - b.errorSeconds)
+		.sort((a, b) => RANK[b.state] - RANK[a.state] || a.error_seconds - b.error_seconds)
 		.map((source) => ({
 			id: source.name,
 			label: source.name,
 			note: source.state,
 			tone: TONE[source.state] ?? TONE.unusable,
-			value: source.offsetSeconds,
-			error: source.errorSeconds
+			value: source.offset_seconds,
+			error: source.error_seconds
 		}));

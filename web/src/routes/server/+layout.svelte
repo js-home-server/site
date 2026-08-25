@@ -30,12 +30,12 @@
 	$effect(watch);
 
 	let snapshot = $derived(server.snapshot);
-	let online = $derived(snapshot?.server === 'online');
+	let online = $derived(snapshot?.availability.server_status === 'online');
 
 	/* The status series is 1 for a poll the machine answered and 0 for one it did
 	   not: bucketed into bars for the rail's strip, and counted outright for the
 	   incident line above it. */
-	let uptime = $derived(server.series?.status ?? []);
+	let uptime = $derived(server.series?.availability.status ?? []);
 	let incidents = $derived(outages(uptime));
 	let uptimeBars = $derived(
 		bucket(uptime, UPTIME_BARS).map((v) => (v === null ? 'unknown' : v < 1 ? 'down' : 'up'))
@@ -55,7 +55,9 @@
 		<div class="rail-box uptime">
 			<h2 class="eyebrow">Uptime</h2>
 			<p class="figure">
-				{online ? Math.floor(snapshot.uptimeSeconds / 3600) : '—'}<span class="unit">h</span>
+				{online && Number.isFinite(snapshot.availability.uptime_seconds)
+					? Math.floor(snapshot.availability.uptime_seconds / 3600)
+					: '—'}<span class="unit">{online && Number.isFinite(snapshot.availability.uptime_seconds) ? 'h' : ''}</span>
 			</p>
 			<p class="stats">
 				{uptime.length
@@ -75,7 +77,7 @@
 		<span class="eyebrow">Last updated</span>
 		<!-- The stamp the snapshot came with, not the clock: this says how fresh
 		     the numbers above are, which is not the same as what time it is. -->
-		<span class="mono">{stamp(snapshot?.generatedAt)}</span>
+		<span class="mono">{stamp(snapshot?.generated_at)}</span>
 	{/snippet}
 </Dashboard>
 

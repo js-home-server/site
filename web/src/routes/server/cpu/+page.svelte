@@ -13,7 +13,7 @@
 	/* Per-core utilisation as a map: one row a core, one cell a bucket, straight
 	   off the same 0-100% scale the traces are drawn against. */
 	let cores = $derived(
-		Object.entries(series?.cpuPerCorePercent ?? {})
+		Object.entries(series?.cpu.per_core_percent ?? {})
 			.sort(([a], [b]) => Number(a) - Number(b))
 			.map(([id, points]) => ({
 				id: `C${id}`,
@@ -23,12 +23,12 @@
 	);
 
 	let cpuStats = $derived([
-		{ label: 'Usage (%)', tone: 'var(--mint)', row: statsRow(series?.cpuPercent, pct) },
-		{ label: 'Pressure (%)', tone: 'var(--coral)', row: statsRow(series?.cpuPressurePercent, pct) },
+		{ label: 'Usage (%)', tone: 'var(--mint)', row: statsRow(series?.cpu.percent, pct) },
+		{ label: 'Pressure (%)', tone: 'var(--coral)', row: statsRow(series?.cpu.pressure_percent, pct) },
 		{
 			label: 'Temperature (°C)',
 			tone: 'var(--amber)',
-			row: statsRow(series?.cpuTemperatureC, degrees)
+			row: statsRow(series?.cpu.temperature_c, degrees)
 		}
 	]);
 </script>
@@ -41,7 +41,7 @@
 	<div class="box fill" style={gridArea({ col: 1, row: 1, w: 2, h: 2 })}>
 		<Panel label="CPU Usage (%)">
 			<Trace
-				lines={[{ id: 'usage', points: series?.cpuPercent, tone: 'var(--mint)' }]}
+				lines={[{ id: 'usage', points: series?.cpu.percent, tone: 'var(--mint)' }]}
 				domain={[0, 100]}
 				format={pct}
 			/>
@@ -54,7 +54,7 @@
 		     trace flat against the top of it. -->
 		<Panel label="CPU Temperature (°C)">
 			<Trace
-				lines={[{ id: 'temperature', points: series?.cpuTemperatureC, tone: 'var(--amber)' }]}
+				lines={[{ id: 'temperature', points: series?.cpu.temperature_c, tone: 'var(--amber)' }]}
 				domain={[40, 100]}
 				format={degrees}
 				marks={[60, 80]}
@@ -67,7 +67,7 @@
 		     spike, so the rules are the two levels worth seeing a trace cross. -->
 		<Panel label="CPU Pressure (%)">
 			<Trace
-				lines={[{ id: 'pressure', points: series?.cpuPressurePercent, tone: 'var(--coral)' }]}
+				lines={[{ id: 'pressure', points: series?.cpu.pressure_percent, tone: 'var(--coral)' }]}
 				domain={[0, 100]}
 				format={pct}
 				marks={[25, 50]}
