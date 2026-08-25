@@ -19,6 +19,7 @@
 		<div class="identity">
 			<h1>Joshua Smith</h1>
 			<p>Data Scientist <span aria-hidden="true">·</span> AI Engineer</p>
+			<a class="cta" href="/projects">View my work</a>
 		</div>
 	</div>
 
@@ -177,6 +178,32 @@
 	}
 
 	p span {
+		color: var(--mint);
+	}
+
+	/* Sat straight under the title line, measured in cells like the name above it
+	   so the whole identity block scales as one thing. The pill is the shape the
+	   project tags already wear. */
+	.cta {
+		display: inline-block;
+		margin-top: clamp(0.8rem, 2.2 * var(--cell), 1.6rem);
+		padding: 0.7em 1.6em;
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		color: var(--color-foreground);
+		font-size: clamp(0.66rem, 1.7 * var(--cell), 1rem);
+		font-weight: 500;
+		letter-spacing: 0.2em;
+		text-decoration: none;
+		text-transform: uppercase;
+		transition:
+			color 160ms ease,
+			border-color 160ms ease;
+	}
+
+	.cta:hover,
+	.cta:focus-visible {
+		border-color: var(--mint);
 		color: var(--mint);
 	}
 

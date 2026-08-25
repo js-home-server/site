@@ -106,8 +106,7 @@
 		--color-border: #c9c8c0;
 		--text-dim: #55544f;
 		--text-faint: #6b6a64;
-		/* How far the body's rule stands off its text; reused below the row
-		   divider so both gaps read as the same unit of air. */
+		/* How far the body's rule stands off its text. */
 		--divide: 0.9rem;
 
 		border-color: #e1e0d9;
@@ -115,11 +114,11 @@
 		color: var(--color-foreground);
 	}
 
-	/* Two up, wrapping into as many rows as there are projects. */
+	/* One project a row, top to bottom. --pad above and below every dividing
+	   rule, so the list is read as separated entries rather than a block. */
 	.cards {
 		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: var(--divide) 0;
+		gap: var(--pad);
 	}
 
 	.card h3 {
@@ -129,8 +128,11 @@
 		letter-spacing: -0.01em;
 	}
 
+	/* Capped in ch like the about page's lede: a row is the full width of the
+	   box now, which is far past what a line of prose can be read across. */
 	.blurb {
 		margin: 0;
+		max-width: 84ch;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
 		font-size: 0.72rem;
@@ -158,37 +160,24 @@
 		letter-spacing: 0.04em;
 	}
 
-	/* A card is a column of the row, divided from the next by a rule rather than
+	/* A card is a row of the list, divided from the next by a rule rather than
 	   given a frame of its own. */
 	.card {
 		display: grid;
-		grid-template-rows: auto minmax(0, 1fr) auto;
 		gap: 1rem;
-		padding: 0 var(--pad);
 	}
 
-	.card:nth-child(odd) {
-		padding-left: 0;
-		border-left: 0;
-	}
-
-	.card:nth-child(even) {
-		padding-right: 0;
-	}
-
-	/* Rows past the first are divided from the one above by a rule, centred in
-	   the full gap between the row above and this one — the grid's own
-	   row-gap plus the padding-top this rule reserves for itself — not just
-	   dropped at the top of the padding. */
-	.card:nth-child(n + 3) {
+	/* Rows past the first take their own --pad, and the rule sits halfway up the
+	   grid's gap above it — so the air reads the same either side of the line. */
+	.card:nth-child(n + 2) {
 		position: relative;
 		padding-top: var(--pad);
 	}
 
-	.card:nth-child(n + 3)::before {
+	.card:nth-child(n + 2)::before {
 		content: '';
 		position: absolute;
-		top: calc((var(--pad) - var(--divide)) / 2);
+		top: calc(var(--pad) / -2);
 		left: 0;
 		right: 0;
 		border-top: var(--rule);
@@ -219,13 +208,11 @@
 		border-left: var(--rule);
 	}
 
-	/* Pinned to the foot of the card, so the four cards end on one line however
-	   long the summaries above them run. A row, for the one with two links. */
+	/* A row, for the one card that has two links. */
 	.links {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.4rem 1.25rem;
-		align-self: end;
 	}
 
 	.links a {
@@ -239,35 +226,8 @@
 		text-decoration: underline;
 	}
 
-	/* An empty slot stands a link's width, so the four feet line up anyway. */
+	/* An empty slot stands a link's width, so the feet all line up anyway. */
 	.slot {
 		width: min(100%, 9rem);
-	}
-
-	/* --- narrow ---------------------------------------------------------- */
-
-	@media (max-width: 40rem) {
-		.cards {
-			grid-template-columns: minmax(0, 1fr);
-		}
-
-		.card {
-			padding-inline: 0;
-			border-left: 0;
-		}
-
-		.card:nth-child(n + 2) {
-			position: relative;
-			padding-top: var(--pad);
-		}
-
-		.card:nth-child(n + 2)::before {
-			content: '';
-			position: absolute;
-			top: 0;
-			left: 0;
-			right: 0;
-			border-top: var(--rule);
-		}
 	}
 </style>
