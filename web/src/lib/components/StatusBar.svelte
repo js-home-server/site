@@ -144,9 +144,15 @@
 			Home server
 		</h2>
 
-		<p class="claim">Served from a box under my stairs. It seems to be working.</p>
+		<p class="claim">Site served from a box under my stairs. It seems to be working.</p>
 
-		<a href="/server">View project <span aria-hidden="true">→</span></a>
+		<a
+			href="#this-server"
+			onclick={(event) => {
+				event.preventDefault();
+				window.dispatchEvent(new Event('openproject'));
+			}}>View project <span aria-hidden="true">→</span></a
+		>
 	</div>
 
 	<div class="metrics">
