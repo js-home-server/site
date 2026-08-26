@@ -39,13 +39,6 @@
 <Contact />
 
 <style>
-	/* Stacked down one scroll now, and each section already ends in its own
-	   bottom inset — a top one on the next as well is two gaps where the page
-	   reads one. */
-	:global(.page + .page) {
-		padding-top: 0;
-	}
-
 	.landing {
 		/* --- hero tuning knobs -------------------------------------------
 		   The art is a fixed grid of characters — 160 wide, 112 tall — so its

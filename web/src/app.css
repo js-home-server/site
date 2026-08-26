@@ -137,20 +137,29 @@
 	}
 }
 
-/* A content page: boxes stacked down one centred column, at the same width and
-   inset the dashboard uses, so the three pages line up with each other however
-   differently they are filled. The gap between the boxes is each page's own —
-   that is the only part they disagree on. The landing page opts out entirely:
-   it is full-bleed and sizes itself from the hero. */
+/* A section of the one scroll: boxes stacked down one centred column, at the
+   same width and inset the dashboard uses, so the sections line up with each
+   other however differently they are filled. The gap between the boxes is each
+   section's own — that is the only part they disagree on. The landing page opts
+   out entirely: it is full-bleed and sizes itself from the hero.
+
+   Only a bottom inset, and the same one the boxes inside a section keep from
+   each other: on one page the space between two sections is one gap, not the
+   two an inset at each end would make of it — which is what left the holes. The
+   last section is the exception, since nothing follows it to close the page. */
 .page {
 	display: grid;
 	max-width: 88rem;
 	margin-inline: auto;
-	padding: clamp(1.5rem, 4vh, 2.5rem) var(--gutter) clamp(3rem, 10vh, 6rem);
+	padding: 0 var(--gutter) clamp(0.75rem, 1.5vh, 1.25rem);
 	/* Jumped to from the nav, which is sticky and would otherwise cover the top
 	   of whatever was jumped to. The fallback is for /server, which is outside
 	   the site shell that sets the height. */
 	scroll-margin-top: var(--header-height, 0px);
+}
+
+.page:last-child {
+	padding-bottom: clamp(3rem, 10vh, 6rem);
 }
 
 /* Read out, never drawn. Every page carries an h1 for the document outline

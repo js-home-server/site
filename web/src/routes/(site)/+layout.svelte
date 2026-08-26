@@ -27,6 +27,19 @@
 	let offset = $state(0);
 	let last = 0;
 	let queued = false;
+	/* A jump from the nav is a scroll down like any other, and receding from it
+	   takes the bar away at the one moment it is being used. So while a jump is
+	   running the bar simply stays. scrollend ends it; the timer is for the
+	   click that scrolls nowhere, on the stop already being read, which would
+	   otherwise leave the bar pinned for good. */
+	let jumping = $state(false);
+	let backstop;
+
+	function jump() {
+		jumping = true;
+		clearTimeout(backstop);
+		backstop = setTimeout(() => (jumping = false), 1500);
+	}
 
 	function onScroll() {
 		/* One read and one write a frame. The spy below measures, which forces
@@ -44,7 +57,7 @@
 
 		/* Over the hero the bar is simply down: nothing to recede from, and
 		   letting it move there is what took it on the first flick. */
-		offset = y <= height ? 0 : Math.min(height + REVEAL, Math.max(0, offset + delta));
+		offset = jumping || y <= height ? 0 : Math.min(height + REVEAL, Math.max(0, offset + delta));
 
 		/* The stop being read is the last one whose top has passed the upper
 		   third of the viewport — near enough the reading line, and far enough
@@ -56,7 +69,7 @@
 	}
 </script>
 
-<svelte:window onscroll={onScroll} />
+<svelte:window onscroll={onScroll} onscrollend={() => (jumping = false)} />
 
 <div class="site-shell">
 	<!-- Whole pixels: the bar is opaque over the page and a fractional offset
@@ -67,7 +80,7 @@
 	>
 		<nav aria-label="Primary navigation">
 			{#each links as { href, label } (href)}
-				<a {href} aria-current={active === href ? 'location' : undefined}>{label}</a>
+				<a {href} onclick={jump} aria-current={active === href ? 'location' : undefined}>{label}</a>
 			{/each}
 		</nav>
 	</header>
