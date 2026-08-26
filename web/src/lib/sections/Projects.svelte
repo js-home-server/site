@@ -1,7 +1,8 @@
 <script>
 	import Placeholder from '$lib/components/Placeholder.svelte';
+	import ToolPills from '$lib/components/ToolPills.svelte';
 
-	/* The work worth showing. `tags` are what each is actually built with; `url`
+	/* The work worth showing. `tools` are what each is actually built with; `url`
 	   is where the source is, on the ones that are public; `live` is where it
 	   actually runs on this site, on the one that runs here. */
 	const PROJECTS = [
@@ -9,20 +10,20 @@
 			name: 'Ancestree',
 			blurb:
 				'Zero-dependency Python package that models a data pipeline as a directed acyclic graph, with content-defined chunking over a SQL backend. Published on PyPI and in use by researchers internally.',
-			tags: ['Python', 'SQLite', 'DAGs', 'PyPI'],
+			tools: ['Python', 'SQL', 'Git'],
 			url: 'https://github.com/JS195/ancestree'
 		},
 		{
 			name: 'Orderflow analysis',
 			blurb:
 				'Pipeline for Binance futures and spot data, with a dynamic feature registry covering OHLC aggregation, open interest, funding rate and CVD, read back through a multi-panel plotting framework.',
-			tags: ['Python', 'Pandas', 'Plotly', 'Binance API']
+			tools: ['Python', 'Pandas', 'Polars', 'Plotly', 'NumPy']
 		},
 		{
 			name: 'This server',
 			blurb:
 				'The machine this site is served from, and the site itself: metrics scraped off the box, cached behind a small API, and read back live on the server page.',
-			tags: ['SvelteKit', 'Docker', 'Prometheus', 'Python'],
+			tools: ['Svelte', 'JavaScript', 'Docker', 'Linux', 'Python'],
 			url: 'https://github.com/js-home-server',
 			live: '/server'
 		},
@@ -30,7 +31,7 @@
 			name: 'ascii-art',
 			blurb:
 				'C11 CLI that converts raster images into ASCII art for the terminal or the web: block-averaged sampling, tone curve and glyph selection as separable, individually tested stages. Generates the art on this site, including the astronaut on the about page.',
-			tags: ['C', 'stb_image', 'HTML/ANSI/TXT'],
+			tools: ['C++', 'Git'],
 			url: 'https://github.com/JS195/asciiArt'
 		}
 	];
@@ -104,7 +105,7 @@
 		<h2 class="eyebrow">My projects</h2>
 
 		<div class="cards">
-			{#each PROJECTS as { name, blurb, tags, url, live }, i (name)}
+			{#each PROJECTS as { name, blurb, tools, url, live }, i (name)}
 				<article class="card" class:open={i === open} bind:this={rows[i]}>
 					<!-- The whole title line is the control: a collapsed project is a
 					     line that opens, and that is all it does. -->
@@ -122,9 +123,7 @@
 							<div class="body">
 								<p class="blurb">{blurb}</p>
 
-								<ul class="tags">
-									{#each tags as tag (tag)}<li>{tag}</li>{/each}
-								</ul>
+								<ToolPills {tools} />
 							</div>
 
 							<div class="links">
@@ -207,27 +206,6 @@
 		font-family: var(--font-mono);
 		font-size: 0.72rem;
 		line-height: 1.7;
-	}
-
-	/* What it is built with, one pill each, wrapping onto as many lines as the
-	   card is wide enough for. */
-	.tags {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.4rem;
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-
-	.tags li {
-		padding: 0.2rem 0.55rem;
-		border: 1px solid var(--color-border);
-		border-radius: 999px;
-		color: var(--text-dim);
-		font-family: var(--font-mono);
-		font-size: 0.62rem;
-		letter-spacing: 0.04em;
 	}
 
 	/* A card is a row of the list, divided from the next by a rule rather than
@@ -326,7 +304,7 @@
 		font-size: 0.85rem;
 	}
 
-	/* The summary and its tags stand off the left, the way the drawing rules them
+	/* The summary and its pills stand off the left, the way the drawing rules them
 	   in against a line. */
 	.body {
 		display: grid;

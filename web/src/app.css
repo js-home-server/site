@@ -189,6 +189,25 @@
 	background: var(--surface);
 }
 
+/* Corner brackets around whatever stands in them — eight hairlines, two to a
+   corner, drawn as backgrounds rather than elements: the same trick Placeholder
+   draws its dotted edges with. Here rather than in each page that wants it,
+   since a scoped rule cannot reach another component's root and a copy per file
+   is how the two drift apart. */
+.bracket-frame {
+	--corner: 1.75rem;
+	--edge: linear-gradient(var(--color-border) 0 0);
+
+	display: grid;
+	padding: 0.75rem;
+	background-image: var(--edge), var(--edge), var(--edge), var(--edge), var(--edge),
+		var(--edge), var(--edge), var(--edge);
+	background-position: 0 0, 0 0, 100% 0, 100% 0, 0 100%, 0 100%, 100% 100%, 100% 100%;
+	background-repeat: no-repeat;
+	background-size: var(--corner) 1px, 1px var(--corner), var(--corner) 1px, 1px var(--corner),
+		var(--corner) 1px, 1px var(--corner), var(--corner) 1px, 1px var(--corner);
+}
+
 /* --- dashboard parts -----------------------------------------------------
    The shapes every reading on the site is built from. They live here rather than
    in a component because they cross scopes: a scoped rule cannot reach another

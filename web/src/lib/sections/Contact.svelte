@@ -175,7 +175,7 @@
 		</div>
 
 		<!-- Decorative: the copy beside it carries the meaning. -->
-		<div class="frame" aria-hidden="true">
+		<div class="bracket-frame" aria-hidden="true">
 			<div class="visual"><AsciiRadioDish /></div>
 		</div>
 	</section>
@@ -262,22 +262,6 @@
 
 	a.value:hover {
 		text-decoration: underline;
-	}
-
-	/* The corner brackets the visual sits in, same trick as the about hero's
-	   .frame: eight hairlines drawn as backgrounds, two to a corner. */
-	.frame {
-		--corner: 1.75rem;
-		--edge: linear-gradient(var(--color-border) 0 0);
-
-		display: grid;
-		padding: 0.75rem;
-		background-image: var(--edge), var(--edge), var(--edge), var(--edge), var(--edge),
-			var(--edge), var(--edge), var(--edge);
-		background-position: 0 0, 0 0, 100% 0, 100% 0, 0 100%, 0 100%, 100% 100%, 100% 100%;
-		background-repeat: no-repeat;
-		background-size: var(--corner) 1px, 1px var(--corner), var(--corner) 1px, 1px var(--corner),
-			var(--corner) 1px, 1px var(--corner), var(--corner) 1px, 1px var(--corner);
 	}
 
 	/* A character grid has one size -- how big one cell is -- so the art is sized
