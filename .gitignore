@@ -5,3 +5,9 @@ status-api-app.py
 website-brief.md
 .DS_Store
 design-review
+
+# Design scratch: concept renders dropped in here while working on the hero.
+# robots.txt lives here too and is deliberately still tracked — SvelteKit serves
+# it at /robots.txt, so an ignored one would vanish from a fresh clone.
+web/static/*
+!web/static/robots.txt

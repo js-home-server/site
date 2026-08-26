@@ -58,16 +58,13 @@
 	   the window; this is the count, and the dashboard reads it the same way. */
 	let incidents = $derived(outages(uptime));
 
-	/* One entry per card. Everything the markup needs is settled here, so the
-	   template stays a list of cards rather than a pile of ternaries.
-
-	   `href` is the section of the dashboard that carries the same reading in full,
-	   which for latency is the network section: this is the probe's round trip, and
-	   that is where the rest of the link's readings are. */
+	/* One entry per reading. Everything the markup needs is settled here, so the
+	   template stays a list of readings rather than a pile of ternaries. The whole
+	   bar is one box now, and the one link in it is the lede's — so these no longer
+	   carry a section of the dashboard to point at. */
 	let cards = $derived([
 		{
 			label: 'Uptime',
-			href: '/server',
 			value: online && Number.isFinite(snapshot.availability.uptime_seconds)
 				? Math.floor(snapshot.availability.uptime_seconds / 3600)
 				: '—',
@@ -84,7 +81,6 @@
 		},
 		{
 			label: 'CPU Temp',
-			href: '/server/cpu',
 			value: Number.isFinite(snapshot?.cpu.temperature_c) ? Math.round(snapshot.cpu.temperature_c) : '—',
 			/* Degrees hug their number, word units take a space. Both carry the
 			   unit at every mention, headline and stats alike. */
@@ -96,7 +92,6 @@
 		},
 		{
 			label: 'Latency',
-			href: '/server/network',
 			value: Number.isFinite(snapshot?.availability.latency_ms)
 				? Math.round(snapshot.availability.latency_ms)
 				: '—',
@@ -119,9 +114,9 @@
 	);
 </script>
 
-{#snippet metricCard({ label, href, value, unit, tight, tone, stats, points, strip })}
-	<a class="metric" {href}>
-		<h2 class="eyebrow">{label}</h2>
+{#snippet metricCard({ label, value, unit, tight, tone, stats, points, strip })}
+	<div class="metric">
+		<h3 class="eyebrow">{label}</h3>
 		<strong class="figure value {tone}">
 			{value}{#if unit}<span class="unit" class:tight>{unit}</span>{/if}
 		</strong>
@@ -136,10 +131,24 @@
 			<Spark {points} tone="var(--{tone})" />
 		{/if}
 		<TimeAxis range={spanLabel} />
-	</a>
+	</div>
 {/snippet}
 
 <aside class="status-bar" aria-label="Live server status">
+	<div class="lede">
+		<h2 class="eyebrow">
+			<!-- The same live dot the contact page wears, in the colour the box is
+			     currently reading: mint while the probe is answering, coral when it
+			     is not, so the claim below is never made by a bar that is down. -->
+			<span class="dot" class:down={!online} aria-hidden="true"></span>
+			Home server
+		</h2>
+
+		<p class="claim">Served from a box under my stairs. It seems to be working.</p>
+
+		<a href="/server">View project <span aria-hidden="true">→</span></a>
+	</div>
+
 	<div class="metrics">
 		{#each cards as card (card.label)}
 			{@render metricCard(card)}
@@ -148,68 +157,129 @@
 </aside>
 
 <style>
+	/* One box now, not three: what it says on the left, what it is reading on the
+	   right, divided by a single rule. --py/--px are carried by the two columns
+	   rather than by the box, which is what runs that rule wall to wall without
+	   the negative margins it would otherwise take to undo the padding. */
 	.status-bar {
-		/* The cards overlap the bull and have to stay in front of it whatever the
+		/* The vertical inset the three separate cards each carried, kept exactly,
+		   so the one box stands the same height on the page as the row it
+		   replaces. */
+		--py: 0.75rem;
+		--px: 1.1rem;
+
+		/* The box overlaps the bull and has to stay in front of it whatever the
 		   art's paint order turns out to be — a mask or a filter on it would
 		   otherwise lift it above plain blocks like this one. */
 		position: relative;
 		z-index: 1;
+		display: grid;
+		/* The claim is two sentences, so the column carrying it takes a bigger
+		   share than a label would need: wide enough to set it in two lines, which
+		   is what holds the box to the height of the row it replaced. */
+		grid-template-columns: minmax(0, 1.3fr) minmax(0, 2.45fr);
 		/* Width comes from the parent (the bull's grid column on the landing
 		   page); only cap it so it never runs off a narrow viewport. */
 		width: 100%;
 		max-width: calc(100vw - 2 * var(--gutter));
-		/* The cards sit off the bottom edge by exactly what the nav sits off the
+		/* The box sits off the bottom edge by exactly what the nav sits off the
 		   top — same token, so the page is framed evenly however the header's
-		   own padding resolves. The outer edges stay flush so the row still
-		   measures tip to tip. */
+		   own padding resolves. The outer edges stay flush so it still measures
+		   tip to tip with the art. */
 		margin: 0 auto var(--nav-pad-top);
+		border: 1px solid var(--color-border);
+		border-radius: 0.35rem;
+		/* Opaque: the bull sits directly behind this and a chart drawn over its
+		   texture is unreadable. */
+		background: var(--color-background);
 	}
 
-	h2 {
+	h2,
+	h3 {
 		margin: 0;
+	}
+
+	/* What the box is, what that means, and where to go for the rest of it. The
+	   link is pushed to the floor so it lands level with the graphics beside it
+	   however the claim above it wraps. */
+	.lede {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		padding: var(--py) var(--px);
+	}
+
+	.lede .dot {
+		display: inline-block;
+		width: 0.4rem;
+		height: 0.4rem;
+		margin-right: 0.35rem;
+		border-radius: 50%;
+		background: var(--mint);
+		box-shadow: 0 0 0.5rem var(--mint);
+	}
+
+	.lede .dot.down {
+		background: var(--coral);
+		box-shadow: 0 0 0.5rem var(--coral);
+	}
+
+	/* The one line of prose in the hero, set in the face the name above it is —
+	   this is a claim, not a reading, and the mono the rest of the box is written
+	   in would file it as one. */
+	.claim {
+		margin: 0;
+		color: var(--color-foreground);
+		font-size: clamp(0.82rem, 1.05vw, 1.05rem);
+		font-weight: 700;
+		letter-spacing: -0.015em;
+		line-height: 1.3;
+		/* Balanced: at two lines this is a heading's problem, not a paragraph's —
+		   the sentence break wants to fall evenly rather than leave an orphan. */
+		text-wrap: balance;
+	}
+
+	.lede a {
+		margin-top: auto;
+		color: var(--mint);
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		font-weight: 500;
+		letter-spacing: 0.12em;
+		text-decoration: none;
+		text-transform: uppercase;
+	}
+
+	.lede a:hover span,
+	.lede a:focus-visible span {
+		display: inline-block;
+		transform: translateX(2px);
 	}
 
 	.metrics {
 		display: grid;
-		/* Equal cells that divide the bar exactly, however wide it is and however
-		   many metrics there are. The scroll container is what keeps this off the
-		   parent's intrinsic width, so the bar can never widen the column it is
-		   measured from. */
+		/* Equal cells that divide the space exactly, however wide it is and
+		   however many readings there are. The scroll container is what keeps
+		   this off the parent's intrinsic width, so the box can never widen the
+		   column it is measured from. */
 		grid-auto-flow: column;
 		grid-auto-columns: minmax(0, 1fr);
-		gap: 0.75rem;
+		gap: 1.25rem;
+		padding: var(--py) var(--px);
+		/* The divider, and the only rule inside the box. */
+		border-left: 1px solid var(--color-border);
 		overflow-x: auto;
 		scrollbar-width: thin;
 	}
 
-	/* These are the one place on the site that is still a card: they stand on the
-	   bull rather than inside a box, so the frame is what makes each one a card
-	   rather than three columns of loose text.
-
-	   Each is a link to the section of the dashboard that carries the same reading
-	   in full, so the whole card is the target rather than a word inside it. */
+	/* No frame of its own any more — the box around all three is the frame, and
+	   these are columns of type standing in it. */
 	.metric {
 		display: flex;
 		flex-direction: column;
 		gap: 0.3rem;
 		/* Room for the graphic and the window caption beneath it. */
 		min-height: 5.4rem;
-		padding: 0.75rem 0.9rem;
-		border: 1px solid var(--color-border);
-		border-radius: 0.25rem;
-		/* Opaque: the bull sits directly behind these and a chart drawn over its
-		   texture is unreadable. The gaps between boxes still show it. */
-		background: var(--color-background);
-		color: inherit;
-		text-decoration: none;
-		transition: border-color 160ms ease;
-	}
-
-	/* The frame is the whole affordance: nothing inside moves or changes colour, so
-	   the card reads the same on the way to being clicked as it does at rest. */
-	.metric:hover,
-	.metric:focus-visible {
-		border-color: var(--color-foreground);
 	}
 
 	/* Every card ends in a graphic of the same height, pinned to the foot of the
@@ -286,17 +356,21 @@
 		color: var(--azure);
 	}
 
+	/* Two columns will not divide a phone: the claim goes above the readings it
+	   introduces, and the rule that divided them turns to lie between them. */
 	@media (max-width: 48rem) {
-		/* Three cells still divide a phone, but only if the frame around the
-		   type gives way first: a card half off the edge reads as broken, a
-		   tighter one does not. */
+		.status-bar {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
 		.metrics {
 			gap: 0.5rem;
+			border-top: 1px solid var(--color-border);
+			border-left: 0;
 		}
 
 		.metric {
 			min-height: 5.9rem;
-			padding: 0.7rem 0.6rem;
 		}
 
 		.stats {

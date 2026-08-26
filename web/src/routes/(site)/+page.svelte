@@ -18,8 +18,13 @@
 
 		<div class="identity">
 			<h1>Joshua Smith</h1>
-			<p>Data Scientist <span aria-hidden="true">·</span> AI Engineer</p>
-			<a class="cta" href="/projects">View my work</a>
+			<p class="tagline">I turn numbers into models, decisions and the occasional bull.</p>
+			<p class="proof">
+				At work, I’ve created thermosphere navigation systems, made novel optimisation
+				workflows run 26× faster, and used geographically distributed sensors to locate
+				lightning strikes.
+			</p>
+			<a class="cta" href="/projects">[View my work]</a>
 		</div>
 	</div>
 
@@ -162,23 +167,43 @@
 	h1 {
 		margin: 0;
 		color: var(--color-foreground);
-		font-size: clamp(2.2rem, 11 * var(--cell), 9rem);
+		font-size: clamp(1.7rem, 7.6 * var(--cell), 6.2rem);
 		font-weight: 700;
-		letter-spacing: -0.055em;
+		letter-spacing: -0.05em;
 		line-height: 0.95;
 	}
 
-	p {
-		margin: clamp(0.6rem, 1.9 * var(--cell), 1.4rem) 0 0;
+	/* The only line under the name, and the whole of what this page claims. Sentence
+	   case and unstretched, so it reads as something said rather than as a job
+	   title — which is the point of it standing here instead of one. Measured in
+	   cells like everything else, so the identity still scales as one thing against
+	   the face behind it. */
+	.tagline {
+		margin: clamp(0.6rem, 1.8 * var(--cell), 1.4rem) 0 0;
 		color: var(--color-foreground);
-		font-size: clamp(0.72rem, 2 * var(--cell), 1.35rem);
-		font-weight: 500;
-		letter-spacing: 0.28em;
-		text-transform: uppercase;
+		font-size: clamp(0.85rem, 2.5 * var(--cell), 1.75rem);
+		font-weight: 400;
+		letter-spacing: -0.01em;
+		line-height: 1.35;
+		text-wrap: balance;
 	}
 
-	p span {
-		color: var(--mint);
+	/* What the line above it is actually claiming, so it is set quieter and to a
+	   measure rather than to the box: the identity is as wide as the horns, and a
+	   sentence this long run across all of it is not a line anyone reads. Capped in
+	   cells like the type itself, so the measure holds its proportion to the face
+	   at every size instead of snapping at a breakpoint. */
+	.proof {
+		max-width: min(100%, 66 * var(--cell));
+		margin: clamp(0.5rem, 1.5 * var(--cell), 1.1rem) auto 0;
+		color: var(--text-dim);
+		font-size: clamp(0.7rem, 1.55 * var(--cell), 1.05rem);
+		font-weight: 400;
+		line-height: 1.6;
+		/* Balanced, not pretty: pretty only guards the last line, which here still
+		   left "lightning strikes." alone under two full ones. Centred type wants
+		   the whole block evened out. */
+		text-wrap: balance;
 	}
 
 	/* Sat straight under the title line, measured in cells like the name above it
@@ -187,23 +212,17 @@
 	.cta {
 		display: inline-block;
 		margin-top: clamp(0.8rem, 2.2 * var(--cell), 1.6rem);
-		padding: 0.7em 1.6em;
-		border: 1px solid var(--color-border);
-		border-radius: 999px;
 		color: var(--color-foreground);
 		font-size: clamp(0.66rem, 1.7 * var(--cell), 1rem);
 		font-weight: 500;
 		letter-spacing: 0.2em;
 		text-decoration: none;
 		text-transform: uppercase;
-		transition:
-			color 160ms ease,
-			border-color 160ms ease;
+		transition: color 160ms ease;
 	}
 
 	.cta:hover,
 	.cta:focus-visible {
-		border-color: var(--mint);
 		color: var(--mint);
 	}
 
@@ -229,10 +248,6 @@
 	@media (max-width: 48rem) {
 		.identity::before {
 			inset-inline: -1rem;
-		}
-
-		p {
-			letter-spacing: 0.16em;
 		}
 	}
 
