@@ -48,6 +48,13 @@
 	html {
 		background: var(--color-background);
 	}
+	/* The site is one scroll and the nav is anchors into it, so a jump between
+	   stops is a move rather than a cut. */
+	@media (prefers-reduced-motion: no-preference) {
+		html {
+			scroll-behavior: smooth;
+		}
+	}
 }
 
 /* --- site ----------------------------------------------------------------
@@ -140,6 +147,10 @@
 	max-width: 88rem;
 	margin-inline: auto;
 	padding: clamp(1.5rem, 4vh, 2.5rem) var(--gutter) clamp(3rem, 10vh, 6rem);
+	/* Jumped to from the nav, which is sticky and would otherwise cover the top
+	   of whatever was jumped to. The fallback is for /server, which is outside
+	   the site shell that sets the height. */
+	scroll-margin-top: var(--header-height, 0px);
 }
 
 /* Read out, never drawn. Every page carries an h1 for the document outline

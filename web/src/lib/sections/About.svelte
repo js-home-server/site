@@ -99,21 +99,13 @@
 	];
 </script>
 
-<svelte:head>
-	<title>About — Joshua Smith</title>
-</svelte:head>
-
 {#snippet dots(level)}
 	<span class="dots" aria-hidden="true">
 		{#each { length: 4 }, i (i)}<i class:on={i < level}></i>{/each}
 	</span>
 {/snippet}
 
-<div class="page about">
-	<!-- Read out, never drawn: the boxes carry the titling, and this is only here
-	     so the document outline starts somewhere. -->
-	<h1 class="sr-only">About</h1>
-
+<section id="about" class="page about">
 	<section class="surface-box hero">
 		<div class="intro">
 			<h2 class="eyebrow">About me</h2>
@@ -126,7 +118,7 @@
 			</p>
 
 			<div class="cta">
-				<a href="/projects"><span aria-hidden="true">&gt;</span> View my work</a>
+				<a href="#projects"><span aria-hidden="true">&gt;</span> View my work</a>
 			</div>
 
 			<!-- The strip along the foot: a figure, what it counts, and its trend. -->
@@ -213,7 +205,7 @@
 			</aside>
 		</div>
 	</section>
-</div>
+</section>
 
 <style>
 	/* The page is the four boxes and the air between them: laid out across

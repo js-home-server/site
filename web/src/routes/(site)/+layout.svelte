@@ -1,24 +1,71 @@
 <script>
-	import { page } from '$app/state';
-
 	let { children } = $props();
 
-	/* The portfolio itself. The server dashboard is deliberately not here: it is
-	   its own app at /server, reached from the projects page. */
+	/* The portfolio is one scroll now, so these are stops on it rather than
+	   routes. The server dashboard is deliberately not here: it is its own app at
+	   /server, reached from the projects section. */
 	const links = [
-		{ href: '/', label: 'Home' },
-		{ href: '/about', label: 'About' },
-		{ href: '/projects', label: 'Projects' },
-		{ href: '/contact', label: 'Contact' }
+		{ href: '#home', label: 'Home' },
+		{ href: '#about', label: 'About' },
+		{ href: '#projects', label: 'Projects' },
+		{ href: '#contact', label: 'Contact' }
 	];
+
+	/* How far past hidden the bar keeps counting down-scroll. That surplus is what
+	   an up-scroll has to spend before the bar starts coming back, so going down
+	   costs nothing and coming back costs this. */
+	const REVEAL = 90;
+
+	let height = $state(0);
+	let active = $state(links[0].href);
+	/* 0 is fully down, `height` fully gone; the stretch past that is the slack
+	   above. Moved by the scroll rather than animated on a class — a transition
+	   is a second opinion on where the bar is, and the two disagreeing is what
+	   flickered. */
+	let offset = $state(0);
+	let last = 0;
+	let queued = false;
+
+	function onScroll() {
+		/* One read and one write a frame. The spy below measures, which forces
+		   layout, and a scroll fires far more often than the screen paints. */
+		if (queued) return;
+		queued = true;
+		requestAnimationFrame(update);
+	}
+
+	function update() {
+		queued = false;
+		const y = Math.max(0, window.scrollY);
+		const delta = y - last;
+		last = y;
+
+		/* Over the hero the bar is simply down: nothing to recede from, and
+		   letting it move there is what took it on the first flick. */
+		offset = y <= height ? 0 : Math.min(height + REVEAL, Math.max(0, offset + delta));
+
+		/* The stop being read is the last one whose top has passed the upper
+		   third of the viewport — near enough the reading line, and far enough
+		   down that a section only claims the nav once it is actually in view. */
+		const line = window.innerHeight / 3;
+		active =
+			links.findLast(({ href }) => document.querySelector(href)?.getBoundingClientRect().top <= line)
+				?.href ?? links[0].href;
+	}
 </script>
 
+<svelte:window onscroll={onScroll} />
+
 <div class="site-shell">
-	<header>
+	<!-- Whole pixels: the bar is opaque over the page and a fractional offset
+	     leaves a seam along its bottom edge. -->
+	<header
+		bind:clientHeight={height}
+		style="--shift: {Math.round(Math.min(offset, height))}px"
+	>
 		<nav aria-label="Primary navigation">
-			<!-- Every stop is a leaf route, so the path either is one or it isn't. -->
 			{#each links as { href, label } (href)}
-				<a {href} aria-current={page.url.pathname === href ? 'page' : undefined}>{label}</a>
+				<a {href} aria-current={active === href ? 'location' : undefined}>{label}</a>
 			{/each}
 		</nav>
 	</header>
@@ -47,10 +94,20 @@
 		overflow: clip;
 	}
 
+	/* Sticky rather than fixed: it keeps its row in the grid, so --header-height
+	   still measures what the hero has to work around. Clip on the shell is not a
+	   scroll container, so the viewport is still what this sticks to. */
 	header {
-		position: relative;
-		z-index: 1;
+		position: sticky;
+		top: 0;
+		z-index: 2;
 		padding: var(--nav-pad-top) var(--gutter) 0;
+		/* The page scrolls under it, so it cannot be transparent. */
+		background: var(--color-background);
+		/* Set by the scroll, so it is its own layer and never a repaint of the
+		   page behind it. */
+		transform: translate3d(0, calc(-1 * var(--shift, 0px)), 0);
+		will-change: transform;
 	}
 
 	nav {
@@ -76,11 +133,11 @@
 		color: var(--color-foreground);
 	}
 
-	a[aria-current='page'] {
+	a[aria-current='location'] {
 		color: var(--mint);
 	}
 
-	a[aria-current='page']::after {
+	a[aria-current='location']::after {
 		position: absolute;
 		bottom: 0.35rem;
 		left: 50%;
@@ -91,6 +148,14 @@
 		box-shadow: 0 0 0.7rem currentcolor;
 		content: '';
 		transform: translateX(-50%);
+	}
+
+	/* Motion nobody asked for, for a viewer who has asked for none: the bar just
+	   stays where it is. */
+	@media (prefers-reduced-motion: reduce) {
+		header {
+			transform: none;
+		}
 	}
 
 	@media (max-width: 36rem) {

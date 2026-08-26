@@ -36,14 +36,7 @@
 	];
 </script>
 
-<svelte:head>
-	<title>Projects — Joshua Smith</title>
-</svelte:head>
-
-<div class="page projects-page">
-	<!-- Read out, never drawn: the box carries the titling, and this is only here
-	     so the document outline starts somewhere. -->
-	<h1 class="sr-only">Projects</h1>
+<section id="projects" class="page projects-page">
 
 	<section class="surface-box projects">
 		<h2 class="eyebrow">My projects</h2>
@@ -82,7 +75,7 @@
 			{/each}
 		</div>
 	</section>
-</div>
+</section>
 
 <style>
 	/* The same centred column the other content pages take, at the width they

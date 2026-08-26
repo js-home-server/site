@@ -97,14 +97,7 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Contact — Joshua Smith</title>
-</svelte:head>
-
-<div class="page contact">
-	<!-- Read out, never drawn: the box carries its own heading. -->
-	<h1 class="sr-only">Contact</h1>
-
+<section id="contact" class="page contact">
 	<section class="surface-box panel">
 		<div class="intro">
 			<h2 class="eyebrow">Contact</h2>
@@ -186,7 +179,7 @@
 			<div class="visual"><AsciiRadioDish /></div>
 		</div>
 	</section>
-</div>
+</section>
 
 <style>
 	.contact {
