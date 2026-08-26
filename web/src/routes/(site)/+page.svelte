@@ -27,15 +27,15 @@
 			<p class="proof">
 				Data scientist and AI engineer working across distributed sensing, thermosphere navigation, and numerical optimisation.
 			</p>
-			<a class="cta" href="#projects">View my work <span aria-hidden="true">→</span></a>
+			<a class="cta" href="#projects">View my work <span aria-hidden="true">↓</span></a>
 		</div>
 	</div>
 
 	<StatusBar />
 </div>
 
-<About />
 <Projects />
+<About />
 <Contact />
 
 <style>
@@ -223,7 +223,8 @@
 	/* Sat straight under the line above it, measured in cells like the name so the
 	   whole identity block scales as one thing. Otherwise it is the shape every
 	   other action on the site wears: mint, mono, small caps, and an arrow that
-	   says where it goes — → for somewhere on this site, ↗ for off it. */
+	   says where it goes — ↓ for further down this page, → for elsewhere on the
+	   site, ↗ for off it. */
 	.cta {
 		display: inline-block;
 		margin-top: clamp(0.8rem, 2.2 * var(--cell), 1.6rem);
@@ -245,7 +246,7 @@
 
 	.cta:hover span,
 	.cta:focus-visible span {
-		transform: translateX(2px);
+		transform: translateY(2px);
 	}
 
 

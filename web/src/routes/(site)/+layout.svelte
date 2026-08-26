@@ -2,12 +2,14 @@
 	let { children } = $props();
 
 	/* The portfolio is one scroll now, so these are stops on it rather than
-	   routes. The server dashboard is deliberately not here: it is its own app at
-	   /server, reached from the projects section. */
+	   routes, and they have to stay in the order the page puts them in: the spy
+	   below reads the last one that has been passed. The server dashboard is
+	   deliberately not here: it is its own app at /server, reached from the
+	   projects section. */
 	const links = [
 		{ href: '#home', label: 'Home' },
-		{ href: '#about', label: 'About' },
 		{ href: '#projects', label: 'Projects' },
+		{ href: '#about', label: 'About' },
 		{ href: '#contact', label: 'Contact' }
 	];
 
