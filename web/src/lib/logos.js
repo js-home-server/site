@@ -32,7 +32,9 @@ import {
    published 24x24 LinkedIn path (MIT-licensed), not a redrawing -- and a
    plain envelope for email, Heroicons' 24px solid mark (already a dependency
    for the about page's category icons), concatenated from its two subpaths
-   since this component takes a single path. */
+   since this component takes a single path -- and a document with a download
+   arrow for the CV, the same Heroicons set's document-arrow-down, also
+   concatenated from its two subpaths. */
 const TABLE = 'M3 4h18v4H3zM3 10h18v4H3zM3 16h18v4H3z';
 const MATLAB = 'M2 17 L7 12 L7 20 Z M8 20 L11 5 L13 10 L16 2 L20 12 L22 8 L19 20 L16 12 L13 20 L10 13 Z';
 const SLURM =
@@ -43,10 +45,14 @@ const LINKEDIN =
 const ENVELOPE =
 	'M1.5 8.67v8.58a3 3 0 0 0 3 3h15a3 3 0 0 0 3-3V8.67l-8.928 5.493a3 3 0 0 1-3.144 0L1.5 8.67Z ' +
 	'M22.5 6.908V6.75a3 3 0 0 0-3-3h-15a3 3 0 0 0-3 3v.158l9.714 5.978a1.5 1.5 0 0 0 1.572 0L22.5 6.908Z';
+const CV =
+	'M5.625 1.5H9a3.75 3.75 0 0 1 3.75 3.75v1.875c0 1.036.84 1.875 1.875 1.875H16.5a3.75 3.75 0 0 1 3.75 3.75v7.875c0 1.035-.84 1.875-1.875 1.875H5.625a1.875 1.875 0 0 1-1.875-1.875V3.375c0-1.036.84-1.875 1.875-1.875Zm5.845 17.03a.75.75 0 0 0 1.06 0l3-3a.75.75 0 1 0-1.06-1.06l-1.72 1.72V12a.75.75 0 0 0-1.5 0v4.19l-1.72-1.72a.75.75 0 0 0-1.06 1.06l3 3Z ' +
+	'M14.25 5.25a5.23 5.23 0 0 0-1.279-3.434 9.768 9.768 0 0 1 6.963 6.963A5.23 5.23 0 0 0 16.5 7.5h-1.875a.375.375 0 0 1-.375-.375V5.25Z';
 
 export const logos = {
 	'C++': siCplusplus.path,
 	CUDA: siNvidia.path,
+	CV,
 	Docker: siDocker.path,
 	Email: ENVELOPE,
 	Git: siGit.path,

@@ -2,6 +2,12 @@
 @import '@fontsource/inter/latin-400.css';
 @import '@fontsource/inter/latin-500.css';
 @import '@fontsource/inter/latin-700.css';
+/* The ASCII art (bull, clock, astronaut, ship, radio dish) is pixel-calibrated to
+   JetBrains Mono's exact glyph metrics. Naming it in font-family without shipping
+   it relies on it being installed as a system font — Safari's local-font-matching
+   privacy protection won't honour that, so it silently falls back to a font with
+   different metrics and every art component renders visibly misaligned. */
+@import '@fontsource/jetbrains-mono/latin-400.css';
 
 /* The four surfaces the site is actually painted on. What started here as a full
    generated palette had a token for every part of a component library this site

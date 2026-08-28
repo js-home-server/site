@@ -136,6 +136,14 @@
 	   column above still measures the art at the size it is painted. */
 	.bull :global(pre) {
 		font-size: var(--cell);
+		/* Safari floors a fractional line-height to the nearest CSS pixel on <pre>
+		   text (Chrome doesn't), which at this font-size quietly shaved ~13% off
+		   every row and left the whole art short — reading as the bull sitting too
+		   low under the nav. Rounding to a device pixel ourselves, the same fix
+		   already used for every other ascii-art component (see --device-px in
+		   app.css), makes both browsers land on the same pixel instead of one of
+		   them truncating. */
+		line-height: round(0.72em, var(--device-px, 1px));
 	}
 
 	.identity {

@@ -54,6 +54,13 @@
 			icon: 'LinkedIn',
 			label: 'linkedin.com/in/joshua-smith-487846181',
 			href: 'https://www.linkedin.com/in/joshua-smith-487846181/'
+		},
+		{
+			key: 'cv',
+			icon: 'CV',
+			label: 'Download CV',
+			href: '/cv.pdf',
+			download: 'joshua-smith-cv.pdf'
 		}
 	];
 
@@ -121,7 +128,13 @@
 						{#if channel.href.startsWith('mailto:')}
 							<a class="value" href={channel.href}>{channel.label}</a>
 						{:else}
-							<a class="value" href={channel.href} target="_blank" rel="noopener noreferrer">
+							<a
+								class="value"
+								href={channel.href}
+								target="_blank"
+								rel="noopener noreferrer"
+								download={channel.download || undefined}
+							>
 								{channel.label} <span aria-hidden="true">↗</span>
 							</a>
 						{/if}
