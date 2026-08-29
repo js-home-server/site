@@ -611,8 +611,20 @@
 		text-transform: uppercase;
 	}
 
+	/* Every visual in here used to be `height: 100%` of the fold's grid row, and
+	   that row is what the open/shut transition animates (0fr to 1fr, below). So
+	   the animation did not reveal the visual — it resized it, every frame: the
+	   iframe's embedded document re-laid-out ~23 times a toggle, the mini
+	   dashboard's grid recomputed and took every Spark and Trace SVG with it, and
+	   the screenshot re-scaled. A definite height instead means nothing inside
+	   changes size at all; the row grows and .fold-inner's overflow clip is the
+	   only thing doing any work. One knob, since the boxes are meant to match. */
+	.visual {
+		--visual-h: 30rem;
+	}
+
 	.visual :global(.placeholder) {
-		height: 100%;
+		height: var(--visual-h);
 	}
 
 	/* The one real embed among the visuals: same box, a solid border rather
@@ -620,8 +632,7 @@
 	.embed {
 		display: block;
 		width: 100%;
-		height: 100%;
-		min-height: 30rem;
+		height: var(--visual-h);
 		border: 1px solid var(--color-border);
 		border-radius: 0.35rem;
 		background: #fff;
@@ -670,8 +681,7 @@
 	.screenshot {
 		display: block;
 		width: 100%;
-		height: 100%;
-		min-height: 30rem;
+		height: var(--visual-h);
 		object-fit: contain;
 		border: 1px solid var(--color-border);
 		border-radius: 0.35rem;
@@ -689,8 +699,7 @@
 	.mini-dashboard {
 		box-sizing: border-box;
 		width: 100%;
-		height: 100%;
-		min-height: 30rem;
+		height: var(--visual-h);
 		color: var(--foreground);
 		--color-foreground: var(--foreground);
 		--color-border: var(--border);
