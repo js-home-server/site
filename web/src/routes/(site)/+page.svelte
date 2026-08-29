@@ -27,7 +27,12 @@
 			<p class="proof">
 				Data scientist and AI engineer working across distributed sensing, thermosphere navigation, and numerical optimisation.
 			</p>
-			<a class="cta" href="#projects">View my work <span aria-hidden="true">↓</span></a>
+			<a
+				class="cta"
+				href="#projects"
+				onclick={() => window.dispatchEvent(new CustomEvent('openproject', { detail: 'ancestree' }))}
+				>View my work <span aria-hidden="true">↓</span></a
+			>
 		</div>
 	</div>
 
@@ -63,9 +68,10 @@
 		--art-fill: 0.78;
 		--tuck: 4rem;
 		--sky: 2rem;
-		/* The cards themselves plus the gap they keep from the bottom edge,
-		   which is the header's own top padding. */
-		--bar-reserve: calc(8.5rem + var(--nav-pad-top));
+		/* The cards themselves plus the gap they keep from the bottom edge —
+		   the same gap every section on the site keeps from the one after it
+		   (.page, app.css; StatusBar.svelte's own margin matches it too). */
+		--bar-reserve: calc(8.5rem + clamp(0.75rem, 1.5vh, 1.25rem));
 
 		/* Three limits, smallest wins, no breakpoints anywhere: the art may not
 		   outgrow the width it is allowed, may not exceed its share of the

@@ -155,11 +155,9 @@
 		</p>
 
 		<a
-			href="#this-server"
-			onclick={(event) => {
-				event.preventDefault();
-				window.dispatchEvent(new Event('openproject'));
-			}}>View project <span aria-hidden="true">→</span></a
+			href="#projects"
+			onclick={() => window.dispatchEvent(new CustomEvent('openproject', { detail: 'this-server' }))}
+			>View project <span aria-hidden="true">→</span></a
 		>
 	</div>
 
@@ -196,11 +194,12 @@
 		   page); only cap it so it never runs off a narrow viewport. */
 		width: 100%;
 		max-width: calc(100vw - 2 * var(--gutter));
-		/* The box sits off the bottom edge by exactly what the nav sits off the
-		   top — same token, so the page is framed evenly however the header's
-		   own padding resolves. The outer edges stay flush so it still measures
-		   tip to tip with the art. */
-		margin: 0 auto var(--nav-pad-top);
+		/* The same gap every section on the site keeps from the one after it
+		   (.page, app.css) — this box is the landing page's own first "card",
+		   so it closes the same distance to Projects that Projects keeps to
+		   About. The outer edges stay flush so it still measures tip to tip
+		   with the art. */
+		margin: 0 auto clamp(0.75rem, 1.5vh, 1.25rem);
 		border: 1px solid var(--color-border);
 		border-radius: 0.35rem;
 		/* Opaque: the bull sits directly behind this and a chart drawn over its
