@@ -3,14 +3,9 @@
 	import AsciiAstronaut from '$lib/components/AsciiAstronaut.svelte';
 	import ToolPills from '$lib/components/ToolPills.svelte';
 
-	/* The stops on the rail, oldest first. `points` is what was actually done in
-	   that stretch; a stop without any is a single line of prose. */
+	/* The stops on the rail, most recent first. `points` is what was actually
+	   done in that stretch; a stop without any is a single line of prose. */
 	const MILESTONES = [
-		{
-			period: '2020 — 2023',
-			title: 'BEng Engineering Mathematics',
-			detail: 'University of Bristol, 2:1. Modelling, statistics and scientific computing.'
-		},
 		{
 			period: '2024 — Present',
 			title: 'Graduate Data Scientist, AWE',
@@ -30,10 +25,9 @@
 			]
 		},
 		{
-			period: 'The future',
-			title: 'Whatever the next hard problem is',
-			detail:
-				'Continuing to build systems that turn messy data into decisions, and looking for the next one worth working on.'
+			period: '2020 — 2023',
+			title: 'BEng Engineering Mathematics',
+			detail: 'University of Bristol, 2:1. Modelling, statistics and scientific computing.'
 		}
 	];
 </script>
