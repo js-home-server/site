@@ -2,10 +2,11 @@
 	import Capacity from '$lib/components/Capacity.svelte';
 	import Panel from '$lib/components/Panel.svelte';
 	import Placeholder from '$lib/components/Placeholder.svelte';
+	import Spark from '$lib/components/Spark.svelte';
 	import ToolPills from '$lib/components/ToolPills.svelte';
 	import Trace from '$lib/components/Trace.svelte';
 	import { fleet } from '$lib/containers.js';
-	import { degrees, gigabytes, microseconds, ms, pct } from '$lib/format.js';
+	import { degrees, gigabytes, microseconds, ms, pct, stamp } from '$lib/format.js';
 	import { gridArea } from '$lib/grid.js';
 	import { memoryBands } from '$lib/memory.js';
 	import { server } from '$lib/server.svelte.js';
@@ -34,7 +35,8 @@
 			tagline: 'Reading the tape at scale.',
 			blurb:
 				'Pipeline for Binance futures and spot data, with a dynamic feature registry covering OHLC aggregation, open interest, funding rate and CVD, read back through a multi-panel plotting framework.',
-			tools: ['Python', 'Pandas', 'Polars', 'Plotly', 'NumPy']
+			tools: ['Python', 'Pandas', 'Polars', 'Plotly', 'NumPy'],
+			image: '/projects/orderflow.png'
 		},
 		{
 			name: 'This server',
@@ -54,6 +56,15 @@
 				'C11 CLI that converts raster images into ASCII art for the terminal or the web: block-averaged sampling, tone curve and glyph selection as separable, individually tested stages. Generates the art on this site, including the astronaut on the about page.',
 			tools: ['C++', 'Git'],
 			url: 'https://github.com/JS195/asciiArt'
+		},
+		{
+			name: 'crypto-archive',
+			year: 2026,
+			tagline: 'Every tick, from six exchanges.',
+			blurb:
+				'Gathers and aggregates my own tick-level trade and order-book data from six exchanges, running continuously — 24/7, 365 — to build a self-owned historical archive rather than relying on any one provider\'s retention.',
+			tools: ['Python', 'Docker', 'Parquet'],
+			liveBadge: true
 		}
 	];
 
@@ -79,6 +90,17 @@
 
 	let containers = $derived(fleet(snapshot?.containers.items));
 	let clockHistory = $derived(clockOffsetHistory(series));
+
+	/* Days and the hours/minutes left over, rather than the hour count the rest
+	   of the site quotes this same figure as: a box this small is still up long
+	   enough that hours stop being the unit worth leading with. */
+	let uptimeSeconds = $derived(snapshot?.availability.uptime_seconds);
+	let uptimeDays = $derived(Number.isFinite(uptimeSeconds) ? Math.floor(uptimeSeconds / 86400) : null);
+	let uptimeRest = $derived(
+		Number.isFinite(uptimeSeconds)
+			? `${Math.floor((uptimeSeconds % 86400) / 3600)}h ${Math.floor((uptimeSeconds % 3600) / 60)}m`
+			: null
+	);
 
 	/* A plain accordion: click a title to open it, click the open one to shut
 	   it. Scroll no longer drives this — the embed and the server preview
@@ -110,7 +132,7 @@
 		<h2 class="eyebrow">My projects</h2>
 
 		<div class="cards">
-			{#each PROJECTS as { name, year, tagline, blurb, tools, url, live, embed, pypi }, i (name)}
+			{#each PROJECTS as { name, year, tagline, blurb, tools, url, live, embed, pypi, image, liveBadge }, i (name)}
 				<article class="card" class:open={i === open}>
 					<!-- The whole title line is the control: a collapsed project is a
 					     line that opens, and that is all it does. The tagline sits
@@ -118,7 +140,21 @@
 					<button type="button" class="head" aria-expanded={i === open} onclick={() => toggle(i)}>
 						<span class="icon">{String(i).padStart(2, '0')}</span>
 						<div class="title-group">
-							<h3>{name}</h3>
+							<h3>
+								{name}
+								{#if embed}
+									<!-- Next to the title so it reads shut, not just once the
+									     fold opens onto the thing it's pointing at. -->
+									<span class="callout">
+										I'm interactive — play with me <span aria-hidden="true">▾</span>
+									</span>
+								{/if}
+								{#if live || liveBadge}
+									<span class="callout live">
+										<i class="dot" aria-hidden="true"></i>Live
+									</span>
+								{/if}
+							</h3>
 							<p class="tagline">{tagline}</p>
 						</div>
 						<span class="year">{year}</span>
@@ -135,7 +171,7 @@
 					     only clipped, and its links would otherwise still be tabbed to. -->
 					<div class="fold" inert={i !== open}>
 						<div class="fold-inner">
-							<div class="content" class:wide-visual={embed || live === '/server'}>
+							<div class="content" class:wide-visual={embed || live === '/server' || image}>
 								<div class="visual">
 									{#if embed}
 										<!-- The demo is a fully self-contained static page (no
@@ -151,40 +187,70 @@
 									{:else if live === '/server'}
 										<div class="mini-dashboard">
 											<div class="mgrid">
-												<div class="obox">
+												<div class="obox" style={gridArea({ col: 1, row: 1 })}>
+													<Panel label="Uptime">
+														<strong class="ofigure" style:color="var(--mint)">
+															{uptimeDays === null ? '—' : `${uptimeDays}d ${uptimeRest}`}
+														</strong>
+														<span class="mupdated">Last updated {stamp(snapshot?.generated_at)}</span>
+													</Panel>
+												</div>
+
+												<div class="obox" style={gridArea({ col: 2, row: 1 })}>
 													<Panel label="Temperature">
 														<strong class="ofigure" style:color="var(--amber)">
 															{degrees(snapshot?.cpu.temperature_c)}
 														</strong>
 														<span class="ostat">{minMax(series?.cpu.temperature_c, degrees)}</span>
+														<Spark points={series?.cpu.temperature_c} tone="var(--amber)" />
 													</Panel>
 												</div>
 
-												<div class="obox">
-													<Panel label="Latency">
-														<strong class="ofigure" style:color="var(--azure)">
-															{ms(snapshot?.availability.latency_ms)}
-														</strong>
-														<span class="ostat">{minMax(series?.availability.latency_ms, ms)}</span>
-													</Panel>
-												</div>
-
-												<div class="obox" style={gridArea({ col: 3, row: 1, w: 2 })}>
+												<div class="obox fill" style={gridArea({ col: 3, row: 1, w: 2, h: 3 })}>
 													<Panel label="Containers">
-														<div class="opair">
-															<span>
-																<strong class="ofigure">{containers.running}</strong>
-																<span class="ostat">Running</span>
-															</span>
-															<span class:unhealthy={containers.unhealthy}>
-																<strong class="ofigure">{containers.unhealthy}</strong>
-																<span class="ostat">Unhealthy</span>
-															</span>
-														</div>
+														{#if containers.slots.length}
+															<div class="mfleet">
+																<table>
+																	<thead>
+																		<tr>
+																			<th scope="col">Container</th>
+																			<th scope="col">Status</th>
+																			<th scope="col">Uptime</th>
+																			<th scope="col">CPU</th>
+																			<th scope="col">CPU limit</th>
+																			<th scope="col">Memory</th>
+																			<th scope="col">Memory limit</th>
+																		</tr>
+																	</thead>
+
+																	<tbody>
+																		{#each containers.slots as slot (slot.name)}
+																			<tr>
+																				<th class="mname" scope="row">{slot.name}</th>
+																				<td class="mstate" class:warning={!slot.healthy}>
+																					<i aria-hidden="true"></i>{slot.status}
+																				</td>
+																				<td>{slot.uptime}</td>
+
+																				{#each slot.resources as resource (resource.id)}
+																					<td class="musage" style:color={resource.tone}>
+																						{resource.value}
+																						<i class="resource-bar"><i style:width="{resource.fill}%"></i></i>
+																					</td>
+																					<td class="mlimit">{resource.limit}</td>
+																				{/each}
+																			</tr>
+																		{/each}
+																	</tbody>
+																</table>
+															</div>
+														{:else}
+															<Placeholder note="no container data" lines={4} />
+														{/if}
 													</Panel>
 												</div>
 
-												<div class="obox" style={gridArea({ col: 1, row: 2, w: 4, h: 2 })}>
+												<div class="obox fill" style={gridArea({ col: 1, row: 2, w: 2, h: 2 })}>
 													<Panel label="CPU & RAM Usage (%)">
 														<Trace
 															lines={[
@@ -219,22 +285,29 @@
 													</Panel>
 												</div>
 
-												<div class="obox">
+												<div class="obox" style={gridArea({ col: 3, row: 4 })}>
 													<Panel label="Time Offset">
 														<strong class="ofigure" style:color="var(--azure)">
 															{microseconds(clockOffset(snapshot?.time))}
 														</strong>
 														<span class="ostat">{minMax(clockHistory, microseconds)}</span>
+														<Spark points={clockHistory} tone="var(--azure)" />
 													</Panel>
 												</div>
 
-												<div class="obox">
-													<Panel label="Processes">
-														<Placeholder note="—" lines={2} />
+												<div class="obox" style={gridArea({ col: 4, row: 4 })}>
+													<Panel label="Latency">
+														<strong class="ofigure" style:color="var(--azure)">
+															{ms(snapshot?.availability.latency_ms)}
+														</strong>
+														<span class="ostat">{minMax(series?.availability.latency_ms, ms)}</span>
+														<Spark points={series?.availability.latency_ms} tone="var(--azure)" />
 													</Panel>
 												</div>
 											</div>
 										</div>
+									{:else if image}
+										<img class="screenshot" src={image} alt="{name} dashboard" />
 									{:else}
 										<Placeholder note="{name.toUpperCase().replace(/\s+/g, '-')}.PNG" lines={16} />
 									{/if}
@@ -489,20 +562,70 @@
 		background: #fff;
 	}
 
+	/* Beside the title rather than on the fold, so it reads shut as well as
+	   open — a card worth flagging as interactive before there's any reason
+	   to open it. Its own fixed colour, not the dimmed grey a shut title
+	   wears, so it stays legible either way. */
+	.callout {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		margin-left: 0.6rem;
+		padding: 0.25rem 0.7rem;
+		vertical-align: middle;
+		white-space: nowrap;
+		color: var(--violet);
+		font-family: var(--font-mono);
+		font-size: 0.6rem;
+		font-weight: 500;
+		letter-spacing: 0.04em;
+		background: #fff;
+		border: 1.5px solid var(--violet);
+		border-radius: 999px;
+	}
+
+	/* The site's other colour for "carry on regardless" — the same mint every
+	   other live indicator wears (StatusBar's own dot, the dashboard's). */
+	.callout.live {
+		color: var(--mint);
+		border-color: var(--mint);
+	}
+
+	.callout .dot {
+		width: 0.4rem;
+		height: 0.4rem;
+		border-radius: 50%;
+		background: currentcolor;
+		box-shadow: 0 0 0.5rem currentcolor;
+	}
+
+	/* A real screenshot rather than a live embed: same box, contained rather
+	   than cropped so the chart's own axes and panels stay whole whatever
+	   shape the box ends up. */
+	.screenshot {
+		display: block;
+		width: 100%;
+		height: 100%;
+		min-height: 30rem;
+		object-fit: contain;
+		border: 1px solid var(--color-border);
+		border-radius: 0.35rem;
+		background: #fff;
+	}
+
 	/* "This server"'s visual: /server's own overview grid (routes/server/
-	   +page.svelte), copied and scaled down rather than embedded live — a
-	   window into the real (dark) dashboard, so --color-foreground/--color-border
-	   are re-shadowed to the page's actual dark tokens the way .projects itself
-	   shadows them light (see .projects further up), just run the other way. */
+	   +page.svelte), copied and scaled down rather than embedded live. Not a
+	   box of its own — just the frame the individual .obox tiles read their
+	   dark tokens from, the way .projects itself shadows them light for
+	   everything else in it (see .projects further up), just run the other
+	   way. Its own background would have been the exact tone every .obox
+	   already paints itself, which is what read as one big panel wrapping
+	   the tiles rather than the tiles standing on their own. */
 	.mini-dashboard {
 		box-sizing: border-box;
 		width: 100%;
 		height: 100%;
 		min-height: 30rem;
-		padding: 0.85rem;
-		border: 1px solid var(--color-border);
-		border-radius: 0.35rem;
-		background: var(--color-background);
 		color: var(--foreground);
 		--color-foreground: var(--foreground);
 		--color-border: var(--border);
@@ -531,6 +654,23 @@
 		background: var(--color-background);
 	}
 
+	/* Opt-in, same as the real dashboard's own .box.fill (Dashboard.svelte):
+	   a panel given more than one row is otherwise however tall its content
+	   needs, which is what left the CPU & RAM trace a squashed line at the
+	   top of a box mostly empty underneath it. This stretches the chain down
+	   to the drawing instead. */
+	.obox.fill {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.obox.fill :global(.panel),
+	.obox.fill :global(.plot),
+	.obox.fill .mfleet {
+		flex: 1;
+		min-height: 0;
+	}
+
 	.ofigure {
 		display: block;
 		color: var(--color-foreground);
@@ -549,23 +689,97 @@
 		letter-spacing: 0.03em;
 	}
 
-	/* Containers' running/unhealthy pair, side by side. */
-	.opair {
-		display: flex;
-		gap: 0.9rem;
+	/* When the snapshot behind every other reading in this box was taken. */
+	.mupdated {
+		display: block;
+		margin-top: 0.35rem;
+		color: var(--text-faint);
+		font-family: var(--font-mono);
+		font-size: 0.58rem;
+		letter-spacing: 0.02em;
 	}
 
-	.opair > span {
-		display: grid;
-		gap: 0.15rem;
+	/* The containers table (routes/server/containers/+page.svelte), copied at
+	   card scale the same way the overview grid above it is: a real table
+	   rather than the running/unhealthy count it replaces, scrolling
+	   sideways in its own two-column box rather than dropping columns. */
+	.mfleet {
+		height: 100%;
+		overflow: auto;
 	}
 
-	.opair .ostat {
-		margin-top: 0;
+	.mfleet table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 0.56rem;
+		white-space: nowrap;
 	}
 
-	.opair .unhealthy .ofigure {
+	.mfleet th,
+	.mfleet td {
+		padding: 0.3rem 0.6rem 0.3rem 0;
+		font-weight: 400;
+		text-align: left;
+	}
+
+	.mfleet thead th {
+		padding-top: 0;
+		padding-bottom: 0.4rem;
+		color: var(--text-dim);
+		font-weight: 500;
+		letter-spacing: 0.03em;
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.mfleet tbody tr + tr th,
+	.mfleet tbody tr + tr td {
+		border-top: 1px solid var(--color-border);
+	}
+
+	.mname {
+		color: var(--color-foreground);
+		font-weight: 500;
+	}
+
+	/* A square of the state's own colour, and the word beside it — the colour
+	   is never the only thing saying which way a row reads. */
+	.mstate {
+		color: var(--mint);
+		text-transform: capitalize;
+	}
+
+	.mstate i {
+		display: inline-block;
+		width: 0.4rem;
+		height: 0.4rem;
+		margin-right: 0.4rem;
+		background: currentcolor;
+	}
+
+	.mstate.warning {
 		color: var(--coral);
+	}
+
+	.mlimit {
+		color: var(--text-dim);
+	}
+
+	.musage {
+		min-width: 3.5rem;
+	}
+
+	.resource-bar {
+		display: block;
+		height: 2px;
+		margin-top: 0.3rem;
+		background: var(--color-border);
+	}
+
+	.resource-bar i {
+		display: block;
+		height: 100%;
+		min-width: 0;
+		background: currentcolor;
 	}
 
 	.ovolumes {
