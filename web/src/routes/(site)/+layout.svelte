@@ -42,8 +42,9 @@
 	}
 
 	function onScroll() {
-		/* One read and one write a frame. The spy below measures, which forces
-		   layout, and a scroll fires far more often than the screen paints. */
+		/* One write a frame, and nothing read back off the page: a scroll fires
+		   far more often than the screen paints, and scrollY is a cached number
+		   rather than a measurement. */
 		if (queued) return;
 		queued = true;
 		requestAnimationFrame(update);
@@ -58,15 +59,32 @@
 		/* Over the hero the bar is simply down: nothing to recede from, and
 		   letting it move there is what took it on the first flick. */
 		offset = jumping || y <= height ? 0 : Math.min(height + REVEAL, Math.max(0, offset + delta));
-
-		/* The stop being read is the last one whose top has passed the upper
-		   third of the viewport — near enough the reading line, and far enough
-		   down that a section only claims the nav once it is actually in view. */
-		const line = window.innerHeight / 3;
-		active =
-			links.findLast(({ href }) => document.querySelector(href)?.getBoundingClientRect().top <= line)
-				?.href ?? links[0].href;
 	}
+
+	/* The stop being read is the last one whose top has passed the upper third of
+	   the viewport — near enough the reading line, and far enough down that a
+	   section only claims the nav once it is actually in view. Asked of the
+	   browser rather than measured for: shrinking the root to a zero-height band
+	   on that line makes "crossing it" the thing an observer reports, and only
+	   one section can be on the line at a time. This used to be a
+	   getBoundingClientRect per section per frame, which forced a synchronous
+	   layout of a page that is ~16k ascii-art spans, on every frame of every
+	   scroll. */
+	$effect(() => {
+		const spy = new IntersectionObserver(
+			(entries) => {
+				for (const entry of entries) if (entry.isIntersecting) active = `#${entry.target.id}`;
+			},
+			{ rootMargin: '-33.33% 0px -66.67% 0px' }
+		);
+
+		for (const { href } of links) {
+			const section = document.querySelector(href);
+			if (section) spy.observe(section);
+		}
+
+		return () => spy.disconnect();
+	});
 </script>
 
 <svelte:window onscroll={onScroll} onscrollend={() => (jumping = false)} />

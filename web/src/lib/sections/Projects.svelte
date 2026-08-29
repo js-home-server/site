@@ -55,7 +55,12 @@
 			blurb:
 				'C11 CLI that converts raster images into ASCII art for the terminal or the web: block-averaged sampling, tone curve and glyph selection as separable, individually tested stages. Generates the art on this site, including the astronaut on the about page.',
 			tools: ['C++', 'Git'],
-			url: 'https://github.com/JS195/asciiArt'
+			url: 'https://github.com/JS195/asciiArt',
+			gallery: [
+				{ src: '/projects/ship-original.png', label: 'Original' },
+				{ src: '/projects/ship-grayscale.png', label: 'Greyscale' },
+				{ src: '/projects/ship-color.png', label: 'Color' }
+			]
 		},
 		{
 			name: 'crypto-archive',
@@ -132,7 +137,7 @@
 		<h2 class="eyebrow">My projects</h2>
 
 		<div class="cards">
-			{#each PROJECTS as { name, year, tagline, blurb, tools, url, live, embed, pypi, image, liveBadge }, i (name)}
+			{#each PROJECTS as { name, year, tagline, blurb, tools, url, live, embed, pypi, image, liveBadge, gallery }, i (name)}
 				<article class="card" class:open={i === open}>
 					<!-- The whole title line is the control: a collapsed project is a
 					     line that opens, and that is all it does. The tagline sits
@@ -171,7 +176,7 @@
 					     only clipped, and its links would otherwise still be tabbed to. -->
 					<div class="fold" inert={i !== open}>
 						<div class="fold-inner">
-							<div class="content" class:wide-visual={embed || live === '/server' || image}>
+							<div class="content" class:wide-visual={embed || live === '/server' || image || gallery}>
 								<div class="visual">
 									{#if embed}
 										<!-- The demo is a fully self-contained static page (no
@@ -307,7 +312,34 @@
 											</div>
 										</div>
 									{:else if image}
-										<img class="screenshot" src={image} alt="{name} dashboard" />
+										<!-- Lazy and async: a shut fold is clipped, not absent, so
+										     without this every card's screenshot is fetched and
+										     decoded on load — and the decode lands on the main
+										     thread mid-animation when the fold opens. -->
+										<img
+											class="screenshot"
+											src={image}
+											alt="{name} dashboard"
+											loading="lazy"
+											decoding="async"
+										/>
+									{:else if gallery}
+										<!-- The tool's own output, not a mockup of it: the source
+										     photo and what --mode gray/color actually do to it,
+										     side by side rather than described. -->
+										<div class="gallery">
+											{#each gallery as shot (shot.src)}
+												<figure>
+													<img
+														src={shot.src}
+														alt="{name}: {shot.label}"
+														loading="lazy"
+														decoding="async"
+													/>
+													<figcaption>{shot.label}</figcaption>
+												</figure>
+											{/each}
+										</div>
 									{:else}
 										<Placeholder note="{name.toUpperCase().replace(/\s+/g, '-')}.PNG" lines={16} />
 									{/if}
@@ -544,6 +576,39 @@
 	   equal weight. */
 	.content.wide-visual {
 		grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+	}
+
+	/* Stacked rather than side by side, in the same visual column every other
+	   embed/preview here uses (.content.wide-visual) — the same width as the
+	   server grid's own box and Ancestree's iframe, not a width of its own. */
+	.gallery {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	.gallery figure {
+		margin: 0;
+		text-align: center;
+	}
+
+	.gallery img {
+		display: block;
+		width: 100%;
+		height: auto;
+		border: 1px solid var(--color-border);
+		border-radius: 0.35rem;
+		background: #000;
+	}
+
+	.gallery figcaption {
+		margin-top: 0.4rem;
+		color: var(--text-dim);
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		font-weight: 500;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
 	}
 
 	.visual :global(.placeholder) {
