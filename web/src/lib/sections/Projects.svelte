@@ -69,7 +69,8 @@
 			blurb:
 				'Gathers and aggregates my own tick-level trade and order-book data from six exchanges, running continuously — 24/7, 365 — to build a self-owned historical archive rather than relying on any one provider\'s retention.',
 			tools: ['Python', 'Docker', 'Parquet'],
-			liveBadge: true
+			liveBadge: true,
+			ticker: true
 		}
 	];
 
@@ -128,6 +129,68 @@
 		const index = PROJECTS.findIndex((project) => slug(project.name) === event.detail);
 		if (index !== -1) open = index;
 	}
+
+	/* crypto-archive's live ticker: a real public trade feed read straight from
+	   the browser, not a claim that this is the archive's own internal feed —
+	   there is no server of ours in this path at all, on purpose. The archive
+	   itself only ever aggregates and discards ticks, so there is no "last 20"
+	   of its own to serve even if we wanted to; this shows the same shape of
+	   data live instead. Connected only while the card is open, torn down the
+	   moment it isn't, so a shut card holds no socket open in the background. */
+	const TICKER_INDEX = PROJECTS.findIndex((project) => project.ticker);
+
+	/* 50 of Binance's own busiest USDT pairs, not just the two or three
+	   headline ones — the point of this box is breadth across symbols, the
+	   same shape the real archive watches six exchanges for. */
+	const TICKER_SYMBOLS = [
+		'btc', 'eth', 'bnb', 'sol', 'xrp', 'ada', 'doge', 'trx', 'avax', 'dot',
+		'link', 'matic', 'ton', 'shib', 'ltc', 'bch', 'uni', 'atom', 'xlm', 'etc',
+		'fil', 'apt', 'arb', 'op', 'near', 'vet', 'icp', 'hbar', 'inj', 'rune',
+		'algo', 'sand', 'mana', 'aave', 'grt', 'eos', 'ftm', 'xtz', 'theta', 'axs',
+		'egld', 'flow', 'chz', 'kava', 'zec', 'enj', 'dash', 'comp', 'snx', 'crv'
+	];
+	const TICKER_STREAM = `wss://stream.binance.com:9443/stream?streams=${TICKER_SYMBOLS.map(
+		(symbol) => `${symbol}usdt@trade`
+	).join('/')}`;
+
+	let ticks = $state([]);
+
+	$effect(() => {
+		if (open !== TICKER_INDEX) return;
+
+		let socket;
+		let torndown = false;
+
+		const connect = () => {
+			socket = new WebSocket(TICKER_STREAM);
+			socket.onmessage = (event) => {
+				const { data } = JSON.parse(event.data);
+				ticks = [
+					{
+						id: `${data.s}-${data.t}`,
+						symbol: data.s.replace('USDT', '/USDT'),
+						side: data.m ? 'sell' : 'buy',
+						price: Number(data.p),
+						qty: Number(data.q),
+						time: data.T
+					},
+					...ticks
+				].slice(0, 20);
+			};
+			/* The feed drops a connection now and then; reconnect once, rather
+			   than leaving a shut-looking box up for the rest of the visit. */
+			socket.onclose = () => {
+				if (!torndown) setTimeout(connect, 3000);
+			};
+		};
+		connect();
+
+		return () => {
+			torndown = true;
+			socket.close();
+			ticks = [];
+		};
+	});
 </script>
 
 <svelte:window onopenproject={openProject} />
@@ -137,7 +200,7 @@
 		<h2 class="eyebrow">My projects</h2>
 
 		<div class="cards">
-			{#each PROJECTS as { name, year, tagline, blurb, tools, url, live, embed, pypi, image, liveBadge, gallery }, i (name)}
+			{#each PROJECTS as { name, year, tagline, blurb, tools, url, live, embed, pypi, image, liveBadge, gallery, ticker }, i (name)}
 				<article class="card" class:open={i === open}>
 					<!-- The whole title line is the control: a collapsed project is a
 					     line that opens, and that is all it does. The tagline sits
@@ -339,6 +402,49 @@
 													<figcaption>{shot.label}</figcaption>
 												</figure>
 											{/each}
+										</div>
+									{:else if ticker}
+										<!-- A real public trade feed, read straight from the
+										     browser — there is no server of mine anywhere in this
+										     path. Not a claim that this is the archive's own feed:
+										     that one only ever aggregates a tick and discards it, so
+										     there is no "last 20" of its own to show even in
+										     principle. Same shape of data, live, is the honest
+										     version of this box. -->
+										<div class="ticker">
+											<div class="ticker-head">
+												<span class="tag">Live trades — public feed</span>
+											</div>
+											{#if ticks.length}
+												<table class="ticker-table">
+													<thead>
+														<tr>
+															<th>Symbol</th>
+															<th>Side</th>
+															<th>Price</th>
+															<th>Size</th>
+															<th>Time</th>
+														</tr>
+													</thead>
+													<tbody>
+														{#each ticks as tick (tick.id)}
+															<tr>
+																<td class="tsymbol">{tick.symbol}</td>
+																<td class="tside" class:sell={tick.side === 'sell'}>
+																	{tick.side}
+																</td>
+																<td class="tprice" class:sell={tick.side === 'sell'}>
+																	{tick.price.toFixed(2)}
+																</td>
+																<td>{tick.qty.toFixed(4)}</td>
+																<td>{new Date(tick.time).toLocaleTimeString()}</td>
+															</tr>
+														{/each}
+													</tbody>
+												</table>
+											{:else}
+												<Placeholder note="connecting…" lines={6} />
+											{/if}
 										</div>
 									{:else}
 										<Placeholder note="{name.toUpperCase().replace(/\s+/g, '-')}.PNG" lines={16} />
@@ -609,6 +715,81 @@
 		font-weight: 500;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
+	}
+
+	/* The tape: a window into a real (dark) feed the same way the embed and the
+	   server preview are, so it reads as a live instrument rather than a
+	   placeholder that happens to have numbers in it. */
+	.ticker {
+		box-sizing: border-box;
+		width: 100%;
+		height: 100%;
+		min-height: 22rem;
+		padding: 0.85rem;
+		border: 1px solid var(--color-border);
+		border-radius: 0.35rem;
+		background: var(--color-background);
+		color: var(--foreground);
+	}
+
+	.ticker-head {
+		margin-bottom: 0.6rem;
+	}
+
+	.ticker-head .tag {
+		color: #8a8a84;
+		font-family: var(--font-mono);
+		font-size: 0.6rem;
+		font-weight: 500;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	.ticker-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+	}
+
+	.ticker-table th,
+	.ticker-table td {
+		padding: 0.3rem 0.5rem 0.3rem 0;
+		font-weight: 400;
+		text-align: left;
+	}
+
+	.ticker-table thead th {
+		padding-top: 0;
+		padding-bottom: 0.4rem;
+		color: #a09f98;
+		font-weight: 500;
+		border-bottom: 1px solid var(--border);
+	}
+
+	.ticker-table tbody tr + tr td {
+		border-top: 1px solid var(--border);
+	}
+
+	.tsymbol {
+		color: var(--foreground);
+		font-weight: 500;
+	}
+
+	/* Buy in the site's own mint, sell in its coral — the same pair every other
+	   up/down or healthy/unhealthy reading on the site is drawn in. */
+	.tside,
+	.tprice {
+		color: var(--mint);
+	}
+
+	.tside.sell,
+	.tprice.sell {
+		color: var(--coral);
+	}
+
+	.tside {
+		text-transform: capitalize;
 	}
 
 	/* Every visual in here used to be `height: 100%` of the fold's grid row, and
