@@ -41,7 +41,12 @@
 		</div>
 
 		<div class="timeline">
-			<h2 class="eyebrow">My journey</h2>
+			<div class="timeline-head">
+				<h2 class="eyebrow">My journey</h2>
+				<a class="cv" href="/cv.pdf" download="joshua-smith-cv.pdf">
+					Download CV <span aria-hidden="true">↓</span>
+				</a>
+			</div>
 			{#each MILESTONES as { period, title, detail, points } (title)}
 				<div class="milestone">
 					<p class="period">{period}</p>
@@ -123,6 +128,37 @@
 		gap: 1rem;
 		align-content: start;
 		padding-left: var(--pad);
+	}
+
+	/* The eyebrow and the CV link share a line: the one other thing worth doing
+	   at the top of the rail, set in the same voice as the hero's own cta. */
+	.timeline-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 0.5rem;
+	}
+
+	.cv {
+		color: var(--mint);
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		font-weight: 500;
+		letter-spacing: 0.12em;
+		text-decoration: none;
+		text-transform: uppercase;
+		white-space: nowrap;
+	}
+
+	.cv span {
+		display: inline-block;
+		transition: transform 160ms ease;
+	}
+
+	.cv:hover span,
+	.cv:focus-visible span {
+		transform: translateY(2px);
 	}
 
 	.milestone {

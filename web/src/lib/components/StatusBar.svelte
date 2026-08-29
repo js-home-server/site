@@ -1,7 +1,7 @@
 <script>
 	import Spark from './Spark.svelte';
 	import TimeAxis from './TimeAxis.svelte';
-	import { degrees, ms } from '$lib/format.js';
+	import { degrees, ms, stamp } from '$lib/format.js';
 	import { server, watch } from '$lib/server.svelte.js';
 	import { bucket, mean, minMax, outages, percentile, values } from '$lib/stats.js';
 
@@ -146,6 +146,14 @@
 
 		<p class="claim">Site served from a box under my stairs. It seems to be working.</p>
 
+		<!-- Same reading the dashboard's own rail-foot ends on (server/+layout.svelte)
+		     — stamp() and all — so the two never say a different age for the same
+		     snapshot. -->
+		<p class="updated">
+			<span class="eyebrow">Last updated</span>
+			<span class="mono">{stamp(snapshot?.generated_at)}</span>
+		</p>
+
 		<a
 			href="#this-server"
 			onclick={(event) => {
@@ -243,6 +251,20 @@
 		/* Balanced: at two lines this is a heading's problem, not a paragraph's —
 		   the sentence break wants to fall evenly rather than leave an orphan. */
 		text-wrap: balance;
+	}
+
+	.updated {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+		align-items: baseline;
+		margin: 0;
+	}
+
+	.updated .mono {
+		color: var(--text-dim);
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
 	}
 
 	.lede a {
