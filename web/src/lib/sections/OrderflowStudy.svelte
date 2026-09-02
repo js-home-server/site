@@ -247,14 +247,28 @@
 
 	let ticks = $state([]);
 
+	/* The connection's own state, read by the tag's dot and the live region
+	   below it — separate from `ticks`, which only says whether a trade has
+	   arrived yet, not why one hasn't. 'failed' is reachable now: Binance is
+	   blocked on a fair number of corporate and institutional networks, and a
+	   box that retries forever looks identical to one that is simply broken. */
+	let connection = $state('connecting'); // 'connecting' | 'open' | 'failed'
+	const MAX_ATTEMPTS = 4;
+
 	$effect(() => {
 		if (!open) return;
 
 		let socket;
 		let torndown = false;
+		let attempts = 0;
+		connection = 'connecting';
 
 		const connect = () => {
 			socket = new WebSocket(TICKER_STREAM);
+			socket.onopen = () => {
+				attempts = 0;
+				connection = 'open';
+			};
 			socket.onmessage = (event) => {
 				const { data } = JSON.parse(event.data);
 				ticks = [
@@ -269,10 +283,19 @@
 					...ticks
 				].slice(0, 14);
 			};
-			/* The feed drops a connection now and then; reconnect once, rather
-			   than leaving a shut-looking box up for the rest of the visit. */
+			/* The feed drops a connection now and then; reconnect a few times
+			   rather than leaving a shut-looking box up for the rest of the
+			   visit — but not forever, or a genuinely blocked network never
+			   learns it's blocked and keeps waiting on a box that says
+			   "connecting…" until the visitor leaves the page. */
 			socket.onclose = () => {
-				if (!torndown) setTimeout(connect, 3000);
+				if (torndown) return;
+				attempts += 1;
+				if (attempts >= MAX_ATTEMPTS) {
+					connection = 'failed';
+					return;
+				}
+				setTimeout(connect, 3000);
 			};
 		};
 		connect();
@@ -281,6 +304,7 @@
 			torndown = true;
 			socket.close();
 			ticks = [];
+			connection = 'connecting';
 		};
 	});
 </script>
@@ -399,7 +423,20 @@
 		</div>
 
 		<div class="tape">
-			<span class="tag"><i class="dot" aria-hidden="true"></i>Live trades · public feed</span>
+			<span class="tag"><i class="dot" class:down={connection !== 'open'} aria-hidden="true"></i>Live trades · public feed</span>
+
+			<!-- Announced once, on a real state change — not per trade, which
+			     arrives several times a second and would spam a screen reader.
+			     The table below carries no aria-live for the same reason: it is
+			     not meant to be read out row by row as it scrolls. -->
+			<p class="sr-only" role="status" aria-live="polite">
+				{connection === 'open'
+					? 'Connected. Live trades below.'
+					: connection === 'failed'
+						? "Binance's public feed is unreachable from this network — it's blocked in some regions and on many corporate networks."
+						: 'Connecting to the public trade feed…'}
+			</p>
+
 			{#if ticks.length}
 				<table class="tape-table">
 					<thead>
@@ -417,6 +454,8 @@
 						{/each}
 					</tbody>
 				</table>
+			{:else if connection === 'failed'}
+				<Placeholder note="feed unreachable from this network" lines={6} />
 			{:else}
 				<Placeholder note="connecting…" lines={6} />
 			{/if}
@@ -731,8 +770,11 @@
 		/* The two tracks' colours, mixed dark enough to be read as text on the
 		   white card: the site's own violet and azure are set for a black page
 		   and are a wash on this one. */
-		--ink-azure: color-mix(in srgb, var(--azure) 55%, #0b0b0b);
-		--ink-violet: color-mix(in srgb, var(--violet) 62%, #241d52);
+		/* The shared light-ground pair (app.css) under this file's old local
+		   names. --ink-violet was its own one-off mix before, at 3.44:1 on this
+		   ground — under the 4.5:1 its own text needs. */
+		--ink-azure: var(--azure-ink);
+		--ink-violet: var(--violet-ink);
 
 		display: grid;
 		gap: 0.75rem;
@@ -827,7 +869,9 @@
 	}
 
 	.mark.warn {
-		color: var(--amber);
+		/* -ink: this icon is on the study's light ground and plain --amber
+		   measures 1.75:1 there. */
+		color: var(--amber-ink);
 		font-size: 0.9rem;
 	}
 
@@ -1029,6 +1073,13 @@
 		box-shadow: 0 0 0.5rem var(--mint);
 	}
 
+	/* Connecting or failed both read as "not lit" — the live region above and
+	   the placeholder below already say which. */
+	.tape .dot.down {
+		background: var(--coral);
+		box-shadow: 0 0 0.5rem var(--coral);
+	}
+
 	.tape-table {
 		width: 100%;
 		border-collapse: collapse;
@@ -1118,7 +1169,9 @@
 	.card-item li::before {
 		position: absolute;
 		left: 0;
-		color: var(--mint);
+		/* -ink: this bullet is on the study's light ground and plain --mint
+		   measures 1.68:1 there. */
+		color: var(--mint-ink);
 		content: '—';
 	}
 
@@ -1530,12 +1583,15 @@
 		font-weight: 700;
 	}
 
-	/* The verdict, not the title: struck through the way the hypothesis was. */
+	/* The verdict, not the title: struck through the way the hypothesis was.
+	   Both border and text read -ink, not plain --coral: this is the shared
+	   light-ground token (app.css) now, same formula this file already had for
+	   the text alone — the border was still plain coral, at 1.8:1 on white. */
 	.verdict {
 		padding: 0.1rem 0.45rem;
-		border: 1px solid var(--coral);
+		border: 1px solid var(--coral-ink);
 		border-radius: 999px;
-		color: color-mix(in srgb, var(--coral) 50%, #0b0b0b);
+		color: var(--coral-ink);
 		font-family: var(--font-mono);
 		font-size: 0.52rem;
 		letter-spacing: 0.06em;

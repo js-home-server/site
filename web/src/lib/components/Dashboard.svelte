@@ -24,7 +24,7 @@
 			<AsciiClock />
 		</div>
 
-		<nav>
+		<nav aria-label="Dashboard sections">
 			{#each sections as section, i (section.href)}
 				<a
 					class="eyebrow"
@@ -47,7 +47,7 @@
 		{/if}
 	</aside>
 
-	<div class="body">
+	<main class="body">
 		<!-- The page's own heading. The section carries the titling now, so this is
 		     for the outline rather than the eye: without it the document starts at
 		     h2 and the section is under nothing. -->
@@ -64,7 +64,7 @@
 			     instead, below the section, rather than going unread. -->
 			<div class="body-foot">{@render foot()}</div>
 		{/if}
-	</div>
+	</main>
 </div>
 
 <style>

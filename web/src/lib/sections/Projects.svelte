@@ -63,7 +63,7 @@
 	   inside "This server" are heavy enough that animating them open and shut
 	   on every scroll tick (as the reading line crossed each card) was the
 	   source of the section's lag, not just a cosmetic flourish worth keeping. */
-	let open = $state(0);
+	let open = $state(PROJECTS.findIndex((project) => project.name === 'Ancestree'));
 
 	function toggle(i) {
 		open = open === i ? -1 : i;
@@ -89,7 +89,7 @@
      the dashed slot where that sentence still has to be written. -->
 {#snippet fact(label, text)}
 	<div class="box">
-		<Panel {label}>
+		<Panel {label} level={4}>
 			{#if text}
 				<p class="prose">{text}</p>
 			{:else}
@@ -104,7 +104,7 @@
      snippet rather than three copies of a list. -->
 {#snippet bullets(label, items, note)}
 	<div class="box">
-		<Panel {label}>
+		<Panel {label} level={4}>
 			{#if items}
 				<ul class="reasons">
 					{#each items as { term, text } (term)}
@@ -120,7 +120,7 @@
 
 <section id="projects" class="page projects-page">
 	<section class="surface-box projects">
-		<h2 class="eyebrow">My projects</h2>
+		<h2 class="section-title">My projects</h2>
 
 		<div class="cards">
 			{#each PROJECTS as { name, year, blurb, tools, url, live, pypi, docs, demo, image, liveBadge, study, facts, architecture, decisions, reliability, tradeoffs, metrics, metricNote, outcome }, i (name)}
@@ -129,23 +129,25 @@
 					     link can't nest inside a button, and the links under the pills
 					     are real ones — so the row is opened either from the title on
 					     the left or the year/mark on the right, both calling the same
-					     toggle. -->
+					     toggle. ToolPills is a row of links too and sits under the
+					     button for the same reason: a button may not contain other
+					     interactive content, which an anchor is regardless of what
+					     wraps it. -->
 					<div class="head-row">
 						<div class="head-col">
 							<button type="button" class="head" aria-expanded={i === open} onclick={() => toggle(i)}>
 								<span class="icon">{String(i).padStart(2, '0')}</span>
-								<div class="title-group">
-									<h3>
-										{name}
-										{#if live || liveBadge}
-											<span class="callout live">
-												<i class="dot" aria-hidden="true"></i>Live
-											</span>
-										{/if}
-									</h3>
-									<ToolPills {tools} />
-								</div>
+								<h3>
+									{name}
+									{#if live || liveBadge}
+										<span class="callout live">
+											<i class="dot" aria-hidden="true"></i>Live
+										</span>
+									{/if}
+								</h3>
 							</button>
+
+							<div class="tools-row"><ToolPills {tools} /></div>
 
 							<!-- Under the pills rather than under the blurb: its own row,
 							     not inside .head above, since a link can't nest inside a
@@ -241,7 +243,7 @@
 									</div>
 
 									<div class="box">
-										<Panel label="Architecture">
+										<Panel label="Architecture" level={4}>
 											{#if architecture}
 												<p class="prose">{architecture.text}</p>
 
@@ -278,7 +280,7 @@
 								     something someone else could re-run — a placeholder is the
 								     honest reading until then. -->
 								<div class="box">
-									<Panel label="Measurable proof">
+									<Panel label="Measurable proof" level={4}>
 										{#if metrics}
 											<div class="tiles">
 												{#each metrics as metric (metric.label)}
@@ -308,7 +310,7 @@
 									{@render bullets('Limitations', tradeoffs, 'limitations')}
 
 									<div class="box">
-										<Panel label="Outcome">
+										<Panel label="Outcome" level={4}>
 											{#if outcome}
 												<p class="prose">{outcome}</p>
 											{:else}
@@ -334,7 +336,7 @@
 		gap: clamp(0.75rem, 1.5vh, 1.25rem);
 	}
 
-	.projects .eyebrow {
+	.projects .section-title {
 		display: block;
 		margin-bottom: var(--pad);
 	}
@@ -342,12 +344,15 @@
 	/* The box painted the other way up. The theme's light values live in app.css
 	   but are shadowed by .dark on the document, so the section restates them for
 	   itself: everything inside — the placeholders, the rules, the quiet text — is
-	   written in tokens and follows without being told. */
+	   written in tokens and follows without being told. --focus-ring goes with
+	   them: plain --mint measures 1.6:1 on this background, same as every other
+	   accent this section shadows to its -ink form. */
 	.projects {
 		--color-foreground: #0b0b0b;
 		--color-border: #c9c8c0;
 		--text-dim: #55544f;
 		--text-faint: #6b6a64;
+		--focus-ring: var(--mint-ink);
 
 		border-color: #e1e0d9;
 		background: #f9f9f7;
@@ -368,12 +373,14 @@
 		letter-spacing: -0.01em;
 	}
 
-	/* Name, pills and blurb stacked in the head's one flexible column, so all
-	   three read under the title in both fold states. */
-	.title-group {
-		display: grid;
-		gap: 0.4rem;
-		min-width: 0;
+	/* The pills, aligned under the title the same way .links (below) is: the
+	   icon column's width plus the gap beside it (.head-col's --icon-col), so
+	   the row starts under the title rather than the icon above it. Its own
+	   row rather than inside .head — ToolPills renders a link for any tool
+	   with a website, and a link can't nest inside a button. */
+	.tools-row {
+		margin-top: 0.4rem;
+		margin-left: calc(var(--icon-col) + 0.75rem);
 	}
 
 	/* One block a reader takes in at a glance, whether or not they open the
@@ -492,7 +499,9 @@
 	.reasons li::before {
 		position: absolute;
 		left: 0;
-		color: var(--mint);
+		/* -ink, not the plain accent: this box is on the light ground (.projects,
+		   below) and plain --mint measures 1.6:1 on it. */
+		color: var(--mint-ink);
 		content: '—';
 	}
 
@@ -552,9 +561,12 @@
 		border-radius: 0.3rem;
 	}
 
-	/* Smaller than a figure on the dashboard: four of these share half a card. */
+	/* Smaller than a figure on the dashboard: four of these share half a card.
+	   -ink, not the plain accent: the tile is on the light ground (.projects,
+	   below) and plain --violet measures 1.78:1 on it — these are the study's
+	   own headline numbers, not a decoration. */
 	.tile .figure {
-		color: var(--violet);
+		color: var(--violet-ink);
 		font-size: 1.35rem;
 	}
 
@@ -755,21 +767,24 @@
 		padding: 0.25rem 0.7rem;
 		vertical-align: middle;
 		white-space: nowrap;
-		color: var(--violet);
+		/* -ink, not the plain accent: on this badge's own white background,
+		   plain --violet measures 1.78:1 for the text and the same for the
+		   border it also draws — well under the 4.5:1 text / 3:1 UI floors. */
+		color: var(--violet-ink);
 		font-family: var(--font-mono);
 		font-size: 0.6rem;
 		font-weight: 500;
 		letter-spacing: 0.04em;
 		background: #fff;
-		border: 1.5px solid var(--violet);
+		border: 1.5px solid var(--violet-ink);
 		border-radius: 999px;
 	}
 
 	/* The site's other colour for "carry on regardless" — the same mint every
 	   other live indicator wears (StatusBar's own dot, the dashboard's). */
 	.callout.live {
-		color: var(--mint);
-		border-color: var(--mint);
+		color: var(--mint-ink);
+		border-color: var(--mint-ink);
 	}
 
 	.callout .dot {

@@ -105,7 +105,7 @@
 <section id="contact" class="page contact">
 	<section class="surface-box panel">
 		<div class="intro">
-			<h2 class="eyebrow">Contact</h2>
+			<h2 class="section-title">Contact</h2>
 
 			<p class="headline">What's on your radar?</p>
 			<p class="lede">
@@ -148,12 +148,16 @@
 				<h3 class="eyebrow">Or send a message</h3>
 
 				<!-- Off-screen rather than display:none, which some bots skip filling
-				     because it's known to be inert; a real visitor never tabs to it. -->
+				     because it's known to be inert; a real visitor never tabs to it.
+				     aria-hidden too: tabindex="-1" only takes it out of tab order, and
+				     a screen reader's own browse mode would otherwise still land on an
+				     unlabelled text field. -->
 				<input
 					type="text"
 					name="botcheck"
 					class="botcheck"
 					tabindex="-1"
+					aria-hidden="true"
 					autocomplete="off"
 					bind:value={honeypot}
 				/>
@@ -177,13 +181,20 @@
 					<button type="submit" disabled={status === 'sending'}>
 						{status === 'sending' ? 'Sending…' : 'Send message'}
 					</button>
-					{#if status === 'sent'}
-						<p class="feedback ok">Sent — thanks, I'll get back to you.</p>
-					{:else if status === 'error'}
-						<p class="feedback err">
-							Something went wrong — try again, or email me directly instead.
-						</p>
-					{/if}
+					<!-- Announced on its own: role="status" plus aria-live so a screen
+					     reader reports the result without the visitor having to go
+					     looking for it, the way a sighted one can just see the line
+					     appear. Polite, not assertive — it waits for a pause rather
+					     than cutting off whatever the reader is already doing. -->
+					<div role="status" aria-live="polite">
+						{#if status === 'sent'}
+							<p class="feedback ok">Sent — thanks, I'll get back to you.</p>
+						{:else if status === 'error'}
+							<p class="feedback err">
+								Something went wrong — try again, or email me directly instead.
+							</p>
+						{/if}
+					</div>
 				</div>
 			</form>
 		</div>
@@ -377,9 +388,11 @@
 		resize: vertical;
 	}
 
+	/* The global :focus-visible ring (app.css) already draws the outline; this
+	   is the extra cue on top of it, the same border-colour swap every other
+	   focused control on the site gets. */
 	input:focus-visible,
 	textarea:focus-visible {
-		outline: none;
 		border-color: var(--mint);
 	}
 

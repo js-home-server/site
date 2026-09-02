@@ -477,7 +477,7 @@
 			<div class="mini-dashboard">
 				<div class="mgrid">
 					<div class="obox" style={gridArea({ col: 1, row: 1 })}>
-						<Panel label="Uptime">
+						<Panel label="Uptime" level={5}>
 							<strong class="ofigure" style:color="var(--mint)">
 								{uptimeDays === null ? '—' : `${uptimeDays}d ${uptimeRest}`}
 							</strong>
@@ -486,7 +486,7 @@
 					</div>
 
 					<div class="obox" style={gridArea({ col: 2, row: 1 })}>
-						<Panel label="Temperature">
+						<Panel label="Temperature" level={5}>
 							<strong class="ofigure" style:color="var(--amber)">
 								{degrees(snapshot?.cpu.temperature_c)}
 							</strong>
@@ -496,7 +496,7 @@
 					</div>
 
 					<div class="obox fill" style={gridArea({ col: 3, row: 1, w: 2, h: 3 })}>
-						<Panel label="Containers">
+						<Panel label="Containers" level={5}>
 							{#if containers.slots.length}
 								<div class="mfleet">
 									<table>
@@ -540,7 +540,7 @@
 					</div>
 
 					<div class="obox fill" style={gridArea({ col: 1, row: 2, w: 2, h: 2 })}>
-						<Panel label="CPU & RAM Usage (%)">
+						<Panel label="CPU & RAM Usage (%)" level={5}>
 							<Trace
 								lines={[
 									{ id: 'cpu', points: series?.cpu.percent, tone: 'var(--mint)', label: 'CPU' },
@@ -553,7 +553,7 @@
 					</div>
 
 					<div class="obox" style={gridArea({ col: 1, row: 4, w: 2 })}>
-						<Panel label="Storage Overview">
+						<Panel label="Storage Overview" level={5}>
 							<div class="ovolumes">
 								{#each volumes as vol (vol.id)}
 									<div class="ovolume">
@@ -575,7 +575,7 @@
 					</div>
 
 					<div class="obox" style={gridArea({ col: 3, row: 4 })}>
-						<Panel label="Time Offset">
+						<Panel label="Time Offset" level={5}>
 							<strong class="ofigure" style:color="var(--azure)">
 								{microseconds(clockOffset(snapshot?.time))}
 							</strong>
@@ -585,7 +585,7 @@
 					</div>
 
 					<div class="obox" style={gridArea({ col: 4, row: 4 })}>
-						<Panel label="Latency">
+						<Panel label="Latency" level={5}>
 							<strong class="ofigure" style:color="var(--azure)">
 								{ms(snapshot?.availability.latency_ms)}
 							</strong>
@@ -692,8 +692,13 @@
 
 <style>
 	/* The study's own stack: one box a named section, in the same rhythm the
-	   other three studies are read in. */
+	   other three studies are read in. --ink is the shared light-ground amber
+	   (app.css) under its old local name: .kicker (below) was reading an --ink
+	   that nothing here ever defined, which resolves to inherited black rather
+	   than a broken colour — legible by accident, not by design. */
 	.study {
+		--ink: var(--amber-ink);
+
 		display: grid;
 		gap: 0.75rem;
 	}
@@ -785,7 +790,10 @@
 	}
 
 	.mark.warn {
-		color: var(--amber);
+		/* -ink, not the plain accent: this icon is on the study's light ground
+		   (.projects, Projects.svelte) and plain --amber measures 1.75:1 there —
+		   under both the 3:1 a meaningful icon needs and the 4.5:1 text needs. */
+		color: var(--amber-ink);
 		font-size: 0.9rem;
 	}
 
@@ -1078,7 +1086,9 @@
 	}
 
 	.core-track i.pinned {
-		background: var(--mint);
+		/* -ink: this bar is on the study's light ground, where plain --mint
+		   measures 1.68:1 — the same swap every accent on paper gets. */
+		background: var(--mint-ink);
 	}
 
 	.core-detail {

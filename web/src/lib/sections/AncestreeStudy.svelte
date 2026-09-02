@@ -514,7 +514,10 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 	.study {
 		/* The study's own accent, dark enough to read on the white card — the
 		   site's amber is set for a black page. */
-		--ink: color-mix(in srgb, var(--amber) 60%, #5a3200);
+		/* The shared light-ground amber (app.css) under this file's old local
+		   name — was its own one-off mix before, at 3.17:1 on this ground,
+		   which clears 3:1 but not the 4.5:1 the kicker's small text needs. */
+		--ink: var(--amber-ink);
 
 		display: grid;
 		gap: 0.75rem;
@@ -598,7 +601,9 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 	.mark {
 		display: inline-flex;
 		flex: none;
-		color: var(--amber);
+		/* -ink: this icon is on the study's light ground and plain --amber
+		   measures 1.75:1 there. */
+		color: var(--amber-ink);
 		font-size: 0.9rem;
 		line-height: 1;
 	}

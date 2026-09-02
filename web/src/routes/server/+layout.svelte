@@ -40,6 +40,26 @@
 	let uptimeBars = $derived(
 		bucket(uptime, UPTIME_BARS).map((v) => (v === null ? 'unknown' : v < 1 ? 'down' : 'up'))
 	);
+
+	/* The span the strip actually covers, the same way StatusBar works it out
+	   for its own copy of this bar: less than `RANGE` until the API has been
+	   collecting that long, so the label can never claim more than the data
+	   behind it does. Feeds the strip's own aria-label below — a sighted reader
+	   never sees "24 hours", but a screen reader was being told that regardless
+	   of the real window. */
+	let spanSeconds = $derived(uptime.length > 1 ? uptime.at(-1)[0] - uptime[0][0] : 0);
+	let spanLabel = $derived(
+		spanSeconds >= 3600
+			? `${Math.round(spanSeconds / 3600)} hours`
+			: spanSeconds > 0
+				? `${Math.round(spanSeconds / 60)} minutes`
+				: null
+	);
+	let uptimeLabel = $derived(
+		uptimeBars.length && spanLabel
+			? `Server uptime over the last ${spanLabel}: ${uptimeBars.filter((s) => s === 'up').length} of ${uptimeBars.length} intervals up`
+			: 'Server uptime history unavailable'
+	);
 </script>
 
 <Dashboard title="Server" sections={SECTIONS} current={page.url.pathname} max="88rem">
@@ -48,8 +68,15 @@
 	{#snippet rail()}
 		<div class="rail-box status">
 			<h2 class="eyebrow">Status</h2>
-			<p class="figure verdict"><i class="dot" aria-hidden="true"></i>Healthy</p>
-			<p class="note">Nothing to report</p>
+			<!-- role="status"/aria-live: a state flip is worth announcing, and it
+			     only fires on a real flip — online and incidents both come off a
+			     5-minute-stepped series, not the 30s snapshot poll. -->
+			<p class="figure verdict" class:down={!online} role="status" aria-live="polite">
+				<i class="dot" aria-hidden="true"></i>{online ? 'Healthy' : 'Unreachable'}
+			</p>
+			<p class="note">
+				{incidents ? `${incidents} incident${incidents > 1 ? 's' : ''}` : 'Nothing to report'}
+			</p>
 		</div>
 
 		<div class="rail-box uptime">
@@ -66,7 +93,7 @@
 						: 'No incidents'
 					: 'No history yet'}
 			</p>
-			<div class="strip" role="img" aria-label="Server uptime over the last 24 hours">
+			<div class="strip" role="img" aria-label={uptimeLabel}>
 				{#each uptimeBars as state}<i class={state}></i>{/each}
 			</div>
 			<TimeAxis />
@@ -127,6 +154,10 @@
 		align-items: center;
 		gap: 0.5rem;
 		color: var(--mint);
+	}
+
+	.status .verdict.down {
+		color: var(--coral);
 	}
 
 	/* The same lit dot the rail marks the current stop with. */

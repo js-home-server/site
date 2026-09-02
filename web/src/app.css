@@ -63,6 +63,18 @@
 	}
 }
 
+/* One focus ring, everywhere: :focus-visible only, so a mouse click never
+   wears the keyboard's own affordance, and unlayered so it always outranks
+   Tailwind's own outline utility (`* { outline-ring/50 }`, base layer above) —
+   that one sets a colour and nothing else, so nothing was actually drawing a
+   ring before this. --focus-ring is --mint on the dark ground this rule is
+   written against; .projects (Projects.svelte) shadows it to --mint-ink for
+   the light one, the same way it shadows every other token in this file. */
+:focus-visible {
+	outline: 2px solid var(--focus-ring);
+	outline-offset: 2px;
+}
+
 /* --- site ----------------------------------------------------------------
    The theme above covers surfaces and body text. These are the few values the
    hand-written pages add: two steps of quiet text below --muted-foreground for
@@ -96,6 +108,29 @@
 	   drive's colour before it is the panel's. */
 	--violet: #c3bbfb;
 	--azure: #8dccf9;
+
+	/* The same five hues, darkened for the one surface that stands on the light
+	   background instead of the dark one — .projects and everything nested in
+	   it (the four study components all inherit through it). The base hues are
+	   tuned against #090909, where they clear 11:1; against #fff or #f9f9f7 they
+	   measure as low as 1.6:1, which fails text and UI contrast outright. Mixed
+	   to #0b0b0b — the light theme's own foreground — at the one ratio that
+	   lands all five at ≥5:1 on both grounds, so a reading on the section's own
+	   tone and one on a card's inner white box both clear AA with margin. Text,
+	   badges, borders and figures on paper read through one of these; the plain
+	   hues stay for the dark ground, where they already have contrast to spare. */
+	--mint-ink: color-mix(in srgb, var(--mint) 50%, #0b0b0b);
+	--amber-ink: color-mix(in srgb, var(--amber) 50%, #0b0b0b);
+	--coral-ink: color-mix(in srgb, var(--coral) 50%, #0b0b0b);
+	--violet-ink: color-mix(in srgb, var(--violet) 50%, #0b0b0b);
+	--azure-ink: color-mix(in srgb, var(--azure) 50%, #0b0b0b);
+
+	/* The one focus ring, everywhere: mint, since it is already the site's
+	   "current/active" colour — the nav's own current-page mark, every live
+	   indicator. Shadowed to --mint-ink wherever .projects shadows the rest of
+	   the palette light, for the same reason every accent there is: plain mint
+	   is a 1.6:1 outline on paper. */
+	--focus-ring: var(--mint);
 
 	/* Baselines are painted on whole device pixels, so that is the only pitch a row
 	   of generated ascii art can actually be given, and rounding its line height to
@@ -227,6 +262,19 @@
 	font-weight: 500;
 	letter-spacing: 0.14em;
 	text-transform: uppercase;
+}
+
+/* A page's own section headings — "My projects", "My journey", "Contact" —
+   deliberately not .eyebrow: that class is an instrument label, quiet and
+   uppercase by design, and a heading set the same way cannot be found by eye
+   before it is read. This is bold enough to register as a heading on its own
+   scroll past, without competing with the hero name above the first of them. */
+.section-title {
+	margin: 0;
+	color: var(--color-foreground);
+	font-size: clamp(1.05rem, 1.6vw, 1.35rem);
+	font-weight: 700;
+	letter-spacing: -0.01em;
 }
 
 /* The one number a reading is known by. */

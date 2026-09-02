@@ -180,7 +180,17 @@
 			Home server
 		</h2>
 
-		<p class="claim">Site served from a box under my stairs. It seems to be working.</p>
+		<!-- role="status"/aria-live so a state flip is announced without a
+		     visitor having to go find the dot — polite, and safe against spam,
+		     since the text only changes value when `online` actually flips, not
+		     on every 30s poll that leaves it the same. The wording itself is the
+		     other half of the fix the comment above already claimed: colour
+		     alone was carrying "down" before this, with the sentence still
+		     insisting it was working. -->
+		<p class="claim" role="status" aria-live="polite">
+			Site served from a box under my stairs.
+			{online ? "It seems to be working." : "It isn't answering right now."}
+		</p>
 
 		<!-- Same reading the dashboard's own rail-foot ends on (server/+layout.svelte)
 		     — stamp() and all — so the two never say a different age for the same

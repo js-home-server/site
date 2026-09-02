@@ -42,7 +42,7 @@
 
 		<div class="timeline">
 			<div class="timeline-head">
-				<h2 class="eyebrow">My journey</h2>
+				<h2 class="section-title">My journey</h2>
 				<a class="cv" href="/cv.pdf" download="joshua-smith-cv.pdf">
 					Download CV <span aria-hidden="true">↓</span>
 				</a>
@@ -50,7 +50,7 @@
 			{#each MILESTONES as { period, title, detail, points } (title)}
 				<div class="milestone">
 					<p class="period">{period}</p>
-					<p class="title">{title}</p>
+					<h3 class="title">{title}</h3>
 					{#if detail}<p class="detail">{detail}</p>{/if}
 					{#if points}
 						<ul>

@@ -473,7 +473,9 @@ test_html_proportions();`}</code></pre>
 	.mark {
 		display: inline-flex;
 		flex: none;
-		color: var(--amber);
+		/* -ink: this icon is on the study's light ground and plain --amber
+		   measures 1.75:1 there. */
+		color: var(--amber-ink);
 		font-size: 0.9rem;
 		line-height: 1;
 	}
