@@ -8,7 +8,7 @@
 	const MILESTONES = [
 		{
 			period: '2024 — Present',
-			title: 'Graduate Data Scientist, AWE',
+			title: 'Graduate Engineer, AWE',
 			points: [
 				{
 					text: 'Signal-processing pipeline synchronising 9 distributed sensors to microsecond precision — denoising, unsupervised anomaly detection, waveform clustering and TDOA localisation.',

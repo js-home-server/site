@@ -1,112 +1,62 @@
 <script>
-	import Capacity from '$lib/components/Capacity.svelte';
 	import Panel from '$lib/components/Panel.svelte';
 	import Placeholder from '$lib/components/Placeholder.svelte';
-	import Spark from '$lib/components/Spark.svelte';
 	import ToolPills from '$lib/components/ToolPills.svelte';
-	import Trace from '$lib/components/Trace.svelte';
-	import { fleet } from '$lib/containers.js';
-	import { degrees, gigabytes, microseconds, ms, pct, stamp } from '$lib/format.js';
-	import { gridArea } from '$lib/grid.js';
-	import { memoryBands } from '$lib/memory.js';
-	import { server } from '$lib/server.svelte.js';
-	import { minMax } from '$lib/stats.js';
-	import { DISKS, volume } from '$lib/storage.js';
-	import { clockOffset, clockOffsetHistory } from '$lib/time.js';
+	import AncestreeStudy from './AncestreeStudy.svelte';
+	import AsciiStudy from './AsciiStudy.svelte';
+	import OrderflowStudy from './OrderflowStudy.svelte';
+	import ServerStudy from './ServerStudy.svelte';
 
 	/* The work worth showing. `tools` are what each is actually built with; `url`
 	   is where the source is, on the ones that are public; `live` is where it
-	   actually runs on this site, on the one that runs here. */
+	   actually runs on this site, on the one that runs here.
+
+	   The case-study fields below `blurb` — facts, architecture, decisions,
+	   reliability, tradeoffs, metrics — are the long form each card opens onto.
+	   Every one of them is optional: a project that has not been written up yet
+	   renders the same frame with a placeholder in the slot, so the shape of what
+	   is still owed is visible rather than hidden. */
 	const PROJECTS = [
 		{
 			name: 'Ancestree',
 			year: 2026,
-			tagline: 'Data lineage, content-addressed.',
 			blurb:
-				'Zero-dependency Python package that models a data pipeline as a directed acyclic graph, with content-defined chunking over a SQL backend. Published on PyPI and in use by researchers internally.',
+				'Ten variations in, you are looking at final_v2_REAL.csv with no record of what produced it. Ancestree puts a pipeline’s DAG, metadata and artifact bytes in one SQLite file, no server needed. It stores 3.93× less and reruns 136× faster, across 975 tests.',
 			tools: ['Python', 'SQL', 'Git'],
 			url: 'https://github.com/JS195/ancestree',
 			pypi: 'https://pypi.org/project/ancestree-track/',
-			embed: 'https://js195.github.io/ancestree/assets/demo/interactive_pipeline.html'
-		},
-		{
-			name: 'Orderflow analysis',
-			year: 2026,
-			tagline: 'Reading the tape at scale.',
-			blurb:
-				'Pipeline for Binance futures and spot data, with a dynamic feature registry covering OHLC aggregation, open interest, funding rate and CVD, read back through a multi-panel plotting framework.',
-			tools: ['Python', 'Pandas', 'Polars', 'Plotly', 'NumPy'],
-			image: '/projects/orderflow.png'
+			docs: 'https://js195.github.io/ancestree/',
+			demo: 'https://js195.github.io/ancestree/demo/',
+			study: 'ancestree'
 		},
 		{
 			name: 'This server',
 			year: 2026,
-			tagline: 'The box, and the site it runs.',
 			blurb:
-				'The machine this site is served from, and the site itself: metrics scraped off the box, cached behind a small API, and read back live on the server page.',
+				'A machine publishing a live feed about itself is publishing facts about a house. This one runs Debian behind an outbound tunnel, where what reaches the public API is a checked-in list rather than whatever the exporters expose. It draws 3.0 W and opens no ports.',
 			tools: ['Svelte', 'JavaScript', 'Docker', 'Linux', 'Python'],
 			url: 'https://github.com/js-home-server',
 			live: '/server'
 		},
 		{
-			name: 'ascii-art',
-			year: 2025,
-			tagline: 'Pixels, rendered as text.',
+			name: 'Crypto orderflow',
+			year: 2026,
 			blurb:
-				'C11 CLI that converts raster images into ASCII art for the terminal or the web: block-averaged sampling, tone curve and glyph selection as separable, individually tested stages. Generates the art on this site, including the astronaut on the about page.',
-			tools: ['C++', 'Git'],
-			url: 'https://github.com/JS195/asciiArt',
-			gallery: [
-				{ src: '/projects/ship-original.png', label: 'Original' },
-				{ src: '/projects/ship-grayscale.png', label: 'Greyscale' },
-				{ src: '/projects/ship-color.png', label: 'Color' }
-			]
+				'Order flow cannot be backfilled, and the vendors that sell it retain days rather than years. So I built the collector: 11.5M rows a day off ten venue feeds, folded to 108 MB of Parquet, and the cross-sectional strategy study that reads it back.',
+			tools: ['Python', 'Docker', 'Polars', 'NumPy'],
+			liveBadge: true,
+			study: 'orderflow'
 		},
 		{
-			name: 'crypto-archive',
-			year: 2026,
-			tagline: 'Every tick, from six exchanges.',
+			name: 'ascii-art',
+			year: 2025,
 			blurb:
-				'Gathers and aggregates my own tick-level trade and order-book data from six exchanges, running continuously — 24/7, 365 — to build a self-owned historical archive rather than relying on any one provider\'s retention.',
-			tools: ['Python', 'Docker', 'Parquet'],
-			liveBadge: true,
-			ticker: true
+				'A photograph is a grid of pixels and a terminal is a grid of characters. A C11 renderer converts one to the other, with sampling, tone curve, glyph selection and encoding as separately tested stages. It runs in 13 ms and draws every image on this site.',
+			tools: ['C++', 'Git'],
+			url: 'https://github.com/JS195/asciiArt',
+			study: 'ascii'
 		}
 	];
-
-	/* A copy of /server's own overview grid (routes/server/+page.svelte), scaled
-	   down into "This server"'s visual box rather than imported — so trimming or
-	   dropping this preview later never touches the real page. */
-	let snapshot = $derived(server.snapshot);
-	let series = $derived(server.series);
-	let month = $derived(server.month ?? server.series);
-
-	let ramUsed = $derived(memoryBands(series).find((band) => band.id === 'used')?.points ?? []);
-
-	let volumes = $derived(
-		DISKS.map((disk) =>
-			volume({
-				...disk,
-				used: month?.storage[disk.id].used_bytes,
-				available: month?.storage[disk.id].available_bytes,
-				percent: month?.storage[disk.id].used_percent
-			})
-		)
-	);
-
-	let containers = $derived(fleet(snapshot?.containers.items));
-	let clockHistory = $derived(clockOffsetHistory(series));
-
-	/* Days and the hours/minutes left over, rather than the hour count the rest
-	   of the site quotes this same figure as: a box this small is still up long
-	   enough that hours stop being the unit worth leading with. */
-	let uptimeSeconds = $derived(snapshot?.availability.uptime_seconds);
-	let uptimeDays = $derived(Number.isFinite(uptimeSeconds) ? Math.floor(uptimeSeconds / 86400) : null);
-	let uptimeRest = $derived(
-		Number.isFinite(uptimeSeconds)
-			? `${Math.floor((uptimeSeconds % 86400) / 3600)}h ${Math.floor((uptimeSeconds % 3600) / 60)}m`
-			: null
-	);
 
 	/* A plain accordion: click a title to open it, click the open one to shut
 	   it. Scroll no longer drives this — the embed and the server preview
@@ -125,113 +75,113 @@
 	   list's order. */
 	const slug = (name) => name.toLowerCase().replace(/\s+/g, '-');
 
+
 	function openProject(event) {
 		const index = PROJECTS.findIndex((project) => slug(project.name) === event.detail);
 		if (index !== -1) open = index;
 	}
 
-	/* crypto-archive's live ticker: a real public trade feed read straight from
-	   the browser, not a claim that this is the archive's own internal feed —
-	   there is no server of ours in this path at all, on purpose. The archive
-	   itself only ever aggregates and discards ticks, so there is no "last 20"
-	   of its own to serve even if we wanted to; this shows the same shape of
-	   data live instead. Connected only while the card is open, torn down the
-	   moment it isn't, so a shut card holds no socket open in the background. */
-	const TICKER_INDEX = PROJECTS.findIndex((project) => project.ticker);
-
-	/* 50 of Binance's own busiest USDT pairs, not just the two or three
-	   headline ones — the point of this box is breadth across symbols, the
-	   same shape the real archive watches six exchanges for. */
-	const TICKER_SYMBOLS = [
-		'btc', 'eth', 'bnb', 'sol', 'xrp', 'ada', 'doge', 'trx', 'avax', 'dot',
-		'link', 'matic', 'ton', 'shib', 'ltc', 'bch', 'uni', 'atom', 'xlm', 'etc',
-		'fil', 'apt', 'arb', 'op', 'near', 'vet', 'icp', 'hbar', 'inj', 'rune',
-		'algo', 'sand', 'mana', 'aave', 'grt', 'eos', 'ftm', 'xtz', 'theta', 'axs',
-		'egld', 'flow', 'chz', 'kava', 'zec', 'enj', 'dash', 'comp', 'snx', 'crv'
-	];
-	const TICKER_STREAM = `wss://stream.binance.com:9443/stream?streams=${TICKER_SYMBOLS.map(
-		(symbol) => `${symbol}usdt@trade`
-	).join('/')}`;
-
-	let ticks = $state([]);
-
-	$effect(() => {
-		if (open !== TICKER_INDEX) return;
-
-		let socket;
-		let torndown = false;
-
-		const connect = () => {
-			socket = new WebSocket(TICKER_STREAM);
-			socket.onmessage = (event) => {
-				const { data } = JSON.parse(event.data);
-				ticks = [
-					{
-						id: `${data.s}-${data.t}`,
-						symbol: data.s.replace('USDT', '/USDT'),
-						side: data.m ? 'sell' : 'buy',
-						price: Number(data.p),
-						qty: Number(data.q),
-						time: data.T
-					},
-					...ticks
-				].slice(0, 20);
-			};
-			/* The feed drops a connection now and then; reconnect once, rather
-			   than leaving a shut-looking box up for the rest of the visit. */
-			socket.onclose = () => {
-				if (!torndown) setTimeout(connect, 3000);
-			};
-		};
-		connect();
-
-		return () => {
-			torndown = true;
-			socket.close();
-			ticks = [];
-		};
-	});
 </script>
 
 <svelte:window onopenproject={openProject} />
+
+<!-- One of the four boxes across the top of a study: a label and a sentence, or
+     the dashed slot where that sentence still has to be written. -->
+{#snippet fact(label, text)}
+	<div class="box">
+		<Panel {label}>
+			{#if text}
+				<p class="prose">{text}</p>
+			{:else}
+				<Placeholder note="not written up" lines={3} />
+			{/if}
+		</Panel>
+	</div>
+{/snippet}
+
+<!-- The three reasoning boxes down the right of a study. All three are the same
+     shape — a bolded term and the clause that earns it — so they are one
+     snippet rather than three copies of a list. -->
+{#snippet bullets(label, items, note)}
+	<div class="box">
+		<Panel {label}>
+			{#if items}
+				<ul class="reasons">
+					{#each items as { term, text } (term)}
+						<li><strong>{term}:</strong> {text}</li>
+					{/each}
+				</ul>
+			{:else}
+				<Placeholder {note} lines={4} />
+			{/if}
+		</Panel>
+	</div>
+{/snippet}
 
 <section id="projects" class="page projects-page">
 	<section class="surface-box projects">
 		<h2 class="eyebrow">My projects</h2>
 
 		<div class="cards">
-			{#each PROJECTS as { name, year, tagline, blurb, tools, url, live, embed, pypi, image, liveBadge, gallery, ticker }, i (name)}
+			{#each PROJECTS as { name, year, blurb, tools, url, live, pypi, docs, demo, image, liveBadge, study, facts, architecture, decisions, reliability, tradeoffs, metrics, metricNote, outcome }, i (name)}
 				<article class="card" class:open={i === open}>
-					<!-- The whole title line is the control: a collapsed project is a
-					     line that opens, and that is all it does. The tagline sits
-					     here rather than in the fold, so it reads even shut. -->
-					<button type="button" class="head" aria-expanded={i === open} onclick={() => toggle(i)}>
-						<span class="icon">{String(i).padStart(2, '0')}</span>
-						<div class="title-group">
-							<h3>
-								{name}
-								{#if embed}
-									<!-- Next to the title so it reads shut, not just once the
-									     fold opens onto the thing it's pointing at. -->
-									<span class="callout">
-										I'm interactive — play with me <span aria-hidden="true">▾</span>
-									</span>
+					<!-- Three columns, top-aligned as one row. Two buttons, not one — a
+					     link can't nest inside a button, and the links under the pills
+					     are real ones — so the row is opened either from the title on
+					     the left or the year/mark on the right, both calling the same
+					     toggle. -->
+					<div class="head-row">
+						<div class="head-col">
+							<button type="button" class="head" aria-expanded={i === open} onclick={() => toggle(i)}>
+								<span class="icon">{String(i).padStart(2, '0')}</span>
+								<div class="title-group">
+									<h3>
+										{name}
+										{#if live || liveBadge}
+											<span class="callout live">
+												<i class="dot" aria-hidden="true"></i>Live
+											</span>
+										{/if}
+									</h3>
+									<ToolPills {tools} />
+								</div>
+							</button>
+
+							<!-- Under the pills rather than under the blurb: its own row,
+							     not inside .head above, since a link can't nest inside a
+							     button. Arrows say where each goes: ↗ off the site, → on it. -->
+							<div class="links">
+								{#if demo}
+									<a href={demo} target="_blank" rel="noopener noreferrer">Interactive demo ↗</a>
 								{/if}
-								{#if live || liveBadge}
-									<span class="callout live">
-										<i class="dot" aria-hidden="true"></i>Live
-									</span>
+								{#if url}
+									<a href={url} target="_blank" rel="noopener noreferrer">View on GitHub ↗</a>
 								{/if}
-							</h3>
-							<p class="tagline">{tagline}</p>
+								{#if pypi}
+									<a href={pypi} target="_blank" rel="noopener noreferrer">View on PyPI ↗</a>
+								{/if}
+								{#if docs}
+									<a href={docs} target="_blank" rel="noopener noreferrer">View docs ↗</a>
+								{/if}
+								{#if live}
+									<a href={live}>Open dashboard →</a>
+								{/if}
+							</div>
 						</div>
-						<span class="year">{year}</span>
-						<!-- The fold's own state, said again rather than left to the shape
-						     of the row: a collapsed row and an open one look enough alike
-						     from a glance that the mark is what actually answers "which is
-						     this." -->
-						<span class="toggle" aria-hidden="true">{i === open ? '−' : '+'}</span>
-					</button>
+
+						<div class="summary">
+							<p class="blurb">{blurb}</p>
+						</div>
+
+						<button type="button" class="stat" aria-expanded={i === open} onclick={() => toggle(i)}>
+							<span class="year">{year}</span>
+							<!-- The fold's own state, said again rather than left to the shape
+							     of the row: a collapsed row and an open one look enough alike
+							     from a glance that the mark is what actually answers "which is
+							     this." -->
+							<span class="toggle" aria-hidden="true">{i === open ? '−' : '+'}</span>
+						</button>
+					</div>
 
 					<!-- The fold is a grid row taken from 0fr to 1fr, which is the one
 					     way a box of copy can be animated open without being told a
@@ -239,243 +189,135 @@
 					     only clipped, and its links would otherwise still be tabbed to. -->
 					<div class="fold" inert={i !== open}>
 						<div class="fold-inner">
-							<div class="content" class:wide-visual={embed || live === '/server' || image || gallery}>
-								<div class="visual">
-									{#if embed}
-										<!-- The demo is a fully self-contained static page (no
-										     X-Frame-Options/CSP, no external assets), so it embeds
-										     directly rather than needing a screenshot stand-in. -->
-										<iframe
-											class="embed"
-											src={embed}
-											title="{name} interactive demo"
-											loading="lazy"
-											sandbox="allow-scripts"
-										></iframe>
-									{:else if live === '/server'}
-										<div class="mini-dashboard">
-											<div class="mgrid">
-												<div class="obox" style={gridArea({ col: 1, row: 1 })}>
-													<Panel label="Uptime">
-														<strong class="ofigure" style:color="var(--mint)">
-															{uptimeDays === null ? '—' : `${uptimeDays}d ${uptimeRest}`}
-														</strong>
-														<span class="mupdated">Last updated {stamp(snapshot?.generated_at)}</span>
-													</Panel>
-												</div>
+							<!-- "This server" is a system rather than a piece of software, so it
+							     gets its own study — the two paths through it, what operating it
+							     involves, and the live box proving the machine is up — rather than
+							     the problem/solution/decisions frame the rest take. -->
+							{#if live === '/server'}
+								<ServerStudy />
+							{:else if study === 'ascii'}
+								<!-- The one project that can be shown as itself: the renders in
+								     its study are the tool's own HTML output, text in the page
+								     rather than a picture of text. -->
+								<AsciiStudy />
+							{:else if study === 'ancestree'}
+								<!-- A published library rather than a system: its study is a
+								     datasheet — what it does, what it costs, what it was
+								     measured at, and what it is not for. -->
+								<AncestreeStudy />
+							{:else if study === 'orderflow'}
+								<!-- The archive and the research that reads it: one project in two
+								     halves, with its own study rather than the generic frame. -->
+								<OrderflowStudy open={i === open} />
+							{:else}
 
-												<div class="obox" style={gridArea({ col: 2, row: 1 })}>
-													<Panel label="Temperature">
-														<strong class="ofigure" style:color="var(--amber)">
-															{degrees(snapshot?.cpu.temperature_c)}
-														</strong>
-														<span class="ostat">{minMax(series?.cpu.temperature_c, degrees)}</span>
-														<Spark points={series?.cpu.temperature_c} tone="var(--amber)" />
-													</Panel>
-												</div>
-
-												<div class="obox fill" style={gridArea({ col: 3, row: 1, w: 2, h: 3 })}>
-													<Panel label="Containers">
-														{#if containers.slots.length}
-															<div class="mfleet">
-																<table>
-																	<thead>
-																		<tr>
-																			<th scope="col">Container</th>
-																			<th scope="col">Status</th>
-																			<th scope="col">Uptime</th>
-																			<th scope="col">CPU</th>
-																			<th scope="col">CPU limit</th>
-																			<th scope="col">Memory</th>
-																			<th scope="col">Memory limit</th>
-																		</tr>
-																	</thead>
-
-																	<tbody>
-																		{#each containers.slots as slot (slot.name)}
-																			<tr>
-																				<th class="mname" scope="row">{slot.name}</th>
-																				<td class="mstate" class:warning={!slot.healthy}>
-																					<i aria-hidden="true"></i>{slot.status}
-																				</td>
-																				<td>{slot.uptime}</td>
-
-																				{#each slot.resources as resource (resource.id)}
-																					<td class="musage" style:color={resource.tone}>
-																						{resource.value}
-																						<i class="resource-bar"><i style:width="{resource.fill}%"></i></i>
-																					</td>
-																					<td class="mlimit">{resource.limit}</td>
-																				{/each}
-																			</tr>
-																		{/each}
-																	</tbody>
-																</table>
-															</div>
-														{:else}
-															<Placeholder note="no container data" lines={4} />
-														{/if}
-													</Panel>
-												</div>
-
-												<div class="obox fill" style={gridArea({ col: 1, row: 2, w: 2, h: 2 })}>
-													<Panel label="CPU & RAM Usage (%)">
-														<Trace
-															lines={[
-																{ id: 'cpu', points: series?.cpu.percent, tone: 'var(--mint)', label: 'CPU' },
-																{ id: 'ram', points: ramUsed, tone: 'var(--violet)', label: 'RAM' }
-															]}
-															domain={[0, 100]}
-															format={pct}
-														/>
-													</Panel>
-												</div>
-
-												<div class="obox" style={gridArea({ col: 1, row: 4, w: 2 })}>
-													<Panel label="Storage Overview">
-														<div class="ovolumes">
-															{#each volumes as vol (vol.id)}
-																<div class="ovolume">
-																	<div class="ovolume-name">
-																		<strong>{vol.label}</strong>
-																		<span class="ostat">
-																			{gigabytes(vol.usedNow)} / {gigabytes(vol.totalNow)} GB
-																		</span>
-																	</div>
-																	<Capacity
-																		label={vol.label}
-																		percent={vol.percentNow ?? snapshot?.storage[vol.id].used_percent}
-																		tone={vol.tone}
-																	/>
-																</div>
-															{/each}
-														</div>
-													</Panel>
-												</div>
-
-												<div class="obox" style={gridArea({ col: 3, row: 4 })}>
-													<Panel label="Time Offset">
-														<strong class="ofigure" style:color="var(--azure)">
-															{microseconds(clockOffset(snapshot?.time))}
-														</strong>
-														<span class="ostat">{minMax(clockHistory, microseconds)}</span>
-														<Spark points={clockHistory} tone="var(--azure)" />
-													</Panel>
-												</div>
-
-												<div class="obox" style={gridArea({ col: 4, row: 4 })}>
-													<Panel label="Latency">
-														<strong class="ofigure" style:color="var(--azure)">
-															{ms(snapshot?.availability.latency_ms)}
-														</strong>
-														<span class="ostat">{minMax(series?.availability.latency_ms, ms)}</span>
-														<Spark points={series?.availability.latency_ms} tone="var(--azure)" />
-													</Panel>
-												</div>
-											</div>
-										</div>
-									{:else if image}
-										<!-- Lazy and async: a shut fold is clipped, not absent, so
-										     without this every card's screenshot is fetched and
-										     decoded on load — and the decode lands on the main
-										     thread mid-animation when the fold opens. -->
-										<img
-											class="screenshot"
-											src={image}
-											alt="{name} dashboard"
-											loading="lazy"
-											decoding="async"
-										/>
-									{:else if gallery}
-										<!-- The tool's own output, not a mockup of it: the source
-										     photo and what --mode gray/color actually do to it,
-										     side by side rather than described. -->
-										<div class="gallery">
-											{#each gallery as shot (shot.src)}
-												<figure>
-													<img
-														src={shot.src}
-														alt="{name}: {shot.label}"
-														loading="lazy"
-														decoding="async"
-													/>
-													<figcaption>{shot.label}</figcaption>
-												</figure>
-											{/each}
-										</div>
-									{:else if ticker}
-										<!-- A real public trade feed, read straight from the
-										     browser — there is no server of mine anywhere in this
-										     path. Not a claim that this is the archive's own feed:
-										     that one only ever aggregates a tick and discards it, so
-										     there is no "last 20" of its own to show even in
-										     principle. Same shape of data, live, is the honest
-										     version of this box. -->
-										<div class="ticker">
-											<div class="ticker-head">
-												<span class="tag">Live trades — public feed</span>
-											</div>
-											{#if ticks.length}
-												<table class="ticker-table">
-													<thead>
-														<tr>
-															<th>Symbol</th>
-															<th>Side</th>
-															<th>Price</th>
-															<th>Size</th>
-															<th>Time</th>
-														</tr>
-													</thead>
-													<tbody>
-														{#each ticks as tick (tick.id)}
-															<tr>
-																<td class="tsymbol">{tick.symbol}</td>
-																<td class="tside" class:sell={tick.side === 'sell'}>
-																	{tick.side}
-																</td>
-																<td class="tprice" class:sell={tick.side === 'sell'}>
-																	{tick.price.toFixed(2)}
-																</td>
-																<td>{tick.qty.toFixed(4)}</td>
-																<td>{new Date(tick.time).toLocaleTimeString()}</td>
-															</tr>
-														{/each}
-													</tbody>
-												</table>
-											{:else}
-												<Placeholder note="connecting…" lines={6} />
-											{/if}
-										</div>
-									{:else}
-										<Placeholder note="{name.toUpperCase().replace(/\s+/g, '-')}.PNG" lines={16} />
-									{/if}
+								<!-- The two questions the rest of the study answers in detail:
+								     what was wrong, and what was built about it. -->
+								<div class="facts">
+									{@render fact('Problem', facts?.problem)}
+									{@render fact('Solution', facts?.solution)}
 								</div>
 
-								<div class="body">
-									<p class="blurb">{blurb}</p>
-
-									<ToolPills {tools} />
-
-									<div class="links">
-										{#if url}
-											<a href={url} target="_blank" rel="noopener noreferrer">View on GitHub ↗</a>
+								<!-- The visual, and the path through the thing it shows beside
+								     it. They pair on shape as well as on sense: the flow is five
+								     stacked stages, which is about as tall as a screenshot. -->
+								<div class="split">
+									<div class="visual">
+										{#if image}
+											<!-- Lazy and async: a shut fold is clipped, not absent, so
+											     without this every card's screenshot is fetched and
+											     decoded on load — and the decode lands on the main
+											     thread mid-animation when the fold opens. -->
+											<img
+												class="screenshot"
+												src={image}
+												alt="{name} dashboard"
+												loading="lazy"
+												decoding="async"
+											/>
 										{:else}
-											<!-- Nothing to point at yet. -->
-											<div class="slot"><Placeholder note="view on github" lines={1} /></div>
-										{/if}
-
-										<!-- On this site rather than off it: the dashboard is its
-										     own app, and this is the only door to it. -->
-										{#if live}
-											<a href={live}>Open dashboard →</a>
-										{/if}
-
-										{#if pypi}
-											<a href={pypi} target="_blank" rel="noopener noreferrer">View on PyPI ↗</a>
+											<Placeholder note="{name.toUpperCase().replace(/\s+/g, '-')}.PNG" lines={16} />
 										{/if}
 									</div>
+
+									<div class="box">
+										<Panel label="Architecture">
+											{#if architecture}
+												<p class="prose">{architecture.text}</p>
+
+												<!-- The path a byte takes through it, named stage by stage,
+												     read top to bottom. Vertical rather than across: laid out
+												     in a row the stages wrapped, and an arrow is its own box,
+												     so the one before a wrapped stage was stranded at the end
+												     of the line above it. A column cannot wrap. -->
+												<div class="flow">
+													{#each architecture.flow as stage, s (stage.name)}
+														{#if s}<span class="arrow" aria-hidden="true">↓</span>{/if}
+														<div class="stage">
+															<strong>{stage.name}</strong>
+															<span>{stage.detail}</span>
+														</div>
+													{/each}
+												</div>
+											{:else}
+												<Placeholder note="architecture" lines={6} />
+											{/if}
+										</Panel>
+									</div>
 								</div>
-							</div>
+
+								<!-- What I chose, and what happens when it breaks. The wider half
+								     is the one with three arguments in it. -->
+								<div class="split">
+									{@render bullets('Key decisions & why', decisions, 'decisions')}
+									{@render bullets('Reliability & failure', reliability, 'failure behaviour')}
+								</div>
+
+								<!-- Across the full width, because four figures in a row is what the
+								     tiles are for. The numbers go here only once measured by
+								     something someone else could re-run — a placeholder is the
+								     honest reading until then. -->
+								<div class="box">
+									<Panel label="Measurable proof">
+										{#if metrics}
+											<div class="tiles">
+												{#each metrics as metric (metric.label)}
+													<div class="tile">
+														<span class="eyebrow">{metric.label}</span>
+														<strong class="figure">
+															{metric.value}{#if metric.unit}<span class="unit">{metric.unit}</span>{/if}
+														</strong>
+														<span class="note">{metric.note}</span>
+													</div>
+												{/each}
+											</div>
+
+											<!-- Where the numbers came from, at the foot of the numbers
+											     themselves: a benchmark without its machine and its
+											     method is a number without a claim. -->
+											{#if metricNote}<p class="metric-note">{metricNote}</p>{/if}
+										{:else}
+											<Placeholder note="not measured yet" lines={6} />
+										{/if}
+									</Panel>
+								</div>
+
+								<!-- Where it stops, and what came of it anyway. Last row, and the
+								     one thing worth keeping if nothing above it is read. -->
+								<div class="split">
+									{@render bullets('Limitations', tradeoffs, 'limitations')}
+
+									<div class="box">
+										<Panel label="Outcome">
+											{#if outcome}
+												<p class="prose">{outcome}</p>
+											{:else}
+												<Placeholder note="not written up" lines={2} />
+											{/if}
+										</Panel>
+									</div>
+								</div>
+							{/if}
 						</div>
 					</div>
 				</article>
@@ -526,23 +368,18 @@
 		letter-spacing: -0.01em;
 	}
 
-	/* Title and tagline stacked in the head's one flexible column, so the
-	   tagline reads under the title in both fold states. */
+	/* Name, pills and blurb stacked in the head's one flexible column, so all
+	   three read under the title in both fold states. */
 	.title-group {
 		display: grid;
-		gap: 0.2rem;
+		gap: 0.4rem;
 		min-width: 0;
 	}
 
-	.tagline {
-		margin: 0;
-		color: var(--text-faint);
-		font-family: var(--font-mono);
-		font-size: 0.72rem;
-	}
-
-	/* Capped in ch like the about page's lede: a row is the full width of the
-	   box now, which is far past what a line of prose can be read across. */
+	/* One block a reader takes in at a glance, whether or not they open the
+	   fold: the problem, the thing built for it, and the number it runs at.
+	   Capped in ch like the about page's lede, since a row is the full width of
+	   the box and that is past what a line of prose can be read across. */
 	.blurb {
 		margin: 0;
 		max-width: 84ch;
@@ -581,12 +418,181 @@
 	}
 
 	/* The row is the clip: min-height: 0 because a grid item's automatic minimum
-	   is its content, which would hold the row open at its full height. */
+	   is its content, which would hold the row open at its full height.
+
+	   Panel's title is sized from here rather than per box, so every label in a
+	   study — the four facts, the four reasoning boxes, the two at the foot —
+	   is the same eyebrow the rest of the site labels things with. */
 	.fold-inner {
+		--title-size: 0.62rem;
+		--title-color: var(--text-faint);
+
 		display: grid;
 		gap: 1rem;
 		min-height: 0;
 		overflow: hidden;
+	}
+
+	/* What a study is made of. One vocabulary for every box in it, so the four
+	   across the top, the four down the right and the two at the foot are read as
+	   one thing divided rather than three different treatments. */
+	.box {
+		padding: 0.9rem 1rem;
+		border: 1px solid var(--color-border);
+		border-radius: 0.4rem;
+		background: #fff;
+	}
+
+	/* Every sentence inside a box, at the one size they are all set in. */
+	.prose {
+		margin: 0;
+		color: var(--text-dim);
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		line-height: 1.65;
+	}
+
+	/* The quiet line under a figure, a link, or a visual's own title. */
+	.note {
+		margin: 0;
+		color: var(--text-faint);
+		font-family: var(--font-mono);
+		font-size: 0.6rem;
+		line-height: 1.5;
+	}
+
+	/* Pills on the left, the paragraph they belong to on the right. */
+	/* Problem, role, constraints, outcome — four across, because they are read as
+	   a row of answers to the same question rather than as a list. */
+	.facts {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.75rem;
+	}
+
+	/* A bolded term and the clause that earns it, marked in the gutter the way
+	   the about page's own points are. */
+	.reasons {
+		display: grid;
+		gap: 0.45rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.reasons li {
+		position: relative;
+		padding-left: 0.95rem;
+		color: var(--text-dim);
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		line-height: 1.6;
+	}
+
+	.reasons li::before {
+		position: absolute;
+		left: 0;
+		color: var(--mint);
+		content: '—';
+	}
+
+	.reasons strong {
+		color: var(--color-foreground);
+		font-weight: 600;
+	}
+
+	/* The stages a byte passes through, read down. One column, so a stage is
+	   never split off from the arrow that leads to it. */
+	.flow {
+		display: grid;
+		gap: 0.3rem;
+	}
+
+	.stage {
+		display: grid;
+		gap: 0.1rem;
+		padding: 0.4rem 0.55rem;
+		border: 1px solid var(--color-border);
+		border-radius: 0.3rem;
+		text-align: center;
+	}
+
+	.stage strong {
+		color: var(--color-foreground);
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		font-weight: 600;
+	}
+
+	.stage span {
+		color: var(--text-faint);
+		font-family: var(--font-mono);
+		font-size: 0.56rem;
+	}
+
+	.arrow {
+		justify-self: center;
+		color: var(--text-faint);
+		font-size: 0.7rem;
+		line-height: 1;
+	}
+
+	/* One tile per measurement, across the study's full width. */
+	.tiles {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+		gap: 0.6rem;
+	}
+
+	.tile {
+		display: grid;
+		gap: 0.2rem;
+		padding: 0.6rem 0.7rem;
+		border: 1px solid var(--color-border);
+		border-radius: 0.3rem;
+	}
+
+	/* Smaller than a figure on the dashboard: four of these share half a card. */
+	.tile .figure {
+		color: var(--violet);
+		font-size: 1.35rem;
+	}
+
+	.tile .unit {
+		margin-left: 0.15em;
+		font-size: 0.5em;
+		font-weight: 500;
+	}
+
+	/* The machine and the method, under the numbers they qualify. */
+	.metric-note {
+		margin: 0.75rem 0 0;
+		color: var(--text-faint);
+		font-family: var(--font-mono);
+		font-size: 0.58rem;
+		line-height: 1.6;
+	}
+
+	/* A row, under the paragraph they belong to. */
+	.links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem 1.25rem;
+		margin-top: 0.75rem;
+		/* The icon column's width plus the gap beside it (.head, above) — so
+		   this row starts exactly under the title, not under the icon. */
+		margin-left: calc(var(--icon-col) + 0.75rem);
+	}
+
+	.links a {
+		color: currentcolor;
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		text-decoration: none;
+	}
+
+	.links a:hover {
+		text-decoration: underline;
 	}
 
 	/* Rows past the first take their own --pad, and the rule sits halfway up the
@@ -609,19 +615,58 @@
 
 	/* A button, so it is reachable and pressable as the control it is, but wearing
 	   none of a button's clothes: the line is the affordance. */
-	.head {
+	/* The button and the summary beside it, top-aligned as one row: the summary
+	   reads level with the title and pills rather than under them. */
+	.head-row {
 		display: grid;
-		grid-template-columns: auto minmax(0, 1fr) auto auto;
-		gap: 0.75rem;
-		align-items: center;
-		width: 100%;
-		padding: 0;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) auto;
+		gap: 1.25rem;
+		align-items: start;
+	}
+
+	/* The button and the links under it, stacked as the row's left column. */
+	.head-col {
+		/* Shared with .head and .links below, so the links row's left edge
+		   lands exactly under the title rather than the icon above it. */
+		--icon-col: 1.6rem;
+
+		display: grid;
+	}
+
+	.summary {
+		padding-top: 0.15rem;
+	}
+
+	/* A button, so it is reachable and pressable as the control it is, but
+	   wearing none of a button's clothes: the shared reset every clickable part
+	   of the row — this one and .stat below — wears. */
+	.head,
+	.stat {
 		border: 0;
 		background: none;
 		color: inherit;
 		font: inherit;
 		text-align: left;
 		cursor: pointer;
+	}
+
+	.head {
+		display: grid;
+		grid-template-columns: var(--icon-col) minmax(0, 1fr);
+		gap: 0.75rem;
+		align-items: start;
+		width: 100%;
+		padding: 0;
+	}
+
+	/* The year and the fold's own mark, on the far right of the row: its own
+	   button rather than folded into .head, since the summary between them
+	   holds real links a button cannot contain. Both call the same toggle. */
+	.stat {
+		display: flex;
+		align-items: baseline;
+		gap: 0.6rem;
+		padding: 0.1rem 0 0;
 	}
 
 	/* Only the open one is at full strength; the flat lines below it are a list
@@ -665,131 +710,21 @@
 	}
 
 	.card.open .toggle,
-	.head:hover .toggle,
-	.head:focus-visible .toggle {
+	.stat:hover .toggle,
+	.stat:focus-visible .toggle {
 		color: var(--color-foreground);
 	}
 
-	/* The visual anchors the left, the summary and its pills fill the right. */
-	.content {
+	/* Every divided row in a study, at the one ratio they all share: the heavier
+	   half takes two thirds. Used three times — demo beside architecture,
+	   decisions beside reliability, limitations beside outcome — so the whole
+	   fold reads as one rhythm rather than three different splits. Each pairing
+	   is by weight: the wider box is the one with more in it. */
+	.split {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-		gap: 1.75rem;
-	}
-
-	/* A real demo or dashboard preview earns more of the row than a placeholder
-	   does — the text beside it only has to hold a blurb and pills, not carry
-	   equal weight. */
-	.content.wide-visual {
 		grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-	}
-
-	/* Stacked rather than side by side, in the same visual column every other
-	   embed/preview here uses (.content.wide-visual) — the same width as the
-	   server grid's own box and Ancestree's iframe, not a width of its own. */
-	.gallery {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-	}
-
-	.gallery figure {
-		margin: 0;
-		text-align: center;
-	}
-
-	.gallery img {
-		display: block;
-		width: 100%;
-		height: auto;
-		border: 1px solid var(--color-border);
-		border-radius: 0.35rem;
-		background: #000;
-	}
-
-	.gallery figcaption {
-		margin-top: 0.4rem;
-		color: var(--text-dim);
-		font-family: var(--font-mono);
-		font-size: 0.68rem;
-		font-weight: 500;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-	}
-
-	/* The tape: a window into a real (dark) feed the same way the embed and the
-	   server preview are, so it reads as a live instrument rather than a
-	   placeholder that happens to have numbers in it. */
-	.ticker {
-		box-sizing: border-box;
-		width: 100%;
-		height: 100%;
-		min-height: 22rem;
-		padding: 0.85rem;
-		border: 1px solid var(--color-border);
-		border-radius: 0.35rem;
-		background: var(--color-background);
-		color: var(--foreground);
-	}
-
-	.ticker-head {
-		margin-bottom: 0.6rem;
-	}
-
-	.ticker-head .tag {
-		color: #8a8a84;
-		font-family: var(--font-mono);
-		font-size: 0.6rem;
-		font-weight: 500;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-	}
-
-	.ticker-table {
-		width: 100%;
-		border-collapse: collapse;
-		font-family: var(--font-mono);
-		font-size: 0.68rem;
-	}
-
-	.ticker-table th,
-	.ticker-table td {
-		padding: 0.3rem 0.5rem 0.3rem 0;
-		font-weight: 400;
-		text-align: left;
-	}
-
-	.ticker-table thead th {
-		padding-top: 0;
-		padding-bottom: 0.4rem;
-		color: #a09f98;
-		font-weight: 500;
-		border-bottom: 1px solid var(--border);
-	}
-
-	.ticker-table tbody tr + tr td {
-		border-top: 1px solid var(--border);
-	}
-
-	.tsymbol {
-		color: var(--foreground);
-		font-weight: 500;
-	}
-
-	/* Buy in the site's own mint, sell in its coral — the same pair every other
-	   up/down or healthy/unhealthy reading on the site is drawn in. */
-	.tside,
-	.tprice {
-		color: var(--mint);
-	}
-
-	.tside.sell,
-	.tprice.sell {
-		color: var(--coral);
-	}
-
-	.tside {
-		text-transform: capitalize;
+		gap: 0.75rem;
+		align-items: start;
 	}
 
 	/* Every visual in here used to be `height: 100%` of the fold's grid row, and
@@ -806,17 +741,6 @@
 
 	.visual :global(.placeholder) {
 		height: var(--visual-h);
-	}
-
-	/* The one real embed among the visuals: same box, a solid border rather
-	   than Placeholder's dashed one since there's finished work inside it. */
-	.embed {
-		display: block;
-		width: 100%;
-		height: var(--visual-h);
-		border: 1px solid var(--color-border);
-		border-radius: 0.35rem;
-		background: #fff;
 	}
 
 	/* Beside the title rather than on the fold, so it reads shut as well as
@@ -869,234 +793,25 @@
 		background: #fff;
 	}
 
-	/* "This server"'s visual: /server's own overview grid (routes/server/
-	   +page.svelte), copied and scaled down rather than embedded live. Not a
-	   box of its own — just the frame the individual .obox tiles read their
-	   dark tokens from, the way .projects itself shadows them light for
-	   everything else in it (see .projects further up), just run the other
-	   way. Its own background would have been the exact tone every .obox
-	   already paints itself, which is what read as one big panel wrapping
-	   the tiles rather than the tiles standing on their own. */
-	.mini-dashboard {
-		box-sizing: border-box;
-		width: 100%;
-		height: var(--visual-h);
-		color: var(--foreground);
-		--color-foreground: var(--foreground);
-		--color-border: var(--border);
-		--text-dim: #a09f98;
-		--text-faint: #8a8a84;
-		--title-size: 0.55rem;
-		--title-color: var(--text-faint);
-		--axis-w: 1.7rem;
-		--graph-min: 3rem;
-	}
+	/* --- narrow ---------------------------------------------------------- */
 
-	.mgrid {
-		display: grid;
-		grid-template-columns: repeat(4, minmax(0, 1fr));
-		grid-auto-rows: minmax(0, 1fr);
-		grid-auto-flow: dense;
-		gap: 0.6rem;
-		height: 100%;
-	}
-
-	.obox {
-		overflow: hidden;
-		padding: 0.5rem 0.6rem;
-		border: 1px solid var(--color-border);
-		border-radius: 0.3rem;
-		background: var(--color-background);
-	}
-
-	/* Opt-in, same as the real dashboard's own .box.fill (Dashboard.svelte):
-	   a panel given more than one row is otherwise however tall its content
-	   needs, which is what left the CPU & RAM trace a squashed line at the
-	   top of a box mostly empty underneath it. This stretches the chain down
-	   to the drawing instead. */
-	.obox.fill {
-		display: flex;
-		flex-direction: column;
-	}
-
-	.obox.fill :global(.panel),
-	.obox.fill :global(.plot),
-	.obox.fill .mfleet {
-		flex: 1;
-		min-height: 0;
-	}
-
-	.ofigure {
-		display: block;
-		color: var(--color-foreground);
-		font-size: 0.92rem;
-		font-weight: 700;
-		letter-spacing: -0.02em;
-		line-height: 1.15;
-	}
-
-	.ostat {
-		display: block;
-		margin-top: 0.15rem;
-		color: var(--text-dim);
-		font-size: 0.48rem;
-		font-weight: 500;
-		letter-spacing: 0.03em;
-	}
-
-	/* When the snapshot behind every other reading in this box was taken. */
-	.mupdated {
-		display: block;
-		margin-top: 0.35rem;
-		color: var(--text-faint);
-		font-family: var(--font-mono);
-		font-size: 0.58rem;
-		letter-spacing: 0.02em;
-	}
-
-	/* The containers table (routes/server/containers/+page.svelte), copied at
-	   card scale the same way the overview grid above it is: a real table
-	   rather than the running/unhealthy count it replaces, scrolling
-	   sideways in its own two-column box rather than dropping columns. */
-	.mfleet {
-		height: 100%;
-		overflow: auto;
-	}
-
-	.mfleet table {
-		width: 100%;
-		border-collapse: collapse;
-		font-size: 0.56rem;
-		white-space: nowrap;
-	}
-
-	.mfleet th,
-	.mfleet td {
-		padding: 0.3rem 0.6rem 0.3rem 0;
-		font-weight: 400;
-		text-align: left;
-	}
-
-	.mfleet thead th {
-		padding-top: 0;
-		padding-bottom: 0.4rem;
-		color: var(--text-dim);
-		font-weight: 500;
-		letter-spacing: 0.03em;
-		border-bottom: 1px solid var(--color-border);
-	}
-
-	.mfleet tbody tr + tr th,
-	.mfleet tbody tr + tr td {
-		border-top: 1px solid var(--color-border);
-	}
-
-	.mname {
-		color: var(--color-foreground);
-		font-weight: 500;
-	}
-
-	/* A square of the state's own colour, and the word beside it — the colour
-	   is never the only thing saying which way a row reads. */
-	.mstate {
-		color: var(--mint);
-		text-transform: capitalize;
-	}
-
-	.mstate i {
-		display: inline-block;
-		width: 0.4rem;
-		height: 0.4rem;
-		margin-right: 0.4rem;
-		background: currentcolor;
-	}
-
-	.mstate.warning {
-		color: var(--coral);
-	}
-
-	.mlimit {
-		color: var(--text-dim);
-	}
-
-	.musage {
-		min-width: 3.5rem;
-	}
-
-	.resource-bar {
-		display: block;
-		height: 2px;
-		margin-top: 0.3rem;
-		background: var(--color-border);
-	}
-
-	.resource-bar i {
-		display: block;
-		height: 100%;
-		min-width: 0;
-		background: currentcolor;
-	}
-
-	.ovolumes {
-		display: grid;
-		gap: 0.35rem;
-	}
-
-	.ovolume {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.6rem;
-	}
-
-	.ovolume-name {
-		display: flex;
-		flex-direction: column;
-		gap: 0.1rem;
-		font-size: 0.6rem;
-	}
-
-	.ovolume-name .ostat {
-		margin-top: 0;
-	}
-
-	.ovolumes :global(.capacity .reading) {
-		font-size: 0.7rem;
-	}
-
-	.body {
-		display: grid;
-		gap: 0.75rem;
-		align-content: start;
-	}
-
-	@media (max-width: 40rem) {
-		.content {
-			grid-template-columns: minmax(0, 1fr);
+	/* Three facts across will not divide a laptop's half-width. */
+	@media (max-width: 60rem) {
+		.facts {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
 	}
 
-	/* A row, for the one card that has two links. */
-	.links {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.4rem 1.25rem;
-	}
+	@media (max-width: 40rem) {
+		.head-row,
+		.split,
+		.facts {
+			grid-template-columns: minmax(0, 1fr);
+		}
 
-	.links a {
-		color: currentcolor;
-		font-family: var(--font-mono);
-		font-size: 0.75rem;
-		text-decoration: none;
-	}
-
-	.links a:hover {
-		text-decoration: underline;
-	}
-
-	/* An empty slot stands a link's width, so the feet all line up anyway. */
-	.slot {
-		width: min(100%, 9rem);
+		.summary {
+			padding-top: 0;
+		}
 	}
 
 	/* A click still opens the row — it just snaps open rather than growing

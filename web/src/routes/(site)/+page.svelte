@@ -10,7 +10,7 @@
 </script>
 
 <svelte:head>
-	<title>Joshua Smith — Data Scientist & AI Engineer</title>
+	<title>Joshua Smith — Data Engineer</title>
 </svelte:head>
 
 <div class="landing" id="home">
@@ -25,7 +25,7 @@
 			<h1>Joshua Smith</h1>
 			<p class="tagline">I turn numbers into models, decisions and the occasional bull.</p>
 			<p class="proof">
-				Data scientist and AI engineer working across distributed sensing, thermosphere navigation, and numerical optimisation.
+				Data Engineer focused on real-time, scientific, and ML systems.
 			</p>
 			<a
 				class="cta"

@@ -5,7 +5,15 @@
 	import { server, watch } from '$lib/server.svelte.js';
 	import { bucket, mean, minMax, outages, percentile, values } from '$lib/stats.js';
 
-	const BAR_PITCH = 2; /* px a bar needs to read as one: its ink and its gap */
+	/* Device pixels a bar needs before it reads as one width rather than a coin
+	   flip between two: a bar under this is thin enough that the ±1 device-pixel
+	   spread every sub-pixel layout leaves somewhere in a long row of bars reads
+	   as one bar doubling in size instead of the rounding noise it actually is.
+	   Counted in device pixels, not CSS ones, so a retina screen earns the extra
+	   bars its sharper grid can actually draw crisply, and a plain one gets fewer,
+	   fatter bars instead of the same count rendered illegibly thin. */
+	const MIN_BAR_DEVICE_PX = 6;
+	const GAP = 1; /* CSS px between bars */
 	const MAX_SEGMENTS = 96;
 
 	$effect(watch);
@@ -35,13 +43,41 @@
 	);
 
 	/* One bar per bucket of that same window, at the finest pitch the strip can
-	   draw: a phone card is narrower than 96 bars and their gaps, and grid
-	   answers that by shrinking every bar to nothing. Never more bars than
-	   samples either, or the empty buckets between them read as outages. */
+	   draw: a phone card is narrower than 96 bars and their gaps, and this shrinks
+	   the count rather than every bar. Never more bars than samples either, or the
+	   empty buckets between them read as outages. */
 	let stripWidth = $state(0);
-	let segmentCount = $derived(
-		stripWidth ? Math.max(12, Math.min(MAX_SEGMENTS, Math.floor(stripWidth / BAR_PITCH))) : MAX_SEGMENTS
-	);
+	let segmentCount = $derived.by(() => {
+		if (!stripWidth) return MAX_SEGMENTS;
+		const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
+		const gapDevice = Math.max(1, Math.round(GAP * dpr));
+		const pitchDevice = MIN_BAR_DEVICE_PX + gapDevice;
+		const fit = Math.floor((stripWidth * dpr + gapDevice) / pitchDevice);
+		return Math.max(12, Math.min(MAX_SEGMENTS, fit));
+	});
+
+	/* Every bar's width in whole device pixels, not CSS pixels handed to the
+	   browser to round. With many fractional-width bars in a row, layout accumulates
+	   sub-pixel position error across the strip and has to snap an edge here and
+	   there at paint time — giving every <i> the same width doesn't stop that,
+	   since each edge still gets rounded on its own. Working the boundaries out
+	   ourselves as integers, then dividing back by the pixel ratio, means every
+	   edge already sits on the device grid and there is nothing left to round. */
+	let barWidths = $derived.by(() => {
+		const n = segmentCount;
+		if (!n || !stripWidth) return [];
+		const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
+		const gapDevice = Math.max(1, Math.round(GAP * dpr));
+		const totalDevice = Math.round(stripWidth * dpr) - (n - 1) * gapDevice;
+		const widths = [];
+		let prevEdge = 0;
+		for (let i = 1; i <= n; i++) {
+			const edge = Math.round((totalDevice * i) / n);
+			widths.push(Math.max(0, edge - prevEdge) / dpr);
+			prevEdge = edge;
+		}
+		return widths;
+	});
 
 	/* Any failed poll in the bucket makes it an outage, not most of them: a bar is
 	   a quarter of an hour, and asking for the average of one is what let a
@@ -123,8 +159,8 @@
 		<span class="stats">{stats}</span>
 		{#if strip}
 			<div class="history" bind:clientWidth={stripWidth} role="img" aria-label={uptimeLabel}>
-				{#each segments as state}
-					<i class={state}></i>
+				{#each segments as state, i}
+					<i class={state} style="width: {barWidths[i]}px"></i>
 				{/each}
 			</div>
 		{:else}
@@ -317,15 +353,18 @@
 	   Every bar takes that full height, which is the height of those traces: this is
 	   a band of colour across the window, not a chart with a reading to stand at. */
 	.history {
-		display: grid;
-		grid-auto-flow: column;
-		grid-auto-columns: 1fr;
+		display: flex;
 		gap: 1px;
 		height: 1.85rem;
 		margin-top: auto;
 	}
 
 	.history i {
+		/* Width is set inline per bar, in whole device pixels (barWidths in the
+		   script) — not left to flex-grow, which would hand each bar a fractional
+		   CSS width and make the browser round it at paint time. flex: none stops
+		   the box from nudging that number to fill any leftover space itself. */
+		flex: none;
 		border-radius: 1px;
 		/* The bare bar is unknown, not down: dim enough to read as "no data"
 		   beside the mint, and never mistakable for an outage. */

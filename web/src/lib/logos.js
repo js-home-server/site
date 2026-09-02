@@ -1,6 +1,8 @@
 import {
+	siCloudflare,
 	siCplusplus,
 	siDocker,
+	siGrafana,
 	siGit,
 	siGithub,
 	siJavascript,
@@ -10,6 +12,7 @@ import {
 	siPandas,
 	siPlotly,
 	siPolars,
+	siPrometheus,
 	siPytorch,
 	siPython,
 	siScikitlearn,
@@ -62,6 +65,7 @@ const GLOBE =
 
 export const logos = {
 	'C++': siCplusplus.path,
+	Cloudflare: siCloudflare.path,
 	CUDA: siNvidia.path,
 	CV,
 	Docker: siDocker.path,
@@ -69,6 +73,7 @@ export const logos = {
 	Git: siGit.path,
 	GitHub: siGithub.path,
 	Globe: GLOBE,
+	Grafana: siGrafana.path,
 	JavaScript: siJavascript.path,
 	LinkedIn: LINKEDIN,
 	Linux: siLinux.path,
@@ -77,6 +82,7 @@ export const logos = {
 	Pandas: siPandas.path,
 	Plotly: siPlotly.path,
 	Polars: siPolars.path,
+	Prometheus: siPrometheus.path,
 	PyTorch: siPytorch.path,
 	Python: siPython.path,
 	Server: SERVER_STACK,
@@ -93,9 +99,11 @@ export const logos = {
    pointer. The two hand-drawn marks have no brand colour to switch to. */
 export const brandColors = {
 	'C++': `#${siCplusplus.hex}`,
+	Cloudflare: `#${siCloudflare.hex}`,
 	CUDA: `#${siNvidia.hex}`,
 	Docker: `#${siDocker.hex}`,
 	Git: `#${siGit.hex}`,
+	Grafana: `#${siGrafana.hex}`,
 	JavaScript: `#${siJavascript.hex}`,
 	Linux: `#${siLinux.hex}`,
 	MATLAB: '#E36C24',
@@ -103,6 +111,7 @@ export const brandColors = {
 	Pandas: `#${siPandas.hex}`,
 	Plotly: `#${siPlotly.hex}`,
 	Polars: `#${siPolars.hex}`,
+	Prometheus: `#${siPrometheus.hex}`,
 	PyTorch: `#${siPytorch.hex}`,
 	Python: `#${siPython.hex}`,
 	Slurm: '#3399CC',
