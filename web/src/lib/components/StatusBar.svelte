@@ -1,6 +1,7 @@
 <script>
 	import Spark from './Spark.svelte';
 	import TimeAxis from './TimeAxis.svelte';
+	import ActionLink from './ActionLink.svelte';
 	import { degrees, ms, stamp } from '$lib/format.js';
 	import { server, watch } from '$lib/server.svelte.js';
 	import { bucket, mean, minMax, outages, percentile, values } from '$lib/stats.js';
@@ -212,7 +213,9 @@
 			<span class="mono">{stamp(snapshot?.generated_at)}</span>
 		</p>
 
-		<a href="#server" onclick={scrollToServerCard}>View project <span aria-hidden="true">→</span></a>
+		<ActionLink variant="cta" direction="site" href="#server" onclick={scrollToServerCard} class="lede-link">
+			View project
+		</ActionLink>
 	</div>
 
 	<div class="metrics">
@@ -320,21 +323,12 @@
 		font-size: var(--fs-xs);
 	}
 
-	.lede a {
+	/* ActionLink's own .cta carries the mint/mono/nudge look; this is just the
+	   layout slot and the size step down that fits this card's own scale. */
+	:global(.lede-link) {
 		margin-top: auto;
-		color: var(--mint);
-		font-family: var(--font-mono);
 		font-size: var(--fs-2xs);
-		font-weight: 500;
 		letter-spacing: 0.12em;
-		text-decoration: none;
-		text-transform: uppercase;
-	}
-
-	.lede a:hover span,
-	.lede a:focus-visible span {
-		display: inline-block;
-		transform: translateX(2px);
 	}
 
 	.metrics {

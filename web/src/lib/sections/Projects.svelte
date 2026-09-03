@@ -4,6 +4,7 @@
 	import ServerMiniDashboard from '$lib/components/ServerMiniDashboard.svelte';
 	import StudyBrief from '$lib/components/StudyBrief.svelte';
 	import ToolPills from '$lib/components/ToolPills.svelte';
+	import ActionLink from '$lib/components/ActionLink.svelte';
 	import { briefs } from '$lib/data/briefs.js';
 
 	/* The work worth showing. `tools` are what each is actually built with; `url`
@@ -96,21 +97,21 @@
 							<div class="tools-row"><ToolPills {tools} /></div>
 
 							<div class="links">
-								<a href={route}>Read case study →</a>
+								<ActionLink direction="site" href={route}>Read case study</ActionLink>
 								{#if demo}
-									<a href={demo} target="_blank" rel="noopener noreferrer">Interactive demo ↗</a>
+									<ActionLink direction="external" href={demo}>Interactive demo</ActionLink>
 								{/if}
 								{#if url}
-									<a href={url} target="_blank" rel="noopener noreferrer">View on GitHub ↗</a>
+									<ActionLink direction="external" href={url}>View on GitHub</ActionLink>
 								{/if}
 								{#if pypi}
-									<a href={pypi} target="_blank" rel="noopener noreferrer">View on PyPI ↗</a>
+									<ActionLink direction="external" href={pypi}>View on PyPI</ActionLink>
 								{/if}
 								{#if docs}
-									<a href={docs} target="_blank" rel="noopener noreferrer">View docs ↗</a>
+									<ActionLink direction="external" href={docs}>View docs</ActionLink>
 								{/if}
 								{#if live}
-									<a href={live}>Open dashboard →</a>
+									<ActionLink direction="site" href={live}>Open dashboard</ActionLink>
 								{/if}
 							</div>
 						</div>
@@ -277,17 +278,6 @@
 		flex-wrap: wrap;
 		gap: 0.4rem 1.25rem;
 		margin-top: 0.75rem;
-	}
-
-	.links a {
-		color: currentcolor;
-		font-family: var(--font-mono);
-		font-size: var(--fs-sm);
-		text-decoration: none;
-	}
-
-	.links a:hover {
-		text-decoration: underline;
 	}
 
 	/* Every title row ends in one full-width dividing line. */

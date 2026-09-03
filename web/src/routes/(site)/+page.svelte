@@ -7,6 +7,7 @@
 	import About from '$lib/sections/About.svelte';
 	import Projects from '$lib/sections/Projects.svelte';
 	import Contact from '$lib/sections/Contact.svelte';
+	import ActionLink from '$lib/components/ActionLink.svelte';
 </script>
 
 <svelte:head>
@@ -27,7 +28,7 @@
 			<p class="proof">
 				Data Engineer focused on real-time, scientific, and ML systems.
 			</p>
-			<a class="cta" href="#projects">View my work <span aria-hidden="true">↓</span></a>
+			<ActionLink variant="cta" direction="site" href="#projects" class="cta">View my work</ActionLink>
 		</div>
 	</div>
 
@@ -222,33 +223,14 @@
 		text-wrap: balance;
 	}
 
-	/* Sat straight under the line above it, measured in cells like the name so the
-	   whole identity block scales as one thing. Otherwise it is the shape every
-	   other action on the site wears: mint, mono, small caps, and an arrow that
-	   says where it goes — ↓ for further down this page, → for elsewhere on the
-	   site, ↗ for off it. */
-	.cta {
-		display: inline-block;
+	/* Sat straight under the line above it, measured in cells like the name so
+	   the whole identity block scales as one thing — ActionLink's own .cta
+	   carries the rest of the look (mint, mono, small caps, the arrow and its
+	   nudge; see ActionLink.svelte for the site's full down/site/external/
+	   download convention). */
+	:global(.cta) {
 		margin-top: clamp(0.8rem, 2.2 * var(--cell), 1.6rem);
-		color: var(--mint);
-		font-family: var(--font-mono);
 		font-size: clamp(0.66rem, 1.7 * var(--cell), 1rem);
-		font-weight: 500;
-		letter-spacing: 0.14em;
-		text-decoration: none;
-		text-transform: uppercase;
-	}
-
-	/* The arrow carries the hover on its own, the way the status bar's link does:
-	   the label is already mint, so there is no colour left for it to change to. */
-	.cta span {
-		display: inline-block;
-		transition: transform 160ms ease;
-	}
-
-	.cta:hover span,
-	.cta:focus-visible span {
-		transform: translateY(2px);
 	}
 
 
