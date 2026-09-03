@@ -110,6 +110,16 @@
 	   it sits between. */
 	--surface: color-mix(in srgb, var(--foreground) 3%, var(--background));
 
+	/* Fixed paper surface for the one light section inside the dark site. These
+	   stay independent of the active colour scheme so nested components can use
+	   the same semantic palette instead of restating literals locally. */
+	--paper-background: #f9f9f7;
+	--paper-foreground: #0b0b0b;
+	--paper-border: #e1e0d9;
+	--paper-rule: #c9c8c0;
+	--paper-text-dim: #55544f;
+	--paper-text-faint: #6b6a64;
+
 	/* One perceptual lightness and chroma, five distinct hues. Colour stays rare:
 	   mint/amber/coral carry state, the others distinguish related data. */
 	--mint: #95d6ab;
@@ -126,16 +136,16 @@
 	   it (the four study components all inherit through it). The base hues are
 	   tuned against #090909, where they clear 11:1; against #fff or #f9f9f7 they
 	   measure as low as 1.6:1, which fails text and UI contrast outright. Mixed
-	   to #0b0b0b — the light theme's own foreground — at the one ratio that
-	   lands all five at ≥5:1 on both grounds, so a reading on the section's own
-	   tone and one on a card's inner white box both clear AA with margin. Text,
+	   toward the light theme's foreground until each still clears normal-text AA
+	   on paper. Mint stays slightly closer to its dark-ground colour than the
+	   others, landing at 4.5:1; the remaining inks retain more margin. Text,
 	   badges, borders and figures on paper read through one of these; the plain
 	   hues stay for the dark ground, where they already have contrast to spare. */
-	--mint-ink: color-mix(in srgb, var(--mint) 50%, #0b0b0b);
-	--amber-ink: color-mix(in srgb, var(--amber) 50%, #0b0b0b);
-	--coral-ink: color-mix(in srgb, var(--coral) 50%, #0b0b0b);
-	--violet-ink: color-mix(in srgb, var(--violet) 50%, #0b0b0b);
-	--azure-ink: color-mix(in srgb, var(--azure) 50%, #0b0b0b);
+	--mint-ink: color-mix(in srgb, var(--mint) 55%, var(--paper-foreground));
+	--amber-ink: color-mix(in srgb, var(--amber) 50%, var(--paper-foreground));
+	--coral-ink: color-mix(in srgb, var(--coral) 50%, var(--paper-foreground));
+	--violet-ink: color-mix(in srgb, var(--violet) 50%, var(--paper-foreground));
+	--azure-ink: color-mix(in srgb, var(--azure) 50%, var(--paper-foreground));
 
 	/* The one focus ring, everywhere: mint, since it is already the site's
 	   "current/active" colour — the nav's own current-page mark, every live

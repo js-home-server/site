@@ -119,25 +119,3 @@ export const brandColors = {
 	TensorFlow: `#${siTensorflow.hex}`,
 	'scikit-learn': `#${siScikitlearn.hex}`
 };
-
-/* Where a click on the pill should land. */
-export const websites = {
-	'C++': 'https://isocpp.org',
-	CUDA: 'https://developer.nvidia.com/cuda-zone',
-	Docker: 'https://www.docker.com',
-	Git: 'https://git-scm.com',
-	JavaScript: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript',
-	Linux: 'https://www.kernel.org',
-	MATLAB: 'https://www.mathworks.com/products/matlab.html',
-	NumPy: 'https://numpy.org',
-	Pandas: 'https://pandas.pydata.org',
-	Plotly: 'https://plotly.com',
-	Polars: 'https://pola.rs',
-	PyTorch: 'https://pytorch.org',
-	Python: 'https://www.python.org',
-	SQL: 'https://en.wikipedia.org/wiki/SQL',
-	Slurm: 'https://slurm.schedmd.com',
-	Svelte: 'https://svelte.dev',
-	TensorFlow: 'https://www.tensorflow.org',
-	'scikit-learn': 'https://scikit-learn.org'
-};
