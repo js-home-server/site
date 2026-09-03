@@ -11,14 +11,14 @@
 	/* One entry per stop on the rail, in the order they are read down it, and
 	   one per route under this layout. */
 	const SECTIONS = [
-		{ label: 'Overview', href: '/server' },
-		{ label: 'CPU', href: '/server/cpu' },
-		{ label: 'Memory', href: '/server/memory' },
-		{ label: 'NVMe', href: '/server/nvme' },
-		{ label: 'SSD', href: '/server/ssd' },
-		{ label: 'Network', href: '/server/network' },
-		{ label: 'Time', href: '/server/time' },
-		{ label: 'Containers', href: '/server/containers' }
+		{ label: 'Overview', href: '/server/' },
+		{ label: 'CPU', href: '/server/cpu/' },
+		{ label: 'Memory', href: '/server/memory/' },
+		{ label: 'NVMe', href: '/server/nvme/' },
+		{ label: 'SSD', href: '/server/ssd/' },
+		{ label: 'Network', href: '/server/network/' },
+		{ label: 'Time', href: '/server/time/' },
+		{ label: 'Containers', href: '/server/containers/' }
 	];
 
 	/* Bars in the rail's uptime strip: a much narrower box than any dashboard
@@ -67,7 +67,12 @@
 
 	{#snippet rail()}
 		<div class="rail-box status">
-			<h2 class="eyebrow">Status</h2>
+			<!-- Not a heading: this rail renders inside <aside>, ahead of the
+			     page's own <h1> (Dashboard.svelte) in source order, so an <h2>
+			     here put a heading before the document's first one. A caption on
+			     a readout, same as .rail-box .note below it and every other
+			     .eyebrow label on the site that isn't titling a section. -->
+			<p class="eyebrow">Status</p>
 			<!-- role="status"/aria-live: a state flip is worth announcing, and it
 			     only fires on a real flip — online and incidents both come off a
 			     5-minute-stepped series, not the 30s snapshot poll. -->
@@ -80,7 +85,7 @@
 		</div>
 
 		<div class="rail-box uptime">
-			<h2 class="eyebrow">Uptime</h2>
+			<p class="eyebrow">Uptime</p>
 			<p class="figure">
 				{online && Number.isFinite(snapshot.availability.uptime_seconds)
 					? Math.floor(snapshot.availability.uptime_seconds / 3600)
@@ -135,7 +140,7 @@
 	.rail-box {
 		padding: 0.9rem 1rem;
 		border: 1px solid var(--color-border);
-		border-radius: 0.4rem;
+		border-radius: var(--radius-panel);
 		background: var(--surface);
 	}
 

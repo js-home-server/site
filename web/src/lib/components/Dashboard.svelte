@@ -105,7 +105,7 @@
 		gap: 1.5rem;
 		padding: 1.25rem;
 		border: 1px solid var(--color-border);
-		border-radius: 0.4rem;
+		border-radius: var(--radius-panel);
 		background: var(--surface);
 	}
 
@@ -213,7 +213,7 @@
 		/* 24px, the standard card padding — every .box below inherits the same
 		   figure, since it reads this custom property off its nearest section. */
 		--pad: 1.5rem;
-		--radius: 0.35rem;
+		--radius: var(--radius-panel);
 		/* The colour on its own as well as the border it is usually written as: a
 		   lattice drawn with grid gaps needs the one, everything else the other, and
 		   a rule is a rule wherever it turns up. */
@@ -278,7 +278,7 @@
 		overflow: hidden;
 		padding: var(--pad);
 		border: 1px solid var(--color-border);
-		border-radius: 0.35rem;
+		border-radius: var(--radius-panel);
 		background: var(--surface);
 	}
 

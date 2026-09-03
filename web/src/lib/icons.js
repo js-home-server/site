@@ -18,8 +18,11 @@ import pin from 'heroicons/24/outline/map-pin.svg?raw';
 import pulse from 'heroicons/24/outline/heart.svg?raw';
 import rocket from 'heroicons/24/outline/rocket-launch.svg?raw';
 import shield from 'heroicons/24/outline/shield-check.svg?raw';
+import star from 'heroicons/24/outline/star.svg?raw';
+import target from 'heroicons/24/outline/viewfinder-circle.svg?raw';
 import warning from 'heroicons/24/outline/exclamation-triangle.svg?raw';
 import window_ from 'heroicons/24/outline/window.svg?raw';
+import wrench from 'heroicons/24/outline/wrench-screwdriver.svg?raw';
 
 export const icons = {
 	adjustments,
@@ -37,6 +40,9 @@ export const icons = {
 	pulse,
 	rocket,
 	shield,
+	star,
+	target,
 	warning,
-	window: window_
+	window: window_,
+	wrench
 };

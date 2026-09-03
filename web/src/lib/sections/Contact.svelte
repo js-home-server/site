@@ -375,7 +375,7 @@
 	input,
 	textarea {
 		border: 1px solid var(--color-border);
-		border-radius: 0.3rem;
+		border-radius: var(--radius-control);
 		background: var(--color-background);
 		color: var(--color-foreground);
 		font: inherit;
@@ -417,7 +417,7 @@
 
 	button {
 		border: 1px solid var(--mint);
-		border-radius: 0.2rem;
+		border-radius: var(--radius-control);
 		background: none;
 		color: var(--mint);
 		font-family: var(--font-mono);

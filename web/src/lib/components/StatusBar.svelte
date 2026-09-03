@@ -200,11 +200,7 @@
 			<span class="mono">{stamp(snapshot?.generated_at)}</span>
 		</p>
 
-		<a
-			href="#projects"
-			onclick={() => window.dispatchEvent(new CustomEvent('openproject', { detail: 'this-server' }))}
-			>View project <span aria-hidden="true">→</span></a
-		>
+		<a href="/projects/server/">View project <span aria-hidden="true">→</span></a>
 	</div>
 
 	<div class="metrics">
@@ -247,7 +243,7 @@
 		   with the art. */
 		margin: 0 auto clamp(0.75rem, 1.5vh, 1.25rem);
 		border: 1px solid var(--color-border);
-		border-radius: 0.35rem;
+		border-radius: var(--radius-panel);
 		/* Opaque: the bull sits directly behind this and a chart drawn over its
 		   texture is unreadable. */
 		background: var(--color-background);

@@ -6,11 +6,14 @@
 	   below reads the last one that has been passed. The server dashboard is
 	   deliberately not here: it is its own app at /server, reached from the
 	   projects section. */
+	/* Absolute (leading /) rather than bare hashes: a project's case study is
+	   also under this layout now, and a bare "#home" from there resolves
+	   against its own URL instead of the landing page's. */
 	const links = [
-		{ href: '#home', label: 'Home' },
-		{ href: '#projects', label: 'Projects' },
-		{ href: '#about', label: 'About' },
-		{ href: '#contact', label: 'Contact' }
+		{ href: '/#home', label: 'Home' },
+		{ href: '/#projects', label: 'Projects' },
+		{ href: '/#about', label: 'About' },
+		{ href: '/#contact', label: 'Contact' }
 	];
 
 	/* How far past hidden the bar keeps counting down-scroll. That surplus is what
@@ -73,13 +76,16 @@
 	$effect(() => {
 		const spy = new IntersectionObserver(
 			(entries) => {
-				for (const entry of entries) if (entry.isIntersecting) active = `#${entry.target.id}`;
+				for (const entry of entries) if (entry.isIntersecting) active = `/#${entry.target.id}`;
 			},
 			{ rootMargin: '-33.33% 0px -66.67% 0px' }
 		);
 
+		/* Only present on the landing page itself — on a project's case study,
+		   none of these exist, so the spy simply observes nothing and `active`
+		   stays on its initial value. */
 		for (const { href } of links) {
-			const section = document.querySelector(href);
+			const section = document.querySelector(href.slice(href.indexOf('#')));
 			if (section) spy.observe(section);
 		}
 

@@ -528,7 +528,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		gap: 0.9rem;
 		padding: 1rem 1.15rem;
 		border: 1px solid var(--color-border);
-		border-radius: 0.4rem;
+		border-radius: var(--radius-panel);
 		background: #fff;
 	}
 
@@ -593,7 +593,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 	.prose code,
 	.foot-note code {
 		padding: 0.05rem 0.25rem;
-		border-radius: 0.2rem;
+		border-radius: var(--radius-control);
 		background: color-mix(in srgb, var(--color-foreground) 5%, transparent);
 		font-size: 0.95em;
 	}
@@ -638,7 +638,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		justify-self: start;
 		padding: 0.45rem 0.8rem;
 		border: 1px solid var(--color-border);
-		border-radius: 0.3rem;
+		border-radius: var(--radius-control);
 		background: color-mix(in srgb, var(--color-foreground) 3%, #fff);
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
@@ -685,7 +685,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		gap: 0.15rem;
 		padding: 0.6rem 0.7rem;
 		border: 1px solid var(--color-border);
-		border-radius: 0.3rem;
+		border-radius: var(--radius-control);
 	}
 
 	.figure strong {
@@ -713,7 +713,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		margin: 0;
 		padding: 0.9rem 1rem;
 		overflow-x: auto;
-		border-radius: 0.35rem;
+		border-radius: var(--radius-panel);
 		background: var(--color-background);
 		color: #d6d5cf;
 		font-family: var(--font-mono);
@@ -798,7 +798,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		align-items: start;
 		padding: 0.75rem 0.9rem;
 		border: 1px solid var(--color-border);
-		border-radius: 0.35rem;
+		border-radius: var(--radius-panel);
 	}
 
 	.layer-index {
@@ -905,7 +905,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		width: 100%;
 		height: 32rem;
 		border: 1px solid var(--color-border);
-		border-radius: 0.35rem;
+		border-radius: var(--radius-panel);
 		background: #fff;
 	}
 
@@ -923,7 +923,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		gap: 0.3rem;
 		padding: 0.8rem 0.9rem;
 		border: 1px solid var(--color-border);
-		border-radius: 0.35rem;
+		border-radius: var(--radius-panel);
 	}
 
 	.cost strong {
@@ -978,7 +978,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		gap: 0.45rem;
 		padding: 0.8rem 0.9rem;
 		border: 1px solid var(--color-border);
-		border-radius: 0.35rem;
+		border-radius: var(--radius-panel);
 	}
 
 	.card-item strong {
@@ -1030,7 +1030,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		gap: 0.45rem;
 		padding: 0.8rem 0.9rem;
 		border: 1px solid var(--color-border);
-		border-radius: 0.35rem;
+		border-radius: var(--radius-panel);
 	}
 
 	.defect-head {

@@ -27,12 +27,7 @@
 			<p class="proof">
 				Data Engineer focused on real-time, scientific, and ML systems.
 			</p>
-			<a
-				class="cta"
-				href="#projects"
-				onclick={() => window.dispatchEvent(new CustomEvent('openproject', { detail: 'ancestree' }))}
-				>View my work <span aria-hidden="true">↓</span></a
-			>
+			<a class="cta" href="#projects">View my work <span aria-hidden="true">↓</span></a>
 		</div>
 	</div>
 

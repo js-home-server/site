@@ -397,7 +397,7 @@ test_html_proportions();`}</code></pre>
 		gap: 0.9rem;
 		padding: 1rem 1.15rem;
 		border: 1px solid var(--color-border);
-		border-radius: 0.4rem;
+		border-radius: var(--radius-panel);
 		background: #fff;
 	}
 
@@ -465,7 +465,7 @@ test_html_proportions();`}</code></pre>
 	.module code,
 	.quant code {
 		padding: 0.05rem 0.25rem;
-		border-radius: 0.2rem;
+		border-radius: var(--radius-control);
 		background: color-mix(in srgb, var(--color-foreground) 5%, transparent);
 		font-size: 0.95em;
 	}
@@ -512,7 +512,7 @@ test_html_proportions();`}</code></pre>
 	.install {
 		justify-self: start;
 		padding: 0.45rem 0.8rem;
-		border-radius: 0.3rem;
+		border-radius: var(--radius-control);
 		background: var(--color-background);
 		color: #d6d5cf;
 		font-family: var(--font-mono);
@@ -558,7 +558,7 @@ test_html_proportions();`}</code></pre>
 		width: 100%;
 		height: auto;
 		border: 1px solid var(--color-border);
-		border-radius: 0.35rem;
+		border-radius: var(--radius-panel);
 	}
 
 	.source figcaption {
@@ -593,7 +593,7 @@ test_html_proportions();`}</code></pre>
 		overflow: hidden;
 		padding: 0.6rem;
 		border: 1px solid var(--color-border);
-		border-radius: 0.35rem;
+		border-radius: var(--radius-panel);
 	}
 
 	.render figcaption {
@@ -640,7 +640,7 @@ test_html_proportions();`}</code></pre>
 		min-width: 6.5rem;
 		padding: 0.6rem 0.7rem;
 		border: 1px solid var(--color-border);
-		border-radius: 0.35rem;
+		border-radius: var(--radius-panel);
 		background: color-mix(in srgb, var(--color-foreground) 2%, #fff);
 	}
 
@@ -694,7 +694,7 @@ test_html_proportions();`}</code></pre>
 		margin: 0;
 		padding: 0.9rem 1rem;
 		overflow-x: auto;
-		border-radius: 0.35rem;
+		border-radius: var(--radius-panel);
 		background: var(--color-background);
 		color: #d6d5cf;
 		font-family: var(--font-mono);
@@ -716,7 +716,7 @@ test_html_proportions();`}</code></pre>
 		align-items: center;
 		padding: 0.65rem 0.8rem;
 		border: 1px solid var(--color-border);
-		border-radius: 0.35rem;
+		border-radius: var(--radius-panel);
 	}
 
 	.aspect strong {
@@ -775,7 +775,7 @@ test_html_proportions();`}</code></pre>
 		gap: 0.5rem;
 		padding: 0.85rem 0.95rem;
 		border: 1px solid var(--color-border);
-		border-radius: 0.35rem;
+		border-radius: var(--radius-panel);
 		background: color-mix(in srgb, var(--color-foreground) 2%, #fff);
 	}
 

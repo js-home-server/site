@@ -1,21 +1,20 @@
 <script>
-	import Panel from '$lib/components/Panel.svelte';
-	import Placeholder from '$lib/components/Placeholder.svelte';
+	import AsciiOwlCompare from '$lib/components/AsciiOwlCompare.svelte';
+	import OrderflowEquityChart from '$lib/components/OrderflowEquityChart.svelte';
+	import ServerMiniDashboard from '$lib/components/ServerMiniDashboard.svelte';
+	import StudyBrief from '$lib/components/StudyBrief.svelte';
 	import ToolPills from '$lib/components/ToolPills.svelte';
-	import AncestreeStudy from './AncestreeStudy.svelte';
-	import AsciiStudy from './AsciiStudy.svelte';
-	import OrderflowStudy from './OrderflowStudy.svelte';
-	import ServerStudy from './ServerStudy.svelte';
+	import { briefs } from '$lib/data/briefs.js';
 
 	/* The work worth showing. `tools` are what each is actually built with; `url`
 	   is where the source is, on the ones that are public; `live` is where it
-	   actually runs on this site, on the one that runs here.
+	   actually runs on this site, on the one that runs here. `route` is its
+	   full case study, on a page of its own — the full write-ups ran 10-14k
+	   characters and buried the comparison this list exists for.
 
-	   The case-study fields below `blurb` — facts, architecture, decisions,
-	   reliability, tradeoffs, metrics — are the long form each card opens onto.
-	   Every one of them is optional: a project that has not been written up yet
-	   renders the same frame with a placeholder in the slot, so the shape of what
-	   is still owed is visible rather than hidden. */
+	   What the fold opens onto instead is that project's executive brief
+	   (`brief`, keyed into data/briefs.js): one sheet, read in twenty seconds,
+	   with the case study a link away for anyone who wants the rest. */
 	const PROJECTS = [
 		{
 			name: 'Ancestree',
@@ -26,8 +25,8 @@
 			url: 'https://github.com/JS195/ancestree',
 			pypi: 'https://pypi.org/project/ancestree-track/',
 			docs: 'https://js195.github.io/ancestree/',
-			demo: 'https://js195.github.io/ancestree/demo/',
-			study: 'ancestree'
+			route: '/projects/ancestree/',
+			brief: 'ancestree'
 		},
 		{
 			name: 'This server',
@@ -36,7 +35,9 @@
 				'A machine publishing a live feed about itself is publishing facts about a house. This one runs Debian behind an outbound tunnel, where what reaches the public API is a checked-in list rather than whatever the exporters expose. It draws 3.0 W and opens no ports.',
 			tools: ['Svelte', 'JavaScript', 'Docker', 'Linux', 'Python'],
 			url: 'https://github.com/js-home-server',
-			live: '/server'
+			live: '/server/',
+			route: '/projects/server/',
+			brief: 'server'
 		},
 		{
 			name: 'Crypto orderflow',
@@ -45,7 +46,8 @@
 				'Order flow cannot be backfilled, and the vendors that sell it retain days rather than years. So I built the collector: 11.5M rows a day off ten venue feeds, folded to 108 MB of Parquet, and the cross-sectional strategy study that reads it back.',
 			tools: ['Python', 'Docker', 'Polars', 'NumPy'],
 			liveBadge: true,
-			study: 'orderflow'
+			route: '/projects/orderflow/',
+			brief: 'orderflow'
 		},
 		{
 			name: 'ascii-art',
@@ -54,20 +56,17 @@
 				'A photograph is a grid of pixels and a terminal is a grid of characters. A C11 renderer converts one to the other, with sampling, tone curve, glyph selection and encoding as separately tested stages. It runs in 13 ms and draws every image on this site.',
 			tools: ['C++', 'Git'],
 			url: 'https://github.com/JS195/asciiArt',
-			study: 'ascii'
+			route: '/projects/ascii-art/',
+			brief: 'ascii'
 		}
 	];
 
 	/* A plain accordion: click a title to open it, click the open one to shut
-	   it. Scroll no longer drives this — the embed and the server preview
-	   inside "This server" are heavy enough that animating them open and shut
-	   on every scroll tick (as the reading line crossed each card) was the
-	   source of the section's lag, not just a cosmetic flourish worth keeping. */
+	   it. Scroll does not drive this — animating four sheets open and shut on
+	   every scroll tick was the source of this section's lag. */
 	let open = $state(PROJECTS.findIndex((project) => project.name === 'Ancestree'));
 
-	function toggle(i) {
-		open = open === i ? -1 : i;
-	}
+	const toggle = (i) => (open = open === i ? -1 : i);
 
 	/* Elsewhere on the site — the hero's "View my work" and the status bar's
 	   "View project" — links open a specific card rather than just scrolling
@@ -75,64 +74,27 @@
 	   list's order. */
 	const slug = (name) => name.toLowerCase().replace(/\s+/g, '-');
 
-
 	function openProject(event) {
 		const index = PROJECTS.findIndex((project) => slug(project.name) === event.detail);
 		if (index !== -1) open = index;
 	}
-
 </script>
 
 <svelte:window onopenproject={openProject} />
-
-<!-- One of the four boxes across the top of a study: a label and a sentence, or
-     the dashed slot where that sentence still has to be written. -->
-{#snippet fact(label, text)}
-	<div class="box">
-		<Panel {label} level={4}>
-			{#if text}
-				<p class="prose">{text}</p>
-			{:else}
-				<Placeholder note="not written up" lines={3} />
-			{/if}
-		</Panel>
-	</div>
-{/snippet}
-
-<!-- The three reasoning boxes down the right of a study. All three are the same
-     shape — a bolded term and the clause that earns it — so they are one
-     snippet rather than three copies of a list. -->
-{#snippet bullets(label, items, note)}
-	<div class="box">
-		<Panel {label} level={4}>
-			{#if items}
-				<ul class="reasons">
-					{#each items as { term, text } (term)}
-						<li><strong>{term}:</strong> {text}</li>
-					{/each}
-				</ul>
-			{:else}
-				<Placeholder {note} lines={4} />
-			{/if}
-		</Panel>
-	</div>
-{/snippet}
 
 <section id="projects" class="page projects-page">
 	<section class="surface-box projects">
 		<h2 class="section-title">My projects</h2>
 
 		<div class="cards">
-			{#each PROJECTS as { name, year, blurb, tools, url, live, pypi, docs, demo, image, liveBadge, study, facts, architecture, decisions, reliability, tradeoffs, metrics, metricNote, outcome }, i (name)}
+			{#each PROJECTS as { name, year, blurb, tools, url, live, pypi, docs, demo, liveBadge, route, brief }, i (name)}
 				<article class="card" class:open={i === open}>
 					<!-- Three columns, top-aligned as one row. Two buttons, not one — a
 					     link can't nest inside a button, and the links under the pills
 					     are real ones — so the row is opened either from the title on
-					     the left or the year/mark on the right, both calling the same
-					     toggle. ToolPills is a row of links too and sits under the
-					     button for the same reason: a button may not contain other
-					     interactive content, which an anchor is regardless of what
-					     wraps it. -->
+					     the left or the year and chevron on the right, both calling the
+					     same toggle. ToolPills is a row of links too and sits under the
+					     button for the same reason. -->
 					<div class="head-row">
 						<div class="head-col">
 							<button type="button" class="head" aria-expanded={i === open} onclick={() => toggle(i)}>
@@ -149,10 +111,8 @@
 
 							<div class="tools-row"><ToolPills {tools} /></div>
 
-							<!-- Under the pills rather than under the blurb: its own row,
-							     not inside .head above, since a link can't nest inside a
-							     button. Arrows say where each goes: ↗ off the site, → on it. -->
 							<div class="links">
+								<a href={route}>Read case study →</a>
 								{#if demo}
 									<a href={demo} target="_blank" rel="noopener noreferrer">Interactive demo ↗</a>
 								{/if}
@@ -181,144 +141,37 @@
 							     of the row: a collapsed row and an open one look enough alike
 							     from a glance that the mark is what actually answers "which is
 							     this." -->
-							<span class="toggle" aria-hidden="true">{i === open ? '−' : '+'}</span>
+							<span class="chevron" aria-hidden="true"></span>
 						</button>
 					</div>
 
 					<!-- The fold is a grid row taken from 0fr to 1fr, which is the one
-					     way a box of copy can be animated open without being told a
+					     way a sheet of copy can be animated open without being told a
 					     height it does not have. `inert` because a collapsed project is
 					     only clipped, and its links would otherwise still be tabbed to. -->
 					<div class="fold" inert={i !== open}>
 						<div class="fold-inner">
-							<!-- "This server" is a system rather than a piece of software, so it
-							     gets its own study — the two paths through it, what operating it
-							     involves, and the live box proving the machine is up — rather than
-							     the problem/solution/decisions frame the rest take. -->
-							{#if live === '/server'}
-								<ServerStudy />
-							{:else if study === 'ascii'}
-								<!-- The one project that can be shown as itself: the renders in
-								     its study are the tool's own HTML output, text in the page
-								     rather than a picture of text. -->
-								<AsciiStudy />
-							{:else if study === 'ancestree'}
-								<!-- A published library rather than a system: its study is a
-								     datasheet — what it does, what it costs, what it was
-								     measured at, and what it is not for. -->
-								<AncestreeStudy />
-							{:else if study === 'orderflow'}
-								<!-- The archive and the research that reads it: one project in two
-								     halves, with its own study rather than the generic frame. -->
-								<OrderflowStudy open={i === open} />
+							{#if brief === 'ascii'}
+								<!-- The one project that can be shown as itself: source,
+								     mono, gray and color side by side is the demonstration,
+								     text in the page rather than a picture of text. -->
+								<StudyBrief brief={briefs[brief]}>
+									{#snippet figure()}<AsciiOwlCompare />{/snippet}
+								</StudyBrief>
+							{:else if brief === 'server'}
+								<!-- Likewise the real thing rather than a chart of it: the same
+								     live telemetry grid the full case study shows. -->
+								<StudyBrief brief={briefs[brief]}>
+									{#snippet figure()}<ServerMiniDashboard />{/snippet}
+								</StudyBrief>
+							{:else if brief === 'orderflow'}
+								<!-- The strategy the archive was built for, not the archive's own
+								     uptime: the same equity curve the full case study plots. -->
+								<StudyBrief brief={briefs[brief]}>
+									{#snippet figure()}<OrderflowEquityChart />{/snippet}
+								</StudyBrief>
 							{:else}
-
-								<!-- The two questions the rest of the study answers in detail:
-								     what was wrong, and what was built about it. -->
-								<div class="facts">
-									{@render fact('Problem', facts?.problem)}
-									{@render fact('Solution', facts?.solution)}
-								</div>
-
-								<!-- The visual, and the path through the thing it shows beside
-								     it. They pair on shape as well as on sense: the flow is five
-								     stacked stages, which is about as tall as a screenshot. -->
-								<div class="split">
-									<div class="visual">
-										{#if image}
-											<!-- Lazy and async: a shut fold is clipped, not absent, so
-											     without this every card's screenshot is fetched and
-											     decoded on load — and the decode lands on the main
-											     thread mid-animation when the fold opens. -->
-											<img
-												class="screenshot"
-												src={image}
-												alt="{name} dashboard"
-												loading="lazy"
-												decoding="async"
-											/>
-										{:else}
-											<Placeholder note="{name.toUpperCase().replace(/\s+/g, '-')}.PNG" lines={16} />
-										{/if}
-									</div>
-
-									<div class="box">
-										<Panel label="Architecture" level={4}>
-											{#if architecture}
-												<p class="prose">{architecture.text}</p>
-
-												<!-- The path a byte takes through it, named stage by stage,
-												     read top to bottom. Vertical rather than across: laid out
-												     in a row the stages wrapped, and an arrow is its own box,
-												     so the one before a wrapped stage was stranded at the end
-												     of the line above it. A column cannot wrap. -->
-												<div class="flow">
-													{#each architecture.flow as stage, s (stage.name)}
-														{#if s}<span class="arrow" aria-hidden="true">↓</span>{/if}
-														<div class="stage">
-															<strong>{stage.name}</strong>
-															<span>{stage.detail}</span>
-														</div>
-													{/each}
-												</div>
-											{:else}
-												<Placeholder note="architecture" lines={6} />
-											{/if}
-										</Panel>
-									</div>
-								</div>
-
-								<!-- What I chose, and what happens when it breaks. The wider half
-								     is the one with three arguments in it. -->
-								<div class="split">
-									{@render bullets('Key decisions & why', decisions, 'decisions')}
-									{@render bullets('Reliability & failure', reliability, 'failure behaviour')}
-								</div>
-
-								<!-- Across the full width, because four figures in a row is what the
-								     tiles are for. The numbers go here only once measured by
-								     something someone else could re-run — a placeholder is the
-								     honest reading until then. -->
-								<div class="box">
-									<Panel label="Measurable proof" level={4}>
-										{#if metrics}
-											<div class="tiles">
-												{#each metrics as metric (metric.label)}
-													<div class="tile">
-														<span class="eyebrow">{metric.label}</span>
-														<strong class="figure">
-															{metric.value}{#if metric.unit}<span class="unit">{metric.unit}</span>{/if}
-														</strong>
-														<span class="note">{metric.note}</span>
-													</div>
-												{/each}
-											</div>
-
-											<!-- Where the numbers came from, at the foot of the numbers
-											     themselves: a benchmark without its machine and its
-											     method is a number without a claim. -->
-											{#if metricNote}<p class="metric-note">{metricNote}</p>{/if}
-										{:else}
-											<Placeholder note="not measured yet" lines={6} />
-										{/if}
-									</Panel>
-								</div>
-
-								<!-- Where it stops, and what came of it anyway. Last row, and the
-								     one thing worth keeping if nothing above it is read. -->
-								<div class="split">
-									{@render bullets('Limitations', tradeoffs, 'limitations')}
-
-									<div class="box">
-										<Panel label="Outcome" level={4}>
-											{#if outcome}
-												<p class="prose">{outcome}</p>
-											{:else}
-												<Placeholder note="not written up" lines={2} />
-											{/if}
-										</Panel>
-									</div>
-								</div>
+								<StudyBrief brief={briefs[brief]} />
 							{/if}
 						</div>
 					</div>
@@ -354,16 +207,21 @@
 		--text-faint: #6b6a64;
 		--focus-ring: var(--mint-ink);
 
+		/* An open card's white content runs flush to the surface-box's own
+		   edge, and .surface-box rounds its corners without clipping to
+		   them — so without this, that white box squares off past the
+		   rounded corner instead of following it. */
+		overflow: hidden;
 		border-color: #e1e0d9;
 		background: #f9f9f7;
 		color: var(--color-foreground);
 	}
 
-	/* One project a row, top to bottom. --pad above and below every dividing
-	   rule, so the list is read as separated entries rather than a block. */
+	/* The project stack reaches the surface border. The heading keeps the
+	   surface padding; the title bars and opened drawings do not. */
 	.cards {
 		display: grid;
-		gap: calc(var(--pad) * 1.6);
+		margin: 0 calc(var(--pad) * -1) calc(var(--pad) * -1);
 	}
 
 	.card h3 {
@@ -383,10 +241,10 @@
 		margin-left: calc(var(--icon-col) + 0.75rem);
 	}
 
-	/* One block a reader takes in at a glance, whether or not they open the
-	   fold: the problem, the thing built for it, and the number it runs at.
-	   Capped in ch like the about page's lede, since a row is the full width of
-	   the box and that is past what a line of prose can be read across. */
+	/* One block a reader takes in at a glance: the problem, the thing built for
+	   it, and the number it runs at. Capped in ch like the about page's lede,
+	   since a row is the full width of the box and that is past what a line
+	   of prose can be read across. */
 	.blurb {
 		margin: 0;
 		max-width: 84ch;
@@ -396,193 +254,39 @@
 		line-height: 1.7;
 	}
 
-	/* A card is a row of the list, divided from the next by a rule rather than
-	   given a frame of its own. Closed it is only its title line; the gap under
-	   that line belongs to the fold, or three flat lines would sit a full row
-	   apart with nothing between them. */
+	/* Each project is one title row followed by its optional blueprint. */
 	.card {
 		display: grid;
 	}
 
 	/* 0fr to 1fr, which is the one way a box of copy animates open without being
-	   handed a height it does not have — its own is whatever the blurb wraps to.
-	   The gap goes with it, so a closed project takes exactly its line. */
+	   handed a height it does not have. The gap goes with it, so a closed
+	   project takes exactly its own rows. */
 	.fold {
 		display: grid;
 		grid-template-rows: 0fr;
-		padding-top: 0;
+		opacity: 0;
 		transition:
 			grid-template-rows 380ms ease,
-			padding-top 380ms ease,
 			opacity 260ms ease;
-		opacity: 0;
 	}
 
 	.card.open .fold {
 		grid-template-rows: 1fr;
-		padding-top: 1rem;
 		opacity: 1;
 	}
 
-	/* The row is the clip: min-height: 0 because a grid item's automatic minimum
-	   is its content, which would hold the row open at its full height.
-
-	   Panel's title is sized from here rather than per box, so every label in a
-	   study — the four facts, the four reasoning boxes, the two at the foot —
-	   is the same eyebrow the rest of the site labels things with. */
+	/* The drawing is clipped only for the height animation. Its own background
+	   runs flush to both sides of the project surface. */
 	.fold-inner {
-		--title-size: 0.62rem;
-		--title-color: var(--text-faint);
-
-		display: grid;
-		gap: 1rem;
 		min-height: 0;
 		overflow: hidden;
 	}
 
-	/* What a study is made of. One vocabulary for every box in it, so the four
-	   across the top, the four down the right and the two at the foot are read as
-	   one thing divided rather than three different treatments. */
-	.box {
-		padding: 0.9rem 1rem;
-		border: 1px solid var(--color-border);
-		border-radius: 0.4rem;
-		background: #fff;
-	}
-
-	/* Every sentence inside a box, at the one size they are all set in. */
-	.prose {
-		margin: 0;
-		color: var(--text-dim);
-		font-family: var(--font-mono);
-		font-size: 0.68rem;
-		line-height: 1.65;
-	}
-
-	/* The quiet line under a figure, a link, or a visual's own title. */
-	.note {
-		margin: 0;
-		color: var(--text-faint);
-		font-family: var(--font-mono);
-		font-size: 0.6rem;
-		line-height: 1.5;
-	}
-
-	/* Pills on the left, the paragraph they belong to on the right. */
-	/* Problem, role, constraints, outcome — four across, because they are read as
-	   a row of answers to the same question rather than as a list. */
-	.facts {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 0.75rem;
-	}
-
-	/* A bolded term and the clause that earns it, marked in the gutter the way
-	   the about page's own points are. */
-	.reasons {
-		display: grid;
-		gap: 0.45rem;
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-
-	.reasons li {
-		position: relative;
-		padding-left: 0.95rem;
-		color: var(--text-dim);
-		font-family: var(--font-mono);
-		font-size: 0.68rem;
-		line-height: 1.6;
-	}
-
-	.reasons li::before {
-		position: absolute;
-		left: 0;
-		/* -ink, not the plain accent: this box is on the light ground (.projects,
-		   below) and plain --mint measures 1.6:1 on it. */
-		color: var(--mint-ink);
-		content: '—';
-	}
-
-	.reasons strong {
-		color: var(--color-foreground);
-		font-weight: 600;
-	}
-
-	/* The stages a byte passes through, read down. One column, so a stage is
-	   never split off from the arrow that leads to it. */
-	.flow {
-		display: grid;
-		gap: 0.3rem;
-	}
-
-	.stage {
-		display: grid;
-		gap: 0.1rem;
-		padding: 0.4rem 0.55rem;
-		border: 1px solid var(--color-border);
-		border-radius: 0.3rem;
-		text-align: center;
-	}
-
-	.stage strong {
-		color: var(--color-foreground);
-		font-family: var(--font-mono);
-		font-size: 0.62rem;
-		font-weight: 600;
-	}
-
-	.stage span {
-		color: var(--text-faint);
-		font-family: var(--font-mono);
-		font-size: 0.56rem;
-	}
-
-	.arrow {
-		justify-self: center;
-		color: var(--text-faint);
-		font-size: 0.7rem;
-		line-height: 1;
-	}
-
-	/* One tile per measurement, across the study's full width. */
-	.tiles {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
-		gap: 0.6rem;
-	}
-
-	.tile {
-		display: grid;
-		gap: 0.2rem;
-		padding: 0.6rem 0.7rem;
-		border: 1px solid var(--color-border);
-		border-radius: 0.3rem;
-	}
-
-	/* Smaller than a figure on the dashboard: four of these share half a card.
-	   -ink, not the plain accent: the tile is on the light ground (.projects,
-	   below) and plain --violet measures 1.78:1 on it — these are the study's
-	   own headline numbers, not a decoration. */
-	.tile .figure {
-		color: var(--violet-ink);
-		font-size: 1.35rem;
-	}
-
-	.tile .unit {
-		margin-left: 0.15em;
-		font-size: 0.5em;
-		font-weight: 500;
-	}
-
-	/* The machine and the method, under the numbers they qualify. */
-	.metric-note {
-		margin: 0.75rem 0 0;
-		color: var(--text-faint);
-		font-family: var(--font-mono);
-		font-size: 0.58rem;
-		line-height: 1.6;
+	@media (prefers-reduced-motion: reduce) {
+		.fold {
+			transition: none;
+		}
 	}
 
 	/* A row, under the paragraph they belong to. */
@@ -607,36 +311,25 @@
 		text-decoration: underline;
 	}
 
-	/* Rows past the first take their own --pad, and the rule sits halfway up the
-	   grid's gap above it — so the air reads the same either side of the line. */
-	.card:nth-child(n + 2) {
-		position: relative;
-		padding-top: var(--pad);
-	}
-
-	.card:nth-child(n + 2)::before {
-		content: '';
-		position: absolute;
-		/* Half the gap above the row, so the air reads the same either side of
-		   the line however wide the gap is set. */
-		top: calc(var(--pad) * -0.8);
-		left: 0;
-		right: 0;
-		border-top: var(--rule);
-	}
-
-	/* A button, so it is reachable and pressable as the control it is, but wearing
-	   none of a button's clothes: the line is the affordance. */
-	/* The button and the summary beside it, top-aligned as one row: the summary
-	   reads level with the title and pills rather than under them. */
+	/* Every title row ends in one full-width dividing line. */
 	.head-row {
+		position: relative;
+		z-index: 1;
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) auto;
 		gap: 1.25rem;
 		align-items: start;
+		padding: var(--pad);
+		background: #f9f9f7;
+		border-bottom: 1px solid #c9c8c0;
 	}
 
-	/* The button and the links under it, stacked as the row's left column. */
+	/* The open title casts a simple full-width shadow onto the blueprint below. */
+	.card.open .head-row {
+		box-shadow: 0 0.6rem 0.7rem -0.55rem rgb(18 35 60 / 38%);
+	}
+
+	/* The title and the links under it, stacked as the row's left column. */
 	.head-col {
 		/* Shared with .head and .links below, so the links row's left edge
 		   lands exactly under the title rather than the icon above it. */
@@ -649,16 +342,14 @@
 		padding-top: 0.15rem;
 	}
 
-	/* A button, so it is reachable and pressable as the control it is, but
-	   wearing none of a button's clothes: the shared reset every clickable part
-	   of the row — this one and .stat below — wears. */
+	/* Both toggles are plain buttons wearing the row's own type: no chrome of
+	   their own, since what they look like is the header bar. */
 	.head,
 	.stat {
-		border: 0;
-		background: none;
-		color: inherit;
-		font: inherit;
+		padding: 0;
 		text-align: left;
+		background: none;
+		border: 0;
 		cursor: pointer;
 	}
 
@@ -667,33 +358,17 @@
 		grid-template-columns: var(--icon-col) minmax(0, 1fr);
 		gap: 0.75rem;
 		align-items: start;
-		width: 100%;
-		padding: 0;
 	}
 
-	/* The year and the fold's own mark, on the far right of the row: its own
-	   button rather than folded into .head, since the summary between them
-	   holds real links a button cannot contain. Both call the same toggle. */
+	/* The year and the fold's mark, on the far right of the row. */
 	.stat {
 		display: flex;
+		gap: 0.85rem;
 		align-items: baseline;
-		gap: 0.6rem;
 		padding: 0.1rem 0 0;
 	}
 
-	/* Only the open one is at full strength; the flat lines below it are a list
-	   of what is coming, not four titles competing. */
 	.head h3 {
-		color: var(--text-dim);
-		transition: color 260ms ease;
-	}
-
-	.card.open .head h3 {
-		color: var(--color-foreground);
-	}
-
-	.head:hover h3,
-	.head:focus-visible h3 {
 		color: var(--color-foreground);
 	}
 
@@ -712,53 +387,35 @@
 		font-size: 0.8rem;
 	}
 
-	.toggle {
-		width: 1rem;
-		color: var(--text-faint);
-		font-family: var(--font-mono);
-		font-size: 0.95rem;
-		text-align: center;
-		transition: color 260ms ease;
+	/* Two strokes rotated into a V, turned through 180° when the fold opens —
+	   a drawn mark rather than a glyph, so it rotates about its own centre
+	   instead of about a font's baseline. */
+	.chevron {
+		align-self: center;
+		width: 0.6rem;
+		height: 0.6rem;
+		border-right: 1.5px solid var(--text-faint);
+		border-bottom: 1.5px solid var(--text-faint);
+		transform: translateY(-25%) rotate(45deg);
+		transition: transform 380ms ease;
 	}
 
-	.card.open .toggle,
-	.stat:hover .toggle,
-	.stat:focus-visible .toggle {
-		color: var(--color-foreground);
+	.card.open .chevron {
+		transform: translateY(15%) rotate(225deg);
 	}
 
-	/* Every divided row in a study, at the one ratio they all share: the heavier
-	   half takes two thirds. Used three times — demo beside architecture,
-	   decisions beside reliability, limitations beside outcome — so the whole
-	   fold reads as one rhythm rather than three different splits. Each pairing
-	   is by weight: the wider box is the one with more in it. */
-	.split {
-		display: grid;
-		grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-		gap: 0.75rem;
-		align-items: start;
+	.stat:hover .chevron {
+		border-color: var(--color-foreground);
 	}
 
-	/* Every visual in here used to be `height: 100%` of the fold's grid row, and
-	   that row is what the open/shut transition animates (0fr to 1fr, below). So
-	   the animation did not reveal the visual — it resized it, every frame: the
-	   iframe's embedded document re-laid-out ~23 times a toggle, the mini
-	   dashboard's grid recomputed and took every Spark and Trace SVG with it, and
-	   the screenshot re-scaled. A definite height instead means nothing inside
-	   changes size at all; the row grows and .fold-inner's overflow clip is the
-	   only thing doing any work. One knob, since the boxes are meant to match. */
-	.visual {
-		--visual-h: 30rem;
+	@media (prefers-reduced-motion: reduce) {
+		.chevron {
+			transition: none;
+		}
 	}
 
-	.visual :global(.placeholder) {
-		height: var(--visual-h);
-	}
-
-	/* Beside the title rather than on the fold, so it reads shut as well as
-	   open — a card worth flagging as interactive before there's any reason
-	   to open it. Its own fixed colour, not the dimmed grey a shut title
-	   wears, so it stays legible either way. */
+	/* Beside the title, so a live project is flagged on the index itself
+	   rather than only once its case study is open. */
 	.callout {
 		display: inline-flex;
 		align-items: center;
@@ -795,46 +452,15 @@
 		box-shadow: 0 0 0.5rem currentcolor;
 	}
 
-	/* A real screenshot rather than a live embed: same box, contained rather
-	   than cropped so the chart's own axes and panels stay whole whatever
-	   shape the box ends up. */
-	.screenshot {
-		display: block;
-		width: 100%;
-		height: var(--visual-h);
-		object-fit: contain;
-		border: 1px solid var(--color-border);
-		border-radius: 0.35rem;
-		background: #fff;
-	}
-
 	/* --- narrow ---------------------------------------------------------- */
 
-	/* Three facts across will not divide a laptop's half-width. */
-	@media (max-width: 60rem) {
-		.facts {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-		}
-	}
-
 	@media (max-width: 40rem) {
-		.head-row,
-		.split,
-		.facts {
+		.head-row {
 			grid-template-columns: minmax(0, 1fr);
 		}
 
 		.summary {
 			padding-top: 0;
-		}
-	}
-
-	/* A click still opens the row — it just snaps open rather than growing
-	   into place. */
-	@media (prefers-reduced-motion: reduce) {
-		.fold,
-		.head h3 {
-			transition: none;
 		}
 	}
 </style>

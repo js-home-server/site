@@ -92,6 +92,18 @@
 	--gutter: clamp(1rem, 3vw, 1.5rem);
 	--nav-pad-top: clamp(1.75rem, 4vh, 2.5rem);
 
+	/* Three tiers, not five: 0.2–0.4rem was drift, not intent — nothing in the
+	   codebase ever justified 0.3 over 0.35 over 0.4 for a bordered box. Every
+	   inline chip and pill-sized control reads as --radius-control; every
+	   bordered card, panel or code block reads as --radius-panel, the one
+	   that was already the majority value; a page-level surface keeps its own
+	   --radius (below), which now falls back to --radius-section by name
+	   instead of a bare literal. Fully round pills (999px) and circles (50%)
+	   are a different shape, not another tier, and are untouched. */
+	--radius-control: 0.3rem;
+	--radius-panel: 0.35rem;
+	--radius-section: 0.6rem;
+
 	/* A box that holds something, lifted just off the page it stands on. Mixed
 	   from the foreground rather than written as a colour, so it is the same
 	   slight lift either side of the theme and cannot drift from the two surfaces
@@ -226,7 +238,7 @@
 
 	padding: var(--pad);
 	border: 1px solid var(--color-border);
-	border-radius: var(--radius, 0.6rem);
+	border-radius: var(--radius, var(--radius-section));
 	background: var(--surface);
 }
 

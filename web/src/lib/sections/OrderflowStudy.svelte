@@ -1,9 +1,8 @@
 <script>
 	import Icon from '$lib/components/Icon.svelte';
 	import Logo from '$lib/components/Logo.svelte';
+	import OrderflowEquityChart from '$lib/components/OrderflowEquityChart.svelte';
 	import Placeholder from '$lib/components/Placeholder.svelte';
-	import { chart, VIEW } from '$lib/chart.js';
-	import equity from '$lib/data/xsflow-equity.json';
 
 	/* The combined study for the crypto work. It was two cards — the collector
 	   and the research that reads it — and they were never two projects: one
@@ -200,33 +199,6 @@
 		{ label: 'Processor draw', value: '3.1 W', note: 'package plus DRAM, 7-day average by RAPL, 14.3 W at peak' },
 		{ label: 'Cloud bill', value: '£0', note: 'one second-hand desktop, and an NVMe with 32 days of tape headroom if compaction ever stopped' }
 	];
-
-	/* --- the equity curve ------------------------------------------------- */
-
-	/* The backtest's own hourly net P&L, compounded and sampled weekly (340
-	   points, ~4 KB) rather than redrawn from the report's summary numbers —
-	   the curve and the table below it come from the same series. */
-	const WEEK = 7 * 86400;
-	const points = (key) => equity[key].map((v, i) => [equity.start + i * WEEK, Math.log10(v)]);
-
-	/* Log, and said so under the chart. A compounding curve on a linear axis is
-	   a picture of the last year and a flat line for the first five. */
-	const DOMAIN = [0, Math.log10(20)];
-	const TICKS = [1, 2, 5, 10, 20];
-
-	/* Dashed as well as grey for the first book, solid violet for the one that
-	   replaced it: the two curves sit on top of each other for four of the six
-	   years, and colour alone would not separate them for everyone. */
-	const curves = [
-		{ id: 'xsflow', label: 'XSFLOW', tone: 'var(--text-faint)', dashed: true, d: chart(points('xsflow'), DOMAIN) },
-		{ id: 'xsflowR', label: 'XSFLOW-R', tone: 'var(--ink-violet)', d: chart(points('xsflowR'), DOMAIN) }
-	];
-
-	const span = { from: equity.start, to: equity.start + (equity.xsflow.length - 1) * WEEK };
-	const YEARS = [2021, 2022, 2023, 2024, 2025, 2026];
-	const atYear = (y) => ((Date.UTC(y, 0, 1) / 1000 - span.from) / (span.to - span.from)) * 100;
-	const atValue = (v) =>
-		(1 - (Math.log10(v) - DOMAIN[0]) / (DOMAIN[1] - DOMAIN[0])) * 100;
 
 	/* --- the live tape ---------------------------------------------------- */
 
@@ -621,48 +593,7 @@
 		)}
 
 		<div class="research">
-			<div class="chart">
-				<div class="plot">
-					<div class="ygutter">
-						{#each TICKS as tick (tick)}
-							<span class="ytick" style="top: {atValue(tick)}%">{tick}×</span>
-						{/each}
-					</div>
-
-					<div class="canvas">
-						{#each TICKS as tick (tick)}
-							<i class="gridline" style="top: {atValue(tick)}%"></i>
-						{/each}
-						{#each YEARS as year (year)}
-							<i class="vline" style="left: {atYear(year)}%"></i>
-						{/each}
-
-						<svg viewBox="0 0 {VIEW.width} {VIEW.height}" preserveAspectRatio="none" aria-hidden="true">
-							{#each curves as curve (curve.id)}
-								<path
-									d={curve.d}
-									class:dashed={curve.dashed}
-									style:color={curve.tone}
-									vector-effect="non-scaling-stroke"
-								/>
-							{/each}
-						</svg>
-					</div>
-
-					<div class="xaxis">
-						{#each YEARS as year (year)}
-							<span style="left: {atYear(year)}%">{year}</span>
-						{/each}
-					</div>
-				</div>
-
-				<div class="key">
-					{#each curves as curve (curve.id)}
-						<span style:color={curve.tone}><i class:dashed={curve.dashed}></i>{curve.label}</span>
-					{/each}
-					<span class="note">equity, log scale · weekly · net of costs at $10m</span>
-				</div>
-			</div>
+			<OrderflowEquityChart />
 
 			<table class="results">
 				<thead>
@@ -786,7 +717,7 @@
 		gap: 0.9rem;
 		padding: 1rem 1.15rem;
 		border: 1px solid var(--color-border);
-		border-radius: 0.4rem;
+		border-radius: var(--radius-panel);
 		background: #fff;
 	}
 
@@ -909,7 +840,7 @@
 		gap: 0.15rem;
 		padding: 0.6rem 0.7rem;
 		border: 1px solid var(--color-border);
-		border-radius: 0.3rem;
+		border-radius: var(--radius-control);
 	}
 
 	.figure strong {
@@ -949,7 +880,7 @@
 		min-width: 8.5rem;
 		padding: 0.7rem 0.75rem;
 		border: 1px solid var(--color-border);
-		border-radius: 0.35rem;
+		border-radius: var(--radius-panel);
 		background: color-mix(in srgb, var(--color-foreground) 2%, #fff);
 	}
 
@@ -1049,7 +980,7 @@
 		align-content: start;
 		gap: 0.55rem;
 		padding: 0.85rem;
-		border-radius: 0.35rem;
+		border-radius: var(--radius-panel);
 		background: var(--color-background);
 	}
 
@@ -1139,7 +1070,7 @@
 		gap: 0.45rem;
 		padding: 0.8rem 0.9rem;
 		border: 1px solid var(--color-border);
-		border-radius: 0.35rem;
+		border-radius: var(--radius-panel);
 	}
 
 	.card-item strong {
@@ -1193,7 +1124,7 @@
 		width: 100%;
 		height: auto;
 		border: 1px solid var(--color-border);
-		border-radius: 0.35rem;
+		border-radius: var(--radius-panel);
 	}
 
 	.shots figcaption {
@@ -1211,116 +1142,6 @@
 		grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
 		gap: 1.25rem;
 		align-items: start;
-	}
-
-	.chart {
-		display: grid;
-		gap: 0.5rem;
-	}
-
-	.plot {
-		display: grid;
-		grid-template-columns: 1.9rem minmax(0, 1fr);
-		grid-template-rows: minmax(0, 1fr) auto;
-		gap: 0.25rem;
-	}
-
-	/* The scale in its own gutter, so no label is ever painted over the curve
-	   it belongs to — the same arrangement the dashboard's own traces use. */
-	.ygutter {
-		position: relative;
-		grid-row: 1;
-	}
-
-	.ytick {
-		position: absolute;
-		right: 0;
-		transform: translateY(-50%);
-		color: var(--text-faint);
-		font-family: var(--font-mono);
-		font-size: 0.52rem;
-	}
-
-	.canvas {
-		position: relative;
-		grid-row: 1;
-		height: 13rem;
-	}
-
-	.canvas svg {
-		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
-	}
-
-	.canvas path {
-		fill: none;
-		stroke: currentcolor;
-		stroke-width: 1.6px;
-		stroke-linejoin: round;
-	}
-
-	.canvas path.dashed {
-		stroke-width: 1.2px;
-		stroke-dasharray: 4 3;
-	}
-
-	.gridline,
-	.vline {
-		position: absolute;
-		background: color-mix(in srgb, var(--color-border) 65%, transparent);
-	}
-
-	.gridline {
-		left: 0;
-		right: 0;
-		height: 1px;
-	}
-
-	.vline {
-		top: 0;
-		bottom: 0;
-		width: 1px;
-	}
-
-	.xaxis {
-		position: relative;
-		grid-column: 2;
-		height: 0.8rem;
-	}
-
-	.xaxis span {
-		position: absolute;
-		transform: translateX(-50%);
-		color: var(--text-faint);
-		font-family: var(--font-mono);
-		font-size: 0.52rem;
-	}
-
-	.key {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 0.35rem 1rem;
-		padding-left: 2.15rem;
-		font-family: var(--font-mono);
-		font-size: 0.58rem;
-	}
-
-	.key span {
-		display: flex;
-		align-items: center;
-		gap: 0.35rem;
-	}
-
-	.key i {
-		width: 0.9rem;
-		border-top: 2px solid currentcolor;
-	}
-
-	.key i.dashed {
-		border-top-style: dashed;
 	}
 
 	.results .now {
@@ -1428,7 +1249,7 @@
 	.contract {
 		padding: 0.85rem 0.95rem;
 		border: 1px solid var(--color-border);
-		border-radius: 0.35rem;
+		border-radius: var(--radius-panel);
 		background: color-mix(in srgb, var(--color-foreground) 2%, #fff);
 	}
 
@@ -1505,7 +1326,7 @@
 		gap: 0.35rem;
 		padding: 0.8rem 0.9rem;
 		border: 1px solid var(--color-border);
-		border-radius: 0.35rem;
+		border-radius: var(--radius-panel);
 	}
 
 	.scope {
@@ -1530,7 +1351,7 @@
 		gap: 0.2rem;
 		padding: 0.7rem 0.8rem;
 		border: 1px solid var(--color-border);
-		border-radius: 0.35rem;
+		border-radius: var(--radius-panel);
 	}
 
 	.cost strong {
@@ -1567,7 +1388,7 @@
 		gap: 0.4rem;
 		padding: 0.8rem 0.9rem;
 		border: 1px solid var(--color-border);
-		border-radius: 0.35rem;
+		border-radius: var(--radius-panel);
 	}
 
 	.reject-head {
@@ -1642,10 +1463,6 @@
 		   shape stays. */
 		.day-label {
 			display: none;
-		}
-
-		.canvas {
-			height: 10rem;
 		}
 	}
 </style>
