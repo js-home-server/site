@@ -525,26 +525,13 @@
 </div>
 
 <style>
-	/* The study's own stack: one box a named section, in the same rhythm the
-	   other three studies are read in. --ink is the shared light-ground amber
-	   (app.css) under its old local name: .kicker (below) was reading an --ink
-	   that nothing here ever defined, which resolves to inherited black rather
-	   than a broken colour — legible by accident, not by design. */
+	/* .study, .box, .lede, .kicker, .thesis, .prose, .foot-note and .arrow are
+	   shared across all four studies (app.css) — this file only keeps its own
+	   accent and the two things its layout genuinely does differently: ledes
+	   stacked with a bottom margin, and a stage with no card of its own since
+	   it already sits inside .flow. */
 	.study {
 		--ink: var(--amber-ink);
-
-		display: grid;
-		gap: 0.75rem;
-	}
-
-	/* Same vocabulary as the generic study's .box (Projects.svelte) — a white
-	   card on the section's light ground — restated here because that one is
-	   scoped to its own component. */
-	.box {
-		padding: 1rem 1.15rem;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-panel);
-		background: #fff;
 	}
 
 	/* What the section is on the left, what it is made of on the right. The
@@ -557,9 +544,9 @@
 		align-items: start;
 	}
 
+	/* Stacked rather than the other studies' single lede: each section here
+	   opens with one of several. */
 	.lede {
-		display: grid;
-		gap: 0.35rem;
 		margin-bottom: 0.7rem;
 	}
 
@@ -567,42 +554,8 @@
 		margin-bottom: 0;
 	}
 
-	/* A word rather than a number: this is a datasheet, and the sections are
-	   its headings. */
-	.kicker {
-		color: var(--ink);
-		font-family: var(--font-mono);
-		font-size: var(--fs-3xs);
-		font-weight: 600;
-		letter-spacing: 0.2em;
-		text-transform: uppercase;
-	}
-
-	.lede h4 {
-		margin: 0;
-		font-size: var(--fs-base);
-		font-weight: 700;
-		letter-spacing: -0.01em;
-	}
-
-	.prose {
-		margin: 0;
-		max-width: 62ch;
-		color: var(--text-dim);
-		font-size: var(--fs-sm);
-		line-height: 1.65;
-	}
-
 	.prose + .foot-note {
 		margin-top: 0.55rem;
-	}
-
-	.foot-note {
-		margin: 0;
-		color: var(--text-faint);
-		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
-		line-height: 1.6;
 	}
 
 	code {
@@ -643,14 +596,6 @@
 	.intro {
 		display: grid;
 		gap: 0.7rem;
-	}
-
-	.thesis {
-		margin: 0;
-		max-width: 62ch;
-		font-size: var(--fs-base);
-		font-weight: 500;
-		line-height: 1.55;
 	}
 
 	/* Host, disks, OS — the header of a datasheet, read across. */
@@ -818,19 +763,20 @@
 		overflow-x: auto;
 	}
 
+	/* Nested inside .flow, which is already the card — a second border here
+	   would be a box drawn inside a box, so this resets the shared .stage
+	   back to plain, centred text. */
 	.stage {
-		display: grid;
+		flex: initial;
 		justify-items: center;
-		gap: 0.3rem;
 		min-width: 4.5rem;
+		padding: 0;
+		border: none;
+		background: none;
 		text-align: center;
 	}
 
 	.stage strong {
-		color: var(--color-foreground);
-		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
-		font-weight: 600;
 		line-height: 1.35;
 	}
 
@@ -846,14 +792,6 @@
 	.stage .mark {
 		color: inherit;
 		font-size: var(--fs-lg);
-	}
-
-	.arrow {
-		align-self: center;
-		flex: none;
-		color: var(--text-faint);
-		font-size: var(--fs-sm);
-		line-height: 1;
 	}
 
 	/* The one thing about the path worth saying in words, beside it rather than

@@ -386,20 +386,10 @@ test_html_proportions();`}</code></pre>
 
 <style>
 	/* The study wears the program's own clothes: sections named as flags, the
-	   page kept grey, and the renders the only colour in it. */
-	.study {
-		display: grid;
-		gap: 0.75rem;
-	}
-
-	.box {
-		display: grid;
-		gap: 0.9rem;
-		padding: 1rem 1.15rem;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-panel);
-		background: #fff;
-	}
+	   page kept grey, and the renders the only colour in it. .study, .box,
+	   .lede, .thesis, .prose, .foot-note, .arrow and .stage's card are shared
+	   across all four studies (app.css) — nothing here needs its own accent,
+	   so .study carries no local rule at all. */
 
 	.row {
 		grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
@@ -413,18 +403,6 @@ test_html_proportions();`}</code></pre>
 		gap: 0.6rem;
 	}
 
-	.lede {
-		display: grid;
-		gap: 0.35rem;
-	}
-
-	.lede h4 {
-		margin: 0;
-		font-size: var(--fs-base);
-		font-weight: 700;
-		letter-spacing: -0.01em;
-	}
-
 	/* The section's name, written as the flag it is. */
 	.flag {
 		justify-self: start;
@@ -435,22 +413,6 @@ test_html_proportions();`}</code></pre>
 		letter-spacing: 0.04em;
 	}
 
-	.prose {
-		margin: 0;
-		max-width: 62ch;
-		color: var(--text-dim);
-		font-size: var(--fs-sm);
-		line-height: 1.65;
-	}
-
-	.foot-note {
-		margin: 0;
-		color: var(--text-faint);
-		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
-		line-height: 1.6;
-	}
-
 	.note {
 		display: block;
 		color: var(--text-faint);
@@ -459,8 +421,8 @@ test_html_proportions();`}</code></pre>
 		line-height: 1.55;
 	}
 
-	.prose code,
-	.foot-note code,
+	/* Same treatment as the shared .prose/.foot-note code (app.css), extended
+	   to the other places this study sets code inline. */
 	figcaption code,
 	.module code,
 	.quant code {
@@ -499,14 +461,6 @@ test_html_proportions();`}</code></pre>
 	.intro {
 		display: grid;
 		gap: 0.7rem;
-	}
-
-	.thesis {
-		margin: 0;
-		max-width: 62ch;
-		font-size: var(--fs-base);
-		font-weight: 500;
-		line-height: 1.55;
 	}
 
 	.install {
@@ -632,23 +586,11 @@ test_html_proportions();`}</code></pre>
 		overflow-x: auto;
 	}
 
+	/* Tighter than the shared card: this pipeline runs more stages in the
+	   same row. */
 	.stage {
-		display: grid;
-		align-content: start;
 		gap: 0.2rem;
-		flex: 1;
-		min-width: 6.5rem;
 		padding: 0.6rem 0.7rem;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-panel);
-		background: color-mix(in srgb, var(--color-foreground) 2%, #fff);
-	}
-
-	.stage strong {
-		color: var(--color-foreground);
-		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
-		font-weight: 600;
 	}
 
 	.stage span {
@@ -656,14 +598,6 @@ test_html_proportions();`}</code></pre>
 		font-family: var(--font-mono);
 		font-size: var(--fs-3xs);
 		line-height: 1.45;
-	}
-
-	.arrow {
-		align-self: center;
-		flex: none;
-		color: var(--text-faint);
-		font-size: var(--fs-sm);
-		line-height: 1;
 	}
 
 	/* One line per translation unit: the pipeline above, with addresses. */
