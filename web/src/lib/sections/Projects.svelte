@@ -194,7 +194,7 @@
 	.blurb {
 		margin: 0;
 		max-width: 56ch;
-		color: var(--text-dim);
+		color: var(--color-foreground);
 		font-size: var(--fs-base);
 		line-height: 1.75;
 	}
