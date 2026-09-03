@@ -46,7 +46,7 @@
 		border-radius: 999px;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: 0.66rem;
+		font-size: var(--fs-xs);
 		letter-spacing: 0.02em;
 	}
 

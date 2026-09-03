@@ -41,7 +41,7 @@
 		margin-bottom: 1.25rem;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: 0.72rem;
+		font-size: var(--fs-xs);
 		text-decoration: none;
 	}
 

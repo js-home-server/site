@@ -119,7 +119,7 @@
 	.mono {
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: 0.72rem;
+		font-size: var(--fs-xs);
 	}
 
 	/* Same mono note as the stamp above it, stood off by a line and lit on hover
@@ -151,7 +151,7 @@
 
 	.rail-box .figure {
 		margin: 0;
-		font-size: 1.4rem;
+		font-size: var(--fs-lg);
 	}
 
 	.status .verdict {
@@ -177,7 +177,7 @@
 	.status .note {
 		margin: 0.35rem 0 0;
 		color: var(--text-dim);
-		font-size: 0.72rem;
+		font-size: var(--fs-xs);
 	}
 
 	.uptime .unit {
@@ -190,7 +190,7 @@
 	.uptime .stats {
 		margin: 0.3rem 0 0.7rem;
 		color: var(--text-dim);
-		font-size: 0.6rem;
+		font-size: var(--fs-2xs);
 		font-weight: 500;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;

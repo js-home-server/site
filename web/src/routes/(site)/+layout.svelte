@@ -159,7 +159,7 @@
 		position: relative;
 		padding-bottom: var(--nav-underhang);
 		color: var(--text-faint);
-		font-size: 1rem;
+		font-size: var(--fs-base);
 		line-height: var(--nav-line-height);
 		letter-spacing: 0.22em;
 		text-decoration: none;
@@ -208,7 +208,7 @@
 		}
 
 		a {
-			font-size: 0.78rem;
+			font-size: var(--fs-sm);
 			letter-spacing: 0.12em;
 		}
 	}

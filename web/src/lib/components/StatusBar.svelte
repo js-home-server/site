@@ -317,14 +317,14 @@
 	.updated .mono {
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: 0.68rem;
+		font-size: var(--fs-xs);
 	}
 
 	.lede a {
 		margin-top: auto;
 		color: var(--mint);
 		font-family: var(--font-mono);
-		font-size: 0.62rem;
+		font-size: var(--fs-2xs);
 		font-weight: 500;
 		letter-spacing: 0.12em;
 		text-decoration: none;
@@ -421,7 +421,7 @@
 	   °C and ms are unit symbols and are wrong in any other case. */
 	.stats {
 		color: var(--text-dim);
-		font-size: 0.62rem;
+		font-size: var(--fs-2xs);
 		font-weight: 500;
 		letter-spacing: 0.1em;
 	}
@@ -458,7 +458,7 @@
 		}
 
 		.stats {
-			font-size: 0.58rem;
+			font-size: var(--fs-2xs);
 			letter-spacing: 0.05em;
 		}
 

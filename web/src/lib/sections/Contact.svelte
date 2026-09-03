@@ -240,8 +240,9 @@
 
 	.lede {
 		margin: 0;
+		max-width: 62ch;
 		color: var(--text-dim);
-		font-size: 0.88rem;
+		font-size: var(--fs-base);
 		line-height: 1.6;
 	}
 
@@ -258,7 +259,7 @@
 		margin: 0;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: 0.72rem;
+		font-size: var(--fs-xs);
 		letter-spacing: 0.02em;
 	}
 
@@ -300,7 +301,7 @@
 	a.value {
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
-		font-size: 0.85rem;
+		font-size: var(--fs-sm);
 		text-decoration: none;
 	}
 
@@ -367,7 +368,7 @@
 	label {
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: 0.68rem;
+		font-size: var(--fs-xs);
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 	}
@@ -380,7 +381,7 @@
 		color: var(--color-foreground);
 		font: inherit;
 		font-family: var(--font-mono);
-		font-size: 0.82rem;
+		font-size: var(--fs-sm);
 		padding: 0.6rem 0.7rem;
 	}
 
@@ -421,7 +422,7 @@
 		background: none;
 		color: var(--mint);
 		font-family: var(--font-mono);
-		font-size: 0.72rem;
+		font-size: var(--fs-xs);
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
 		padding: 0.7rem 1.1rem;
@@ -442,7 +443,7 @@
 	.feedback {
 		margin: 0;
 		font-family: var(--font-mono);
-		font-size: 0.75rem;
+		font-size: var(--fs-sm);
 	}
 
 	.feedback.ok {

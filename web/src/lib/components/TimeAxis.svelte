@@ -25,7 +25,7 @@
 		display: flex;
 		justify-content: space-between;
 		color: var(--text-faint);
-		font-size: 0.55rem;
+		font-size: var(--fs-3xs);
 		font-weight: 500;
 		letter-spacing: 0.12em;
 		line-height: 1;

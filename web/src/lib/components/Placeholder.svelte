@@ -27,7 +27,7 @@
 	span {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.68rem;
+		font-size: var(--fs-xs);
 		letter-spacing: 0.1em;
 	}
 </style>

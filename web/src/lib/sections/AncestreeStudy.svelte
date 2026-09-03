@@ -510,26 +510,14 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 
 <style>
 	/* A datasheet rather than a case study: a spec strip, then sections named
-	   in a rail down the left, then the measurements. */
+	   in a rail down the left, then the measurements. .study, .box, .lede,
+	   .kicker, .thesis, .prose and .foot-note are shared across all four
+	   studies (app.css) — this file only keeps its own accent. */
 	.study {
-		/* The study's own accent, dark enough to read on the white card — the
-		   site's amber is set for a black page. */
-		/* The shared light-ground amber (app.css) under this file's old local
-		   name — was its own one-off mix before, at 3.17:1 on this ground,
-		   which clears 3:1 but not the 4.5:1 the kicker's small text needs. */
+		/* Dark enough to read on the white card — the site's amber is set for
+		   a black page. Clears 4.5:1 on this ground, which plain --amber
+		   (3.17:1) did not. */
 		--ink: var(--amber-ink);
-
-		display: grid;
-		gap: 0.75rem;
-	}
-
-	.box {
-		display: grid;
-		gap: 0.9rem;
-		padding: 1rem 1.15rem;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-panel);
-		background: #fff;
 	}
 
 	.row {
@@ -544,58 +532,12 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		gap: 0.6rem;
 	}
 
-	.lede {
-		display: grid;
-		gap: 0.35rem;
-	}
-
-	.lede h4 {
-		margin: 0;
-		font-size: 0.95rem;
-		font-weight: 700;
-		letter-spacing: -0.01em;
-	}
-
-	/* The rail's word. A datasheet's sections are named, not numbered. */
-	.kicker {
-		color: var(--ink);
-		font-family: var(--font-mono);
-		font-size: 0.55rem;
-		font-weight: 600;
-		letter-spacing: 0.2em;
-		text-transform: uppercase;
-	}
-
-	.prose {
-		margin: 0;
-		color: var(--text-dim);
-		font-family: var(--font-mono);
-		font-size: 0.68rem;
-		line-height: 1.65;
-	}
-
-	.foot-note {
-		margin: 0;
-		color: var(--text-faint);
-		font-family: var(--font-mono);
-		font-size: 0.62rem;
-		line-height: 1.6;
-	}
-
 	.note {
 		display: block;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.58rem;
+		font-size: var(--fs-2xs);
 		line-height: 1.5;
-	}
-
-	.prose code,
-	.foot-note code {
-		padding: 0.05rem 0.25rem;
-		border-radius: var(--radius-control);
-		background: color-mix(in srgb, var(--color-foreground) 5%, transparent);
-		font-size: 0.95em;
 	}
 
 	.mark {
@@ -604,7 +546,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		/* -ink: this icon is on the study's light ground and plain --amber
 		   measures 1.75:1 there. */
 		color: var(--amber-ink);
-		font-size: 0.9rem;
+		font-size: var(--fs-base);
 		line-height: 1;
 	}
 
@@ -621,18 +563,6 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		gap: 0.7rem;
 	}
 
-	.thesis {
-		margin: 0;
-		max-width: 62ch;
-		font-size: 0.92rem;
-		font-weight: 500;
-		line-height: 1.55;
-	}
-
-	.thesis code {
-		font-size: 0.9em;
-	}
-
 	/* The one line a reader might actually run. */
 	.install {
 		justify-self: start;
@@ -642,7 +572,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		background: color-mix(in srgb, var(--color-foreground) 3%, #fff);
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
-		font-size: 0.72rem;
+		font-size: var(--fs-xs);
 	}
 
 	/* Version, Python, dependencies — the header of a datasheet, read across. */
@@ -661,7 +591,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 	.spec dt {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.52rem;
+		font-size: var(--fs-3xs);
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
 	}
@@ -670,7 +600,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		margin: 0;
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
-		font-size: 0.68rem;
+		font-size: var(--fs-xs);
 		font-weight: 600;
 	}
 
@@ -690,7 +620,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 
 	.figure strong {
 		color: var(--color-foreground);
-		font-size: 1.3rem;
+		font-size: var(--fs-lg);
 		font-weight: 700;
 		letter-spacing: -0.02em;
 		line-height: 1.1;
@@ -717,7 +647,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		background: var(--color-background);
 		color: #d6d5cf;
 		font-family: var(--font-mono);
-		font-size: 0.64rem;
+		font-size: var(--fs-2xs);
 		line-height: 1.75;
 		tab-size: 4;
 	}
@@ -732,7 +662,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 	.bars-head {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.55rem;
+		font-size: var(--fs-3xs);
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
 	}
@@ -749,7 +679,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 	.bar-name {
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
-		font-size: 0.66rem;
+		font-size: var(--fs-xs);
 		font-weight: 600;
 	}
 
@@ -770,7 +700,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 	.bar-value {
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
-		font-size: 0.62rem;
+		font-size: var(--fs-2xs);
 		text-align: right;
 	}
 
@@ -778,7 +708,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		grid-column: 2 / -1;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.58rem;
+		font-size: var(--fs-2xs);
 		line-height: 1.5;
 	}
 
@@ -810,7 +740,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		border-radius: 50%;
 		color: var(--ink);
 		font-family: var(--font-mono);
-		font-size: 0.6rem;
+		font-size: var(--fs-2xs);
 	}
 
 	.layer-body {
@@ -820,14 +750,14 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 
 	.layer-body strong {
 		color: var(--color-foreground);
-		font-size: 0.78rem;
+		font-size: var(--fs-sm);
 		font-weight: 700;
 	}
 
 	.scope {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.56rem;
+		font-size: var(--fs-3xs);
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 	}
@@ -842,7 +772,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 	.layer-figure strong {
 		color: var(--ink);
 		font-family: var(--font-mono);
-		font-size: 0.85rem;
+		font-size: var(--fs-sm);
 		font-weight: 700;
 	}
 
@@ -863,7 +793,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 
 	.spread h5 {
 		margin: 0;
-		font-size: 0.78rem;
+		font-size: var(--fs-sm);
 		font-weight: 700;
 	}
 
@@ -883,7 +813,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 	.pattern-value {
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: 0.6rem;
+		font-size: var(--fs-2xs);
 	}
 
 	.pattern-value {
@@ -928,7 +858,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 
 	.cost strong {
 		color: var(--color-foreground);
-		font-size: 0.76rem;
+		font-size: var(--fs-sm);
 		font-weight: 700;
 	}
 
@@ -937,7 +867,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		margin-top: 0.3rem;
 		border-collapse: collapse;
 		font-family: var(--font-mono);
-		font-size: 0.62rem;
+		font-size: var(--fs-2xs);
 	}
 
 	.cost th,
@@ -983,7 +913,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 
 	.card-item strong {
 		color: var(--color-foreground);
-		font-size: 0.74rem;
+		font-size: var(--fs-xs);
 		font-weight: 700;
 		line-height: 1.4;
 	}
@@ -1001,7 +931,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		padding-left: 0.85rem;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: 0.62rem;
+		font-size: var(--fs-2xs);
 		line-height: 1.55;
 	}
 
@@ -1042,7 +972,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 
 	.defect-head strong {
 		color: var(--color-foreground);
-		font-size: 0.74rem;
+		font-size: var(--fs-xs);
 		font-weight: 700;
 		line-height: 1.4;
 	}
@@ -1056,7 +986,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		padding: 0.15rem 0.5rem;
 		border-radius: 999px;
 		font-family: var(--font-mono);
-		font-size: 0.52rem;
+		font-size: var(--fs-3xs);
 		font-weight: 600;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
@@ -1083,7 +1013,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		width: 100%;
 		border-collapse: collapse;
 		font-family: var(--font-mono);
-		font-size: 0.62rem;
+		font-size: var(--fs-2xs);
 	}
 
 	.rewrite th,
@@ -1097,7 +1027,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 	.rewrite thead th {
 		padding-top: 0;
 		color: var(--text-faint);
-		font-size: 0.55rem;
+		font-size: var(--fs-3xs);
 		font-weight: 500;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
@@ -1140,7 +1070,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		align-items: baseline;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: 0.64rem;
+		font-size: var(--fs-2xs);
 		line-height: 1.6;
 	}
 

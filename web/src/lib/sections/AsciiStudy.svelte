@@ -420,7 +420,7 @@ test_html_proportions();`}</code></pre>
 
 	.lede h4 {
 		margin: 0;
-		font-size: 0.95rem;
+		font-size: var(--fs-base);
 		font-weight: 700;
 		letter-spacing: -0.01em;
 	}
@@ -430,16 +430,16 @@ test_html_proportions();`}</code></pre>
 		justify-self: start;
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
-		font-size: 0.6rem;
+		font-size: var(--fs-2xs);
 		font-weight: 600;
 		letter-spacing: 0.04em;
 	}
 
 	.prose {
 		margin: 0;
+		max-width: 62ch;
 		color: var(--text-dim);
-		font-family: var(--font-mono);
-		font-size: 0.68rem;
+		font-size: var(--fs-sm);
 		line-height: 1.65;
 	}
 
@@ -447,7 +447,7 @@ test_html_proportions();`}</code></pre>
 		margin: 0;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.62rem;
+		font-size: var(--fs-2xs);
 		line-height: 1.6;
 	}
 
@@ -455,7 +455,7 @@ test_html_proportions();`}</code></pre>
 		display: block;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.58rem;
+		font-size: var(--fs-2xs);
 		line-height: 1.55;
 	}
 
@@ -476,14 +476,14 @@ test_html_proportions();`}</code></pre>
 		/* -ink: this icon is on the study's light ground and plain --amber
 		   measures 1.75:1 there. */
 		color: var(--amber-ink);
-		font-size: 0.9rem;
+		font-size: var(--fs-base);
 		line-height: 1;
 	}
 
 	.scope {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.56rem;
+		font-size: var(--fs-3xs);
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 	}
@@ -504,7 +504,7 @@ test_html_proportions();`}</code></pre>
 	.thesis {
 		margin: 0;
 		max-width: 62ch;
-		font-size: 0.92rem;
+		font-size: var(--fs-base);
 		font-weight: 500;
 		line-height: 1.55;
 	}
@@ -516,7 +516,7 @@ test_html_proportions();`}</code></pre>
 		background: var(--color-background);
 		color: #d6d5cf;
 		font-family: var(--font-mono);
-		font-size: 0.68rem;
+		font-size: var(--fs-xs);
 	}
 
 	.spec {
@@ -534,7 +534,7 @@ test_html_proportions();`}</code></pre>
 	.spec dt {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.52rem;
+		font-size: var(--fs-3xs);
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
 	}
@@ -543,7 +543,7 @@ test_html_proportions();`}</code></pre>
 		margin: 0;
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
-		font-size: 0.66rem;
+		font-size: var(--fs-xs);
 		font-weight: 600;
 	}
 
@@ -565,7 +565,7 @@ test_html_proportions();`}</code></pre>
 		margin-top: 0.4rem;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.58rem;
+		font-size: var(--fs-2xs);
 		line-height: 1.5;
 	}
 
@@ -604,21 +604,21 @@ test_html_proportions();`}</code></pre>
 	.render figcaption strong {
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
-		font-size: 0.72rem;
+		font-size: var(--fs-xs);
 		font-weight: 700;
 	}
 
 	.rule {
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: 0.6rem;
+		font-size: var(--fs-2xs);
 	}
 
 	.render figcaption code {
 		justify-self: start;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: 0.56rem;
+		font-size: var(--fs-3xs);
 		line-height: 1.5;
 	}
 
@@ -647,14 +647,14 @@ test_html_proportions();`}</code></pre>
 	.stage strong {
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
-		font-size: 0.62rem;
+		font-size: var(--fs-2xs);
 		font-weight: 600;
 	}
 
 	.stage span {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.55rem;
+		font-size: var(--fs-3xs);
 		line-height: 1.45;
 	}
 
@@ -662,7 +662,7 @@ test_html_proportions();`}</code></pre>
 		align-self: center;
 		flex: none;
 		color: var(--text-faint);
-		font-size: 0.75rem;
+		font-size: var(--fs-sm);
 		line-height: 1;
 	}
 
@@ -685,7 +685,7 @@ test_html_proportions();`}</code></pre>
 	.module span {
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: 0.6rem;
+		font-size: var(--fs-2xs);
 	}
 
 	/* --- code ------------------------------------------------------------- */
@@ -698,7 +698,7 @@ test_html_proportions();`}</code></pre>
 		background: var(--color-background);
 		color: #d6d5cf;
 		font-family: var(--font-mono);
-		font-size: 0.62rem;
+		font-size: var(--fs-2xs);
 		line-height: 1.75;
 	}
 
@@ -722,7 +722,7 @@ test_html_proportions();`}</code></pre>
 	.aspect strong {
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
-		font-size: 1rem;
+		font-size: var(--fs-base);
 		font-weight: 700;
 	}
 
@@ -732,7 +732,7 @@ test_html_proportions();`}</code></pre>
 		width: 100%;
 		border-collapse: collapse;
 		font-family: var(--font-mono);
-		font-size: 0.62rem;
+		font-size: var(--fs-2xs);
 	}
 
 	.quant th,
@@ -745,7 +745,7 @@ test_html_proportions();`}</code></pre>
 	.quant thead th {
 		padding-top: 0;
 		color: var(--text-faint);
-		font-size: 0.55rem;
+		font-size: var(--fs-3xs);
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 		border-bottom: 1px solid var(--color-border);
@@ -795,7 +795,7 @@ test_html_proportions();`}</code></pre>
 	.build dt {
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
-		font-size: 0.66rem;
+		font-size: var(--fs-xs);
 		font-weight: 600;
 	}
 
@@ -803,7 +803,7 @@ test_html_proportions();`}</code></pre>
 		margin: 0;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: 0.63rem;
+		font-size: var(--fs-2xs);
 		line-height: 1.6;
 	}
 
@@ -824,7 +824,7 @@ test_html_proportions();`}</code></pre>
 		align-items: baseline;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: 0.64rem;
+		font-size: var(--fs-2xs);
 		line-height: 1.6;
 	}
 

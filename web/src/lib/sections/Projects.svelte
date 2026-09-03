@@ -213,7 +213,7 @@
 
 	.card h3 {
 		margin: 0;
-		font-size: 1.05rem;
+		font-size: var(--fs-lg);
 		font-weight: 700;
 		letter-spacing: -0.01em;
 	}
@@ -230,10 +230,9 @@
 	   of prose can be read across. */
 	.blurb {
 		margin: 0;
-		max-width: 84ch;
+		max-width: 62ch;
 		color: var(--text-dim);
-		font-family: var(--font-mono);
-		font-size: 0.72rem;
+		font-size: var(--fs-sm);
 		line-height: 1.7;
 	}
 
@@ -283,7 +282,7 @@
 	.links a {
 		color: currentcolor;
 		font-family: var(--font-mono);
-		font-size: 0.75rem;
+		font-size: var(--fs-sm);
 		text-decoration: none;
 	}
 
@@ -336,7 +335,7 @@
 	.year {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.8rem;
+		font-size: var(--fs-sm);
 	}
 
 	/* The sole way to open a card: a pill rather than the bare year-and-mark
@@ -349,7 +348,7 @@
 		padding: 0.35rem 0.8rem 0.35rem 0.9rem;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: 0.68rem;
+		font-size: var(--fs-xs);
 		letter-spacing: 0.02em;
 		white-space: nowrap;
 		background: #fff;
@@ -404,7 +403,7 @@
 		vertical-align: middle;
 		white-space: nowrap;
 		font-family: var(--font-mono);
-		font-size: 0.6rem;
+		font-size: var(--fs-2xs);
 		font-weight: 500;
 		letter-spacing: 0.04em;
 	}

@@ -150,7 +150,7 @@
 		gap: 0.6rem;
 		align-items: center;
 		padding: 0.55rem 0;
-		font-size: 0.7rem;
+		font-size: var(--fs-xs);
 		text-decoration: none;
 		transition: color 160ms ease;
 	}
@@ -166,7 +166,7 @@
 
 	.idx {
 		font-family: var(--font-mono);
-		font-size: 0.65rem;
+		font-size: var(--fs-2xs);
 		letter-spacing: 0.08em;
 	}
 
@@ -259,7 +259,7 @@
 	h2 {
 		margin: 0;
 		color: var(--color-foreground);
-		font-size: 1.4rem;
+		font-size: var(--fs-lg);
 		font-weight: 700;
 		letter-spacing: -0.01em;
 	}
@@ -349,7 +349,7 @@
 		width: 100%;
 		border-collapse: collapse;
 		font-family: var(--font-mono);
-		font-size: 0.68rem;
+		font-size: var(--fs-xs);
 	}
 
 	/* Left, like everything else on the page, and never wrapped: a reading broken

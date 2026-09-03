@@ -199,7 +199,7 @@
 		gap: 0.4rem;
 		color: #a09f98;
 		font-family: var(--font-mono);
-		font-size: 0.6rem;
+		font-size: var(--fs-2xs);
 		font-weight: 500;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
@@ -268,7 +268,7 @@
 	.ofigure {
 		display: block;
 		color: var(--color-foreground);
-		font-size: 0.92rem;
+		font-size: var(--fs-base);
 		font-weight: 700;
 		letter-spacing: -0.02em;
 		line-height: 1.15;
@@ -278,7 +278,7 @@
 		display: block;
 		margin-top: 0.15rem;
 		color: var(--text-dim);
-		font-size: 0.48rem;
+		font-size: var(--fs-3xs);
 		font-weight: 500;
 		letter-spacing: 0.03em;
 	}
@@ -289,7 +289,7 @@
 		margin-top: 0.35rem;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.58rem;
+		font-size: var(--fs-2xs);
 		letter-spacing: 0.02em;
 	}
 
@@ -305,7 +305,7 @@
 	.mfleet table {
 		width: 100%;
 		border-collapse: collapse;
-		font-size: 0.56rem;
+		font-size: var(--fs-3xs);
 		white-space: nowrap;
 	}
 
@@ -392,7 +392,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.1rem;
-		font-size: 0.6rem;
+		font-size: var(--fs-2xs);
 	}
 
 	.ovolume-name .ostat {
@@ -400,6 +400,6 @@
 	}
 
 	.ovolumes :global(.capacity .reading) {
-		font-size: 0.7rem;
+		font-size: var(--fs-xs);
 	}
 </style>

@@ -697,28 +697,16 @@
 </div>
 
 <style>
+	/* .study, .box, .lede, .thesis, .prose, .foot-note and .arrow are shared
+	   across all four studies (app.css) — this file only keeps its own
+	   tracks' colours. */
 	.study {
-		/* The two tracks' colours, mixed dark enough to be read as text on the
-		   white card: the site's own violet and azure are set for a black page
-		   and are a wash on this one. */
-		/* The shared light-ground pair (app.css) under this file's old local
-		   names. --ink-violet was its own one-off mix before, at 3.44:1 on this
-		   ground — under the 4.5:1 its own text needs. */
+		/* Mixed dark enough to be read as text on the white card: the site's
+		   own violet and azure are set for a black page and are a wash on
+		   this one. Clears 4.5:1 on this ground, which plain --violet
+		   (3.44:1) did not. */
 		--ink-azure: var(--azure-ink);
 		--ink-violet: var(--violet-ink);
-
-		display: grid;
-		gap: 0.75rem;
-	}
-
-	/* The same white card the rest of the site's studies are built from. */
-	.box {
-		display: grid;
-		gap: 0.9rem;
-		padding: 1rem 1.15rem;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-panel);
-		background: #fff;
 	}
 
 	.row {
@@ -736,16 +724,9 @@
 		gap: 0.6rem;
 	}
 
+	/* A hair wider than the shared gap: this study's ledes carry more text. */
 	.lede {
-		display: grid;
 		gap: 0.4rem;
-	}
-
-	.lede h4 {
-		margin: 0;
-		font-size: 0.95rem;
-		font-weight: 700;
-		letter-spacing: -0.01em;
 	}
 
 	/* Which half of the project a block belongs to. The study has two tracks
@@ -758,7 +739,7 @@
 		border-radius: 999px;
 		color: var(--ink-azure);
 		font-family: var(--font-mono);
-		font-size: 0.52rem;
+		font-size: var(--fs-3xs);
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
 	}
@@ -767,35 +748,17 @@
 		color: var(--ink-violet);
 	}
 
-	.prose {
-		margin: 0;
-		color: var(--text-dim);
-		font-family: var(--font-mono);
-		font-size: 0.68rem;
-		line-height: 1.65;
-	}
-
-	/* The quiet line under a table, a chart or a diagram: the caveat, the
-	   method, or the thing the picture cannot say itself. */
-	.foot-note {
-		margin: 0;
-		color: var(--text-faint);
-		font-family: var(--font-mono);
-		font-size: 0.62rem;
-		line-height: 1.6;
-	}
-
 	.note {
 		display: block;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.58rem;
+		font-size: var(--fs-2xs);
 		line-height: 1.5;
 	}
 
 	.mark {
 		display: inline-flex;
-		font-size: 1.45rem;
+		font-size: var(--fs-xl);
 		line-height: 1;
 	}
 
@@ -803,7 +766,7 @@
 		/* -ink: this icon is on the study's light ground and plain --amber
 		   measures 1.75:1 there. */
 		color: var(--amber-ink);
-		font-size: 0.9rem;
+		font-size: var(--fs-base);
 	}
 
 	/* --- the banner ------------------------------------------------------- */
@@ -824,7 +787,7 @@
 	.thesis {
 		margin: 0;
 		max-width: 62ch;
-		font-size: 0.92rem;
+		font-size: var(--fs-base);
 		font-weight: 500;
 		line-height: 1.55;
 	}
@@ -845,7 +808,7 @@
 
 	.figure strong {
 		color: var(--color-foreground);
-		font-size: 1.3rem;
+		font-size: var(--fs-lg);
 		font-weight: 700;
 		letter-spacing: -0.02em;
 		line-height: 1.1;
@@ -887,21 +850,21 @@
 	.stage strong {
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
-		font-size: 0.68rem;
+		font-size: var(--fs-xs);
 		font-weight: 600;
 	}
 
 	.stage-detail {
 		color: var(--ink-azure);
 		font-family: var(--font-mono);
-		font-size: 0.6rem;
+		font-size: var(--fs-2xs);
 	}
 
 	.arrow {
 		align-self: center;
 		flex: none;
 		color: var(--text-faint);
-		font-size: 0.8rem;
+		font-size: var(--fs-sm);
 		line-height: 1;
 	}
 
@@ -918,7 +881,7 @@
 		width: 100%;
 		border-collapse: collapse;
 		font-family: var(--font-mono);
-		font-size: 0.64rem;
+		font-size: var(--fs-2xs);
 	}
 
 	.streams th,
@@ -940,7 +903,7 @@
 		font-weight: 500;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
-		font-size: 0.55rem;
+		font-size: var(--fs-3xs);
 		border-bottom: 1px solid var(--color-border);
 	}
 
@@ -990,7 +953,7 @@
 		gap: 0.4rem;
 		color: #a09f98;
 		font-family: var(--font-mono);
-		font-size: 0.58rem;
+		font-size: var(--fs-2xs);
 		font-weight: 500;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
@@ -1015,7 +978,7 @@
 		width: 100%;
 		border-collapse: collapse;
 		font-family: var(--font-mono);
-		font-size: 0.64rem;
+		font-size: var(--fs-2xs);
 	}
 
 	.tape-table th,
@@ -1075,7 +1038,7 @@
 
 	.card-item strong {
 		color: var(--color-foreground);
-		font-size: 0.74rem;
+		font-size: var(--fs-xs);
 		font-weight: 700;
 		line-height: 1.4;
 	}
@@ -1093,7 +1056,7 @@
 		padding-left: 0.85rem;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: 0.62rem;
+		font-size: var(--fs-2xs);
 		line-height: 1.55;
 	}
 
@@ -1131,7 +1094,7 @@
 		margin-top: 0.35rem;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.58rem;
+		font-size: var(--fs-2xs);
 		line-height: 1.5;
 	}
 
@@ -1164,7 +1127,7 @@
 		width: 100%;
 		border-collapse: collapse;
 		font-family: var(--font-mono);
-		font-size: 0.64rem;
+		font-size: var(--fs-2xs);
 	}
 
 	.measured th,
@@ -1178,7 +1141,7 @@
 	.measured thead th {
 		padding-top: 0;
 		color: var(--text-faint);
-		font-size: 0.55rem;
+		font-size: var(--fs-3xs);
 		font-weight: 500;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
@@ -1233,7 +1196,7 @@
 	.terms dt {
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
-		font-size: 0.66rem;
+		font-size: var(--fs-xs);
 		font-weight: 600;
 	}
 
@@ -1241,7 +1204,7 @@
 		margin: 0;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: 0.64rem;
+		font-size: var(--fs-2xs);
 		line-height: 1.6;
 	}
 
@@ -1300,7 +1263,7 @@
 	.day-label {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.5rem;
+		font-size: var(--fs-3xs);
 		text-align: center;
 	}
 
@@ -1309,7 +1272,7 @@
 		margin-top: -0.4rem;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.58rem;
+		font-size: var(--fs-2xs);
 	}
 
 	/* Three columns of one story: what happened, what the software did about
@@ -1332,7 +1295,7 @@
 	.scope {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.55rem;
+		font-size: var(--fs-3xs);
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 	}
@@ -1356,7 +1319,7 @@
 
 	.cost strong {
 		color: var(--color-foreground);
-		font-size: 1.05rem;
+		font-size: var(--fs-lg);
 		font-weight: 700;
 		letter-spacing: -0.02em;
 	}
@@ -1400,7 +1363,7 @@
 
 	.reject-head strong {
 		color: var(--color-foreground);
-		font-size: 0.74rem;
+		font-size: var(--fs-xs);
 		font-weight: 700;
 	}
 
@@ -1414,7 +1377,7 @@
 		border-radius: 999px;
 		color: var(--coral-ink);
 		font-family: var(--font-mono);
-		font-size: 0.52rem;
+		font-size: var(--fs-3xs);
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
 	}
@@ -1436,7 +1399,7 @@
 		align-items: baseline;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: 0.64rem;
+		font-size: var(--fs-2xs);
 		line-height: 1.6;
 	}
 

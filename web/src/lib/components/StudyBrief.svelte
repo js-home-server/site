@@ -208,7 +208,7 @@
 		padding: 0.3rem 0.85rem;
 		color: var(--paper);
 		font-family: var(--font-mono);
-		font-size: 0.58rem;
+		font-size: var(--fs-2xs);
 		font-weight: 600;
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
@@ -237,7 +237,7 @@
 		display: block;
 		color: var(--ink);
 		font-family: var(--font-mono);
-		font-size: 0.62rem;
+		font-size: var(--fs-2xs);
 		font-weight: 700;
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
@@ -248,7 +248,7 @@
 	.claim {
 		margin: 0.5rem 0 0.4rem;
 		color: var(--ink-deep);
-		font-size: 0.85rem;
+		font-size: var(--fs-sm);
 		font-weight: 600;
 		line-height: 1.4;
 		letter-spacing: -0.01em;
@@ -257,8 +257,7 @@
 	.prose {
 		margin: 0;
 		color: var(--body-ink);
-		font-family: var(--font-mono);
-		font-size: 0.66rem;
+		font-size: var(--fs-sm);
 		line-height: 1.7;
 	}
 
@@ -295,7 +294,7 @@
 	/* A section title, sized up in place of the icon or number that used to
 	   mark it — the label alone carries the weight now. */
 	.kicker-lg {
-		font-size: 0.98rem;
+		font-size: var(--fs-base);
 		letter-spacing: 0.05em;
 	}
 
@@ -357,14 +356,14 @@
 
 	.block dt {
 		color: var(--ink);
-		font-size: 0.5rem;
+		font-size: var(--fs-3xs);
 		opacity: 0.75;
 	}
 
 	.block dd {
 		margin-top: 0.15rem;
 		color: var(--ink-deep);
-		font-size: 0.66rem;
+		font-size: var(--fs-xs);
 		letter-spacing: 0.04em;
 	}
 
@@ -394,7 +393,7 @@
 		align-items: baseline;
 		gap: 0.5rem;
 		font-family: var(--font-mono);
-		font-size: 0.98rem;
+		font-size: var(--fs-base);
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
 	}
@@ -510,7 +509,7 @@
 	.tick-label {
 		color: var(--ink);
 		font-family: var(--font-mono);
-		font-size: 0.55rem;
+		font-size: var(--fs-3xs);
 		text-align: center;
 		font-variant-numeric: tabular-nums;
 	}
@@ -523,7 +522,7 @@
 
 	.tick-label {
 		color: var(--body-ink);
-		font-size: 0.5rem;
+		font-size: var(--fs-3xs);
 	}
 
 	/* --- the notes rail --------------------------------------------------- */
@@ -577,7 +576,7 @@
 		margin: 0;
 		color: var(--ink);
 		font-family: var(--font-mono);
-		font-size: 1.05rem;
+		font-size: var(--fs-lg);
 		font-weight: 700;
 		letter-spacing: -0.01em;
 		line-height: 1.2;

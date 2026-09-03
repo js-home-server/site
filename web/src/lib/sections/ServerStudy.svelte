@@ -572,7 +572,7 @@
 	.kicker {
 		color: var(--ink);
 		font-family: var(--font-mono);
-		font-size: 0.55rem;
+		font-size: var(--fs-3xs);
 		font-weight: 600;
 		letter-spacing: 0.2em;
 		text-transform: uppercase;
@@ -580,16 +580,16 @@
 
 	.lede h4 {
 		margin: 0;
-		font-size: 0.95rem;
+		font-size: var(--fs-base);
 		font-weight: 700;
 		letter-spacing: -0.01em;
 	}
 
 	.prose {
 		margin: 0;
+		max-width: 62ch;
 		color: var(--text-dim);
-		font-family: var(--font-mono);
-		font-size: 0.68rem;
+		font-size: var(--fs-sm);
 		line-height: 1.65;
 	}
 
@@ -601,7 +601,7 @@
 		margin: 0;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.62rem;
+		font-size: var(--fs-2xs);
 		line-height: 1.6;
 	}
 
@@ -615,12 +615,12 @@
 	   icons.js — so a brand row and a generic row read as the same row. */
 	.mark {
 		display: inline-flex;
-		font-size: 1.55rem;
+		font-size: var(--fs-xl);
 		line-height: 1;
 	}
 
 	.mark.small {
-		font-size: 0.85rem;
+		font-size: var(--fs-sm);
 	}
 
 	.mark.warn {
@@ -628,7 +628,7 @@
 		   (.projects, Projects.svelte) and plain --amber measures 1.75:1 there —
 		   under both the 3:1 a meaningful icon needs and the 4.5:1 text needs. */
 		color: var(--amber-ink);
-		font-size: 0.9rem;
+		font-size: var(--fs-base);
 	}
 
 	/* --- the banner ------------------------------------------------------- */
@@ -648,7 +648,7 @@
 	.thesis {
 		margin: 0;
 		max-width: 62ch;
-		font-size: 0.92rem;
+		font-size: var(--fs-base);
 		font-weight: 500;
 		line-height: 1.55;
 	}
@@ -669,7 +669,7 @@
 	.spec dt {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.52rem;
+		font-size: var(--fs-3xs);
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
 	}
@@ -678,7 +678,7 @@
 		margin: 0;
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
-		font-size: 0.68rem;
+		font-size: var(--fs-xs);
 		font-weight: 600;
 	}
 
@@ -698,7 +698,7 @@
 
 	.figure strong {
 		color: var(--color-foreground);
-		font-size: 1.3rem;
+		font-size: var(--fs-lg);
 		font-weight: 700;
 		letter-spacing: -0.02em;
 		line-height: 1.1;
@@ -717,7 +717,7 @@
 		display: block;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.56rem;
+		font-size: var(--fs-3xs);
 		line-height: 1.5;
 	}
 
@@ -745,7 +745,7 @@
 		gap: 0.4rem;
 		margin: 0 0 0.55rem;
 		font-family: var(--font-mono);
-		font-size: 0.66rem;
+		font-size: var(--fs-xs);
 		font-weight: 600;
 	}
 
@@ -762,7 +762,7 @@
 		padding-left: 0.85rem;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: 0.62rem;
+		font-size: var(--fs-2xs);
 		line-height: 1.55;
 	}
 
@@ -795,7 +795,7 @@
 	.flow h5 {
 		margin: 0 0 0.6rem;
 		font-family: var(--font-mono);
-		font-size: 0.66rem;
+		font-size: var(--fs-xs);
 		font-weight: 600;
 	}
 
@@ -829,7 +829,7 @@
 	.stage strong {
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
-		font-size: 0.6rem;
+		font-size: var(--fs-2xs);
 		font-weight: 600;
 		line-height: 1.35;
 	}
@@ -837,7 +837,7 @@
 	.stage span {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.55rem;
+		font-size: var(--fs-3xs);
 		line-height: 1.35;
 	}
 
@@ -845,14 +845,14 @@
 	   which is what left every mark down these paths at detail-text size. */
 	.stage .mark {
 		color: inherit;
-		font-size: 1.4rem;
+		font-size: var(--fs-lg);
 	}
 
 	.arrow {
 		align-self: center;
 		flex: none;
 		color: var(--text-faint);
-		font-size: 0.8rem;
+		font-size: var(--fs-sm);
 		line-height: 1;
 	}
 
@@ -865,7 +865,7 @@
 		background: color-mix(in srgb, var(--color-foreground) 5%, #fff);
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: 0.62rem;
+		font-size: var(--fs-2xs);
 		line-height: 1.6;
 	}
 
@@ -882,7 +882,7 @@
 	.cores-head {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.52rem;
+		font-size: var(--fs-3xs);
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
 	}
@@ -898,7 +898,7 @@
 	.core-value {
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
-		font-size: 0.6rem;
+		font-size: var(--fs-2xs);
 		font-weight: 600;
 	}
 
@@ -929,7 +929,7 @@
 		grid-column: 2 / -1;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.55rem;
+		font-size: var(--fs-3xs);
 	}
 
 	/* --- readings, ops, limits -------------------------------------------- */
@@ -953,7 +953,7 @@
 	.rlabel {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.52rem;
+		font-size: var(--fs-3xs);
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
 	}
@@ -961,14 +961,14 @@
 	.reading strong {
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
-		font-size: 0.82rem;
+		font-size: var(--fs-sm);
 		font-weight: 700;
 	}
 
 	.rnote {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.56rem;
+		font-size: var(--fs-3xs);
 		line-height: 1.5;
 	}
 
@@ -991,12 +991,12 @@
 	.op strong {
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
-		font-size: 0.66rem;
+		font-size: var(--fs-xs);
 		font-weight: 600;
 	}
 
 	.op .prose {
-		font-size: 0.62rem;
+		font-size: var(--fs-2xs);
 	}
 
 	.limits {
@@ -1014,7 +1014,7 @@
 		align-items: baseline;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: 0.64rem;
+		font-size: var(--fs-2xs);
 		line-height: 1.6;
 	}
 

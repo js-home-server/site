@@ -129,7 +129,7 @@
 
 	.note {
 		overflow: hidden;
-		font-size: 0.54rem;
+		font-size: var(--fs-3xs);
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}

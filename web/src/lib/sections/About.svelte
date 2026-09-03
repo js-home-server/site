@@ -154,7 +154,7 @@
 	.cv {
 		color: var(--mint);
 		font-family: var(--font-mono);
-		font-size: 0.68rem;
+		font-size: var(--fs-xs);
 		font-weight: 500;
 		letter-spacing: 0.12em;
 		text-decoration: none;
@@ -188,22 +188,21 @@
 		margin: 0;
 		color: var(--mint);
 		font-family: var(--font-mono);
-		font-size: 0.68rem;
+		font-size: var(--fs-xs);
 		letter-spacing: 0.12em;
 	}
 
 	.title {
 		margin: 0.3rem 0 0;
 		color: var(--color-foreground);
-		font-size: 0.9rem;
+		font-size: var(--fs-base);
 		font-weight: 700;
 	}
 
 	.detail,
 	.milestone li {
 		color: var(--text-dim);
-		font-family: var(--font-mono);
-		font-size: 0.72rem;
+		font-size: var(--fs-sm);
 		line-height: 1.7;
 	}
 

@@ -65,7 +65,7 @@
 	.latency-reading strong {
 		color: var(--azure);
 		font-family: var(--font-mono);
-		font-size: 1.45rem;
+		font-size: var(--fs-xl);
 	}
 
 	/* The tail figure belongs to the reading, so it sits on its baseline rather
@@ -80,6 +80,6 @@
 	.latency-reading span {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: 0.6rem;
+		font-size: var(--fs-2xs);
 	}
 </style>
