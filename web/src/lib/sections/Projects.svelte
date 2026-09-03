@@ -5,9 +5,15 @@
 	import Logo from '$lib/components/Logo.svelte';
 	import { fleet } from '$lib/containers.js';
 	import { server } from '$lib/server.svelte.js';
+	import { spanSeconds } from '$lib/stats.js';
 
 	let runningContainers = $derived(
 		server.snapshot ? fleet(server.snapshot.containers?.items).running : null
+	);
+	let retainedDays = $derived(
+		server.month?.storage?.ssd?.used_bytes?.length > 1
+			? Math.floor(spanSeconds(server.month.storage.ssd.used_bytes) / 86_400)
+			: null
 	);
 
 	/* The work worth showing. `tools` are what each is actually built with; `url`
@@ -25,7 +31,8 @@
 			url: 'https://github.com/JS195/ancestree',
 			pypi: 'https://pypi.org/project/ancestree-track/',
 			docs: 'https://js195.github.io/ancestree/',
-			tagline: 'There’s an interactive pipeline hiding in the case study.',
+			proofLabel: 'Try it',
+			proof: 'Interactive pipeline in the docs',
 			route: '/projects/ancestree/',
 			brief: 'ancestree'
 		},
@@ -37,7 +44,8 @@
 			tools: ['Svelte', 'JavaScript', 'Docker', 'Linux', 'Python'],
 			url: 'https://github.com/js-home-server',
 			live: '/server/',
-			tagline: null,
+			proofLabel: 'Live',
+			proof: null,
 			route: '/projects/server/',
 			brief: 'server'
 		},
@@ -45,10 +53,11 @@
 			name: 'Crypto orderflow',
 			year: 2026,
 			blurb:
-				'Order flow cannot be backfilled, and the vendors that sell it retain days rather than years. So I built the collector: 11.5M rows a day off ten venue feeds, folded to 108 MB of Parquet, and the cross-sectional strategy study that reads it back. Its 583 streams cover 100 base assets across six exchanges with 1.0 ms median writer lag. The archive supports a market-neutral strategy with 2.39 net Sharpe over 6.5 years and 1.08 walk-forward; shuffled-signal and lookahead checks test the result.',
+				'A cross-sectional strategy needs order flow aggregated across many assets at once, and the vendors that sell it retain days rather than years of something that cannot be backfilled after the fact. That need for a longer, wider archive is what led me to build the collector myself: 11.5M rows a day off ten venue feeds, folded to 108 MB of Parquet. Its 583 streams cover 100 base assets across six exchanges with 1.0 ms median writer lag. The archive now backs a market-neutral strategy with 2.39 net Sharpe over 6.5 years and 1.08 walk-forward; shuffled-signal and lookahead checks test the result.',
 			tools: ['Python', 'Docker', 'Polars', 'NumPy'],
 			url: 'https://github.com/JS195/orderflow-alpha',
-			tagline: '1,064 socket drops absorbed. Not one row lost.',
+			proofLabel: 'Live',
+			proof: null,
 			route: '/projects/orderflow/',
 			brief: 'orderflow'
 		},
@@ -59,7 +68,8 @@
 				'A photograph is a grid of pixels and a terminal is a grid of characters. A C11 renderer converts one to the other, with sampling, tone curve, glyph selection and encoding as separately tested stages. It runs in 13 ms and draws every image on this site. Its seven modules comprise 1,300 lines of C11, with one vendored dependency and clean builds under -Wall, -Wextra and -Wpedantic. Seventeen tests and 168 assertions cover the pipeline and output geometry; one Make target regenerates five site components byte-identically.',
 			tools: ['C++', 'Git'],
 			url: 'https://github.com/JS195/asciiArt',
-			tagline: 'Every image on this site renders through 1,300 lines of C11.',
+			proofLabel: 'In use',
+			proof: '13 ms to generate every image on this site',
 			route: '/projects/ascii-art/',
 			brief: 'ascii'
 		}
@@ -69,21 +79,28 @@
 
 <section id="projects" class="page projects-page">
 	<section class="surface-box projects">
-		<h2 class="section-title">My projects</h2>
+		<h2 class="section-title">Projects</h2>
 
 		<div class="cards">
-			{#each PROJECTS as { name, year, blurb, tools, url, live, pypi, docs, demo, tagline, route, brief } (name)}
+			{#each PROJECTS as { name, year, blurb, tools, url, live, pypi, docs, demo, proofLabel, proof, route, brief } (name)}
 				<article id={brief} class="card">
 					<div class="identity">
 						<h3>{name}</h3>
 						<p class="meta"><span>{year}</span><span aria-hidden="true">·</span> Solo developer</p>
-						<p class="tagline" aria-live={live ? 'polite' : undefined}>
-							{live
-								? runningContainers === null
-									? 'Checking the running containers…'
-									: `${runningContainers} containers are running this very second.`
-								: tagline}
-						</p>
+						<div class="proof">
+							<p class="proof-label">{proofLabel}</p>
+							<p aria-live={live || brief === 'orderflow' ? 'polite' : undefined}>
+								{brief === 'orderflow'
+									? retainedDays === null
+										? 'Checking retained history…'
+										: `${retainedDays} retained days with no dropped rows`
+									: live
+									? runningContainers === null
+										? 'Checking the running containers…'
+										: `${runningContainers} containers currently running`
+									: proof}
+							</p>
+						</div>
 						<div class="tools-row"><ToolPills {tools} /></div>
 					</div>
 
@@ -168,7 +185,7 @@
 	}
 
 	.meta,
-	.tagline {
+	.proof {
 		font-family: var(--font-mono);
 	}
 
@@ -180,11 +197,24 @@
 		font-size: var(--fs-sm);
 	}
 
-	.tagline {
-		margin: 0.45rem 0 0;
+	.proof {
+		margin-top: 0.75rem;
+		padding-left: 0.75rem;
+		border-left: 2px solid var(--text-faint);
 		color: var(--text-faint);
-		font-size: var(--fs-sm);
+		font-size: var(--fs-xs);
 		line-height: 1.5;
+	}
+
+	.proof p {
+		margin: 0;
+	}
+
+	.proof-label {
+		color: var(--text-faint);
+		font-size: var(--fs-xs);
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
 	}
 
 	.tools-row {

@@ -12,15 +12,15 @@
 			title: 'Graduate Engineer, AWE',
 			points: [
 				{
-					text: 'Signal-processing pipeline synchronising 9 distributed sensors to microsecond precision — denoising, unsupervised anomaly detection, waveform clustering and TDOA localisation.',
+					text: 'Implemented a signal-processing pipeline synchronising 9 geographically distributed RF sensors to microsecond precision resolving discrepancies between internal crystal clock and GPS time. I performed data cleaning, denoising, and unsupervised anomaly detection. I then performed time difference of arrival localisation using multi objective optimisation and cross correlation on the waveforms to obtain a 3km median error globally.',
 					tools: ['Linux', 'Slurm', 'Git', 'Python', 'scikit-learn', 'Plotly', 'NumPy']
 				},
 				{
-					text: 'Onboard navigation system: 580 m median accuracy at 700 km range against a 7.5 km/s target, 4-second end-to-end latency, inside 8 GB of RAM on a consumer CPU.',
+					text: 'Designed an onboard navigation system using radar-based terrain imaging. With the sentinel 1 satellite constellation as a case study, I obtained a 325 m median location accuracy, at 700 km range, with a velocity 7.5 km/s. I built the preprocessing pipeline for the incoming radar data, and designed an optimisation based solver to determine location, with a machine learning based optimal candidate selection. Achieved on a tight hardware bugdet of 8GB RAM, a consumer CPU with a 4-second end-to-end latency.',
 					tools: ['MATLAB']
 				},
 				{
-					text: 'Multi-objective optimisation by surrogate modelling: 150,000 function evaluations down to 20,000, CUDA for a 26x cut in wall time, deployed company-wide.',
+					text: 'Worked on a novel multi-objective optimisation for computationally expensive black box simulators using surrogate modelling. Working closely with a professor of statistics, I collaborated with the method design, and translated their ideas into code. I designed and implemented the stopping conditions. Leveraging CUDA, I cut wall time on my original implementation by 26x. The project overall was a success cutting 150,000 function evaluations down to 20,000, deployed company-wide as a multi-purpose tool.',
 					tools: ['Python', 'Git', 'Slurm', 'CUDA', 'Pandas', 'Linux']
 				}
 			]
@@ -43,7 +43,7 @@
 
 		<div class="timeline">
 			<div class="timeline-head">
-				<h2 class="section-title">My journey</h2>
+				<h2 class="section-title">Experience</h2>
 				<ActionLink
 					variant="cta"
 					direction="download"
@@ -96,17 +96,35 @@
 	   negative margin and the padding put back are for. */
 	.visual {
 		display: grid;
-		align-content: center;
+		align-content: stretch;
+		overflow: hidden;
 		margin: calc(-1 * var(--pad)) 0 calc(-1 * var(--pad)) calc(-1 * var(--pad));
 		padding: var(--pad);
 		border-right: var(--rule);
 	}
 
+	/* grid-template-columns/rows pinned to the frame's own box, not left as
+	   default auto tracks: an auto track sizes itself to the portrait's own
+	   intrinsic width/height instead of the frame's, so the portrait (wider
+	   than the frame once it fills the taller box's height) blew the track
+	   out past the frame's edge rather than overflowing a track the frame
+	   could still centre around — which is why the crop landed almost
+	   entirely on one side instead of split evenly across both. */
+	.visual :global(.bracket-frame) {
+		place-items: center;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-rows: minmax(0, 1fr);
+		min-height: 0;
+		overflow: hidden;
+	}
+
 	/* A character grid has one size — how big one cell is — so the art is sized by
 	   setting that from the box it stands in: --cols is its column count times the
 	   0.6021em JetBrains Mono advances per character, which makes the art span this
-	   half of the box exactly. See ../asciiArt's Makefile for how the 73 was
-	   measured.
+	   half of the box exactly. See ../asciiArt's Makefile for how the 61 was
+	   measured — height-driven now, not width-driven, since the box beside it grew
+	   tall enough that the portrait's height is the fixed side and its overflowing
+	   width is what the frame around it (.bracket-frame, below) clips evenly.
 
 	   Scoped here rather than shared in app.css on purpose: the generated art
 	   component carries its own `.ascii-art pre { font-size: 6px }`, and only a rule
@@ -117,9 +135,16 @@
 	   bands the picture. */
 	.portrait {
 		/* How many characters wide the astronaut is. */
-		--cols: 73;
+		--cols: 61;
 
+		width: auto;
+		height: 100%;
+		aspect-ratio: calc((61 * 0.6021) / (115 * 0.72));
 		container-type: inline-size;
+		/* The crop's own ink bounding box is centred, but the suit is lit
+		   brighter on its left than its right, so the bright mass reads as
+		   off-centre even though the box isn't. Nudged right to compensate. */
+		transform: translateX(3%);
 
 		/* The art is a few thousand one-character spans, and inline layout over
 		   that many boxes is not cheap. Anything that changes the height of a
@@ -150,6 +175,8 @@
 	/* The eyebrow and the CV link share a line: the one other thing worth doing
 	   at the top of the rail, set in the same voice as the hero's own cta. */
 	.timeline-head {
+		--cta-size: var(--fs-base);
+
 		display: flex;
 		flex-wrap: wrap;
 		align-items: baseline;
@@ -246,9 +273,16 @@
 		   decoration, and on one column the reading order is the order. */
 		.visual {
 			order: 1;
+			align-content: center;
 			margin: 0 calc(-1 * var(--pad)) calc(-1 * var(--pad));
 			border-top: var(--rule);
 			border-right: 0;
+		}
+
+		.portrait {
+			width: 100%;
+			height: auto;
+			aspect-ratio: auto;
 		}
 
 		.timeline {

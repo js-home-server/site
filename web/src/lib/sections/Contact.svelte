@@ -243,7 +243,7 @@
 		margin: 0;
 		max-width: 62ch;
 		color: var(--text-dim);
-		font-size: var(--fs-base);
+		font-size: var(--fs-sm);
 		line-height: 1.6;
 	}
 
