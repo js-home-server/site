@@ -5,6 +5,18 @@
 	import { server, watch } from '$lib/server.svelte.js';
 	import { bucket, mean, minMax, outages, percentile, values } from '$lib/stats.js';
 
+	/* StatusBar only ever renders on the homepage, alongside the card this
+	   points at, so there is no page to navigate to — just the accordion to
+	   scroll to. Centred rather than jumped to the top the way an anchor
+	   normally lands, and not opened: this is a look, not a click the reader
+	   asked for. */
+	function scrollToServerCard(event) {
+		const card = document.getElementById('server');
+		if (!card) return;
+		event.preventDefault();
+		card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+	}
+
 	/* Device pixels a bar needs before it reads as one width rather than a coin
 	   flip between two: a bar under this is thin enough that the ±1 device-pixel
 	   spread every sub-pixel layout leaves somewhere in a long row of bars reads
@@ -200,7 +212,7 @@
 			<span class="mono">{stamp(snapshot?.generated_at)}</span>
 		</p>
 
-		<a href="/projects/server/">View project <span aria-hidden="true">→</span></a>
+		<a href="#server" onclick={scrollToServerCard}>View project <span aria-hidden="true">→</span></a>
 	</div>
 
 	<div class="metrics">

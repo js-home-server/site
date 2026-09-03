@@ -62,25 +62,14 @@
 	];
 
 	/* A plain accordion: click a title to open it, click the open one to shut
-	   it. Scroll does not drive this — animating four sheets open and shut on
-	   every scroll tick was the source of this section's lag. */
-	let open = $state(PROJECTS.findIndex((project) => project.name === 'Ancestree'));
+	   it. Nothing opens on its own — not on load, not from a link elsewhere on
+	   the site — a reader opens exactly the ones they ask to see. Scroll does
+	   not drive this either: animating four sheets open and shut on every
+	   scroll tick was the source of this section's lag. */
+	let open = $state(-1);
 
 	const toggle = (i) => (open = open === i ? -1 : i);
-
-	/* Elsewhere on the site — the hero's "View my work" and the status bar's
-	   "View project" — links open a specific card rather than just scrolling
-	   here, by name rather than index so those links don't have to know the
-	   list's order. */
-	const slug = (name) => name.toLowerCase().replace(/\s+/g, '-');
-
-	function openProject(event) {
-		const index = PROJECTS.findIndex((project) => slug(project.name) === event.detail);
-		if (index !== -1) open = index;
-	}
 </script>
-
-<svelte:window onopenproject={openProject} />
 
 <section id="projects" class="page projects-page">
 	<section class="surface-box projects">
@@ -88,26 +77,21 @@
 
 		<div class="cards">
 			{#each PROJECTS as { name, year, blurb, tools, url, live, pypi, docs, demo, liveBadge, route, brief }, i (name)}
-				<article class="card" class:open={i === open}>
-					<!-- Three columns, top-aligned as one row. Two buttons, not one — a
-					     link can't nest inside a button, and the links under the pills
-					     are real ones — so the row is opened either from the title on
-					     the left or the year and chevron on the right, both calling the
-					     same toggle. ToolPills is a row of links too and sits under the
-					     button for the same reason. -->
+				<article id={brief} class="card" class:open={i === open}>
+					<!-- Three columns, top-aligned as one row. The title and blurb are
+					     plain text now — the only thing that opens a card is the pill
+					     on the right, so a reader skimming names and links never
+					     triggers the fold by accident. -->
 					<div class="head-row">
 						<div class="head-col">
-							<button type="button" class="head" aria-expanded={i === open} onclick={() => toggle(i)}>
-								<span class="icon">{String(i).padStart(2, '0')}</span>
-								<h3>
-									{name}
-									{#if live || liveBadge}
-										<span class="callout live">
-											<i class="dot" aria-hidden="true"></i>Live
-										</span>
-									{/if}
-								</h3>
-							</button>
+							<h3>
+								{name}
+								{#if live || liveBadge}
+									<span class="callout live">
+										<i class="dot" aria-hidden="true"></i>Live
+									</span>
+								{/if}
+							</h3>
 
 							<div class="tools-row"><ToolPills {tools} /></div>
 
@@ -135,14 +119,17 @@
 							<p class="blurb">{blurb}</p>
 						</div>
 
-						<button type="button" class="stat" aria-expanded={i === open} onclick={() => toggle(i)}>
+						<div class="stat">
 							<span class="year">{year}</span>
-							<!-- The fold's own state, said again rather than left to the shape
-							     of the row: a collapsed row and an open one look enough alike
-							     from a glance that the mark is what actually answers "which is
-							     this." -->
-							<span class="chevron" aria-hidden="true"></span>
-						</button>
+							<button type="button" class="expand" aria-expanded={i === open} onclick={() => toggle(i)}>
+								{i === open ? 'Collapse' : 'Expand'}
+								<!-- The fold's own state, said again rather than left to the shape
+								     of the row: a collapsed row and an open one look enough alike
+								     from a glance that the mark is what actually answers "which is
+								     this." -->
+								<span class="chevron" aria-hidden="true"></span>
+							</button>
+						</div>
 					</div>
 
 					<!-- The fold is a grid row taken from 0fr to 1fr, which is the one
@@ -231,14 +218,10 @@
 		letter-spacing: -0.01em;
 	}
 
-	/* The pills, aligned under the title the same way .links (below) is: the
-	   icon column's width plus the gap beside it (.head-col's --icon-col), so
-	   the row starts under the title rather than the icon above it. Its own
-	   row rather than inside .head — ToolPills renders a link for any tool
-	   with a website, and a link can't nest inside a button. */
+	/* Its own row rather than run into the title — ToolPills renders a link
+	   for any tool with a website, and a link can't nest inside a button. */
 	.tools-row {
 		margin-top: 0.4rem;
-		margin-left: calc(var(--icon-col) + 0.75rem);
 	}
 
 	/* One block a reader takes in at a glance: the problem, the thing built for
@@ -295,9 +278,6 @@
 		flex-wrap: wrap;
 		gap: 0.4rem 1.25rem;
 		margin-top: 0.75rem;
-		/* The icon column's width plus the gap beside it (.head, above) — so
-		   this row starts exactly under the title, not under the icon. */
-		margin-left: calc(var(--icon-col) + 0.75rem);
 	}
 
 	.links a {
@@ -329,83 +309,81 @@
 		box-shadow: 0 0.6rem 0.7rem -0.55rem rgb(18 35 60 / 38%);
 	}
 
-	/* The title and the links under it, stacked as the row's left column. */
+	/* The title and the links under it, stacked as the row's left column. Plain
+	   text now — nothing here toggles the fold, so a click on the name or a
+	   pill scrolled past doesn't surprise-open a card. */
 	.head-col {
-		/* Shared with .head and .links below, so the links row's left edge
-		   lands exactly under the title rather than the icon above it. */
-		--icon-col: 1.6rem;
-
 		display: grid;
+	}
+
+	.head-col h3 {
+		color: var(--color-foreground);
 	}
 
 	.summary {
 		padding-top: 0.15rem;
 	}
 
-	/* Both toggles are plain buttons wearing the row's own type: no chrome of
-	   their own, since what they look like is the header bar. */
-	.head,
-	.stat {
-		padding: 0;
-		text-align: left;
-		background: none;
-		border: 0;
-		cursor: pointer;
-	}
-
-	.head {
-		display: grid;
-		grid-template-columns: var(--icon-col) minmax(0, 1fr);
-		gap: 0.75rem;
-		align-items: start;
-	}
-
-	/* The year and the fold's mark, on the far right of the row. */
+	/* The year and the one control that opens the card, on the far right of
+	   the row. */
 	.stat {
 		display: flex;
-		gap: 0.85rem;
-		align-items: baseline;
-		padding: 0.1rem 0 0;
+		align-items: center;
+		gap: 0.75rem;
+		padding-top: 0.1rem;
 	}
 
-	.head h3 {
-		color: var(--color-foreground);
-	}
-
-	/* The card's index rather than an icon: 00, 01, 02 — a count of the work,
-	   not an illustration of it. */
-	.icon {
-		color: var(--text-faint);
-		font-family: var(--font-mono);
-		font-size: 0.85rem;
-	}
-
-	/* The other end of the line from .icon, in the same quiet mono. */
 	.year {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
 		font-size: 0.8rem;
 	}
 
+	/* The sole way to open a card: a pill rather than the bare year-and-mark
+	   this used to be, so it reads as a control rather than a label a reader
+	   might mistake the rest of the row for sharing. */
+	.expand {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.35rem 0.8rem 0.35rem 0.9rem;
+		color: var(--text-dim);
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		letter-spacing: 0.02em;
+		white-space: nowrap;
+		background: #fff;
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		cursor: pointer;
+		transition:
+			color 160ms ease,
+			border-color 160ms ease;
+	}
+
+	.expand:hover {
+		color: var(--color-foreground);
+		border-color: var(--color-foreground);
+	}
+
+	.card.open .expand {
+		color: var(--color-foreground);
+	}
+
 	/* Two strokes rotated into a V, turned through 180° when the fold opens —
 	   a drawn mark rather than a glyph, so it rotates about its own centre
 	   instead of about a font's baseline. */
 	.chevron {
-		align-self: center;
 		width: 0.6rem;
 		height: 0.6rem;
-		border-right: 1.5px solid var(--text-faint);
-		border-bottom: 1.5px solid var(--text-faint);
-		transform: translateY(-25%) rotate(45deg);
+		border-right: 1.5px solid currentcolor;
+		border-bottom: 1.5px solid currentcolor;
+		transform: translateY(-15%) rotate(45deg);
 		transition: transform 380ms ease;
 	}
 
 	.card.open .chevron {
-		transform: translateY(15%) rotate(225deg);
-	}
-
-	.stat:hover .chevron {
-		border-color: var(--color-foreground);
+		transform: translateY(10%) rotate(225deg);
 	}
 
 	@media (prefers-reduced-motion: reduce) {
@@ -415,33 +393,28 @@
 	}
 
 	/* Beside the title, so a live project is flagged on the index itself
-	   rather than only once its case study is open. */
+	   rather than only once its case study is open. Plain text and a dot,
+	   not a pill: nothing here is clickable, and a bordered badge implied
+	   otherwise. */
 	.callout {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.35rem;
 		margin-left: 0.6rem;
-		padding: 0.25rem 0.7rem;
 		vertical-align: middle;
 		white-space: nowrap;
-		/* -ink, not the plain accent: on this badge's own white background,
-		   plain --violet measures 1.78:1 for the text and the same for the
-		   border it also draws — well under the 4.5:1 text / 3:1 UI floors. */
-		color: var(--violet-ink);
 		font-family: var(--font-mono);
 		font-size: 0.6rem;
 		font-weight: 500;
 		letter-spacing: 0.04em;
-		background: #fff;
-		border: 1.5px solid var(--violet-ink);
-		border-radius: 999px;
 	}
 
-	/* The site's other colour for "carry on regardless" — the same mint every
-	   other live indicator wears (StatusBar's own dot, the dashboard's). */
+	/* The same mint every other live indicator wears (StatusBar's own dot,
+	   the dashboard's). -ink rather than the plain accent: on this card's
+	   white background, plain --mint measures 1.6:1, under the 4.5:1 text
+	   needs. */
 	.callout.live {
 		color: var(--mint-ink);
-		border-color: var(--mint-ink);
 	}
 
 	.callout .dot {
