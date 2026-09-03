@@ -2,6 +2,8 @@
 	/* The frame every case-study route shares: the light "datasheet" ground
 	   the studies were built against (Projects.svelte shadows the same tokens
 	   for the accordion this content used to live in), and the one way back. */
+	import ActionLink from './ActionLink.svelte';
+
 	let { title, children } = $props();
 </script>
 
@@ -11,7 +13,7 @@
 
 <section class="page study-page">
 	<div class="surface-box projects">
-		<a class="back" href="/#projects">← All projects</a>
+		<ActionLink direction="back" href="/#projects">All projects</ActionLink>
 		{@render children()}
 	</div>
 </section>
@@ -36,17 +38,9 @@
 		color: var(--color-foreground);
 	}
 
-	.back {
-		display: inline-block;
+	/* ActionLink's own hover/focus reads --focus-ring, already shadowed to
+	   --mint-ink by .projects above. */
+	:global(.action-link.back) {
 		margin-bottom: 1.25rem;
-		color: var(--text-dim);
-		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
-		text-decoration: none;
-	}
-
-	.back:hover,
-	.back:focus-visible {
-		color: var(--mint-ink);
 	}
 </style>

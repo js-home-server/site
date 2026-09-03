@@ -1,5 +1,6 @@
 <script>
 	import { page } from '$app/state';
+	import ActionLink from '$lib/components/ActionLink.svelte';
 	import Dashboard from '$lib/components/Dashboard.svelte';
 	import TimeAxis from '$lib/components/TimeAxis.svelte';
 	import { stamp } from '$lib/format.js';
@@ -111,7 +112,7 @@
 		     the numbers above are, which is not the same as what time it is. -->
 		<span class="mono">{stamp(snapshot?.generated_at)}</span>
 		<!-- Off the site's nav, so this is the only way back to it. -->
-		<a class="mono back" href="/">← joshuasmith</a>
+		<ActionLink direction="back" href="/">joshuasmith</ActionLink>
 	{/snippet}
 </Dashboard>
 
@@ -122,16 +123,10 @@
 		font-size: var(--fs-xs);
 	}
 
-	/* Same mono note as the stamp above it, stood off by a line and lit on hover
-	   the way the rail's own stops are. */
-	.back {
+	/* ActionLink's own hover/focus reads --focus-ring, --mint on this dark
+	   ground. */
+	:global(.action-link.back) {
 		margin-top: 0.5rem;
-		text-decoration: none;
-	}
-
-	.back:hover,
-	.back:focus-visible {
-		color: var(--mint);
 	}
 
 	/* The two readings stood above the rail's nav: the same card vocabulary
