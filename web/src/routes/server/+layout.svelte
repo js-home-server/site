@@ -3,9 +3,10 @@
 	import ActionLink from '$lib/components/ActionLink.svelte';
 	import Dashboard from '$lib/components/Dashboard.svelte';
 	import TimeAxis from '$lib/components/TimeAxis.svelte';
-	import { stamp } from '$lib/format.js';
+	import UptimeStrip from '$lib/components/UptimeStrip.svelte';
+	import { stamp, uptimeHours } from '$lib/format.js';
 	import { server, watch } from '$lib/server.svelte.js';
-	import { bucket, outages } from '$lib/stats.js';
+	import { outages } from '$lib/stats.js';
 
 	let { children } = $props();
 
@@ -34,33 +35,11 @@
 	let online = $derived(snapshot?.availability.server_status === 'online');
 
 	/* The status series is 1 for a poll the machine answered and 0 for one it did
-	   not: bucketed into bars for the rail's strip, and counted outright for the
-	   incident line above it. */
+	   not: UptimeStrip buckets it into bars, and this counts it outright for the
+	   incident line above the strip. */
 	let uptime = $derived(server.series?.availability.status ?? []);
 	let incidents = $derived(outages(uptime));
-	let uptimeBars = $derived(
-		bucket(uptime, UPTIME_BARS).map((v) => (v === null ? 'unknown' : v < 1 ? 'down' : 'up'))
-	);
-
-	/* The span the strip actually covers, the same way StatusBar works it out
-	   for its own copy of this bar: less than `RANGE` until the API has been
-	   collecting that long, so the label can never claim more than the data
-	   behind it does. Feeds the strip's own aria-label below — a sighted reader
-	   never sees "24 hours", but a screen reader was being told that regardless
-	   of the real window. */
-	let spanSeconds = $derived(uptime.length > 1 ? uptime.at(-1)[0] - uptime[0][0] : 0);
-	let spanLabel = $derived(
-		spanSeconds >= 3600
-			? `${Math.round(spanSeconds / 3600)} hours`
-			: spanSeconds > 0
-				? `${Math.round(spanSeconds / 60)} minutes`
-				: null
-	);
-	let uptimeLabel = $derived(
-		uptimeBars.length && spanLabel
-			? `Server uptime over the last ${spanLabel}: ${uptimeBars.filter((s) => s === 'up').length} of ${uptimeBars.length} intervals up`
-			: 'Server uptime history unavailable'
-	);
+	let hours = $derived(online ? uptimeHours(snapshot?.availability.uptime_seconds) : null);
 </script>
 
 <Dashboard title="Server" sections={SECTIONS} current={page.url.pathname} max="88rem">
@@ -88,9 +67,7 @@
 		<div class="rail-box uptime">
 			<p class="eyebrow">Uptime</p>
 			<p class="figure">
-				{online && Number.isFinite(snapshot.availability.uptime_seconds)
-					? Math.floor(snapshot.availability.uptime_seconds / 3600)
-					: '—'}<span class="unit">{online && Number.isFinite(snapshot.availability.uptime_seconds) ? 'h' : ''}</span>
+				{hours ?? '—'}<span class="unit">{hours !== null ? 'h' : ''}</span>
 			</p>
 			<p class="stats">
 				{uptime.length
@@ -99,9 +76,7 @@
 						: 'No incidents'
 					: 'No history yet'}
 			</p>
-			<div class="strip" role="img" aria-label={uptimeLabel}>
-				{#each uptimeBars as state}<i class={state}></i>{/each}
-			</div>
+			<UptimeStrip {uptime} barCount={UPTIME_BARS} height="1.6rem" class="strip" />
 			<TimeAxis />
 		</div>
 	{/snippet}
@@ -191,29 +166,9 @@
 		text-transform: uppercase;
 	}
 
-	/* One bar a bucket, the same vocabulary the dashboard's own heatmaps draw
-	   cells with: mint where the machine answered, coral where it did not. */
-	.strip {
-		display: grid;
-		grid-auto-flow: column;
-		grid-auto-columns: 1fr;
-		gap: 1px;
-		height: 1.6rem;
+	/* UptimeStrip's own layout and bar colours; this is only the rail's slot for
+	   it. */
+	:global(.strip) {
 		margin-bottom: 0.5rem;
-	}
-
-	.strip i {
-		border-radius: 1px;
-		/* The bare bar is unknown, not down: dim enough to read as "no data"
-		   beside the mint, and never mistakable for an outage. */
-		background: color-mix(in srgb, var(--mint) 12%, var(--color-background));
-	}
-
-	.strip i.up {
-		background: var(--mint);
-	}
-
-	.strip i.down {
-		background: var(--coral);
 	}
 </style>

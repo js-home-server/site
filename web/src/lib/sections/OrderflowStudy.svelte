@@ -697,9 +697,10 @@
 </div>
 
 <style>
-	/* .study, .box, .lede, .thesis, .prose, .foot-note and .arrow are shared
-	   across all four studies (app.css) — this file only keeps its own
-	   tracks' colours. */
+	/* .study, .box, .lede, .thesis, .prose, .foot-note, .arrow, .row, .intro,
+	   .spec, .limits, .card-item, .scope, .mark, .headline and .figure are
+	   shared across all four studies (app.css) — this file only keeps its
+	   own tracks' colours and each shared part's local delta. */
 	.study {
 		/* Mixed dark enough to be read as text on the white card: the site's
 		   own violet and azure are set for a black page and are a wash on
@@ -707,12 +708,6 @@
 		   (3.44:1) did not. */
 		--ink-azure: var(--azure-ink);
 		--ink-violet: var(--violet-ink);
-	}
-
-	.row {
-		grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
-		gap: 1.5rem;
-		align-items: start;
 	}
 
 	/* A column of a split row holds a heading and whatever qualifies it, and
@@ -757,9 +752,7 @@
 	}
 
 	.mark {
-		display: inline-flex;
 		font-size: var(--fs-xl);
-		line-height: 1;
 	}
 
 	.mark.warn {
@@ -780,20 +773,6 @@
 	.banner > div:first-child {
 		display: grid;
 		gap: 0.6rem;
-	}
-
-	.headline {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 0.6rem;
-	}
-
-	.figure {
-		display: grid;
-		gap: 0.15rem;
-		padding: 0.6rem 0.7rem;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-control);
 	}
 
 	.figure strong {
@@ -993,15 +972,6 @@
 		display: grid;
 		grid-template-columns: repeat(3, minmax(0, 1fr));
 		gap: 0.6rem;
-	}
-
-	.card-item {
-		display: grid;
-		align-content: start;
-		gap: 0.45rem;
-		padding: 0.8rem 0.9rem;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-panel);
 	}
 
 	.card-item strong {
@@ -1260,14 +1230,6 @@
 		border-radius: var(--radius-panel);
 	}
 
-	.scope {
-		color: var(--text-faint);
-		font-family: var(--font-mono);
-		font-size: var(--fs-3xs);
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-	}
-
 	/* --- cost ------------------------------------------------------------- */
 
 	.costs {
@@ -1351,14 +1313,6 @@
 	}
 
 	/* --- limits ----------------------------------------------------------- */
-
-	.limits {
-		display: grid;
-		gap: 0.5rem;
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
 
 	.limits li {
 		display: grid;

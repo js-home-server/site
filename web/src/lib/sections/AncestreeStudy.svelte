@@ -511,19 +511,14 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 <style>
 	/* A datasheet rather than a case study: a spec strip, then sections named
 	   in a rail down the left, then the measurements. .study, .box, .lede,
-	   .kicker, .thesis, .prose and .foot-note are shared across all four
-	   studies (app.css) — this file only keeps its own accent. */
+	   .kicker, .thesis, .prose, .foot-note, .row, .intro, .spec, .limits,
+	   .card-item, .mark's base, .headline and .figure are shared across all
+	   four studies (app.css) — this file only keeps its own accent. */
 	.study {
 		/* Dark enough to read on the white card — the site's amber is set for
 		   a black page. Clears 4.5:1 on this ground, which plain --amber
 		   (3.17:1) did not. */
 		--ink: var(--amber-ink);
-	}
-
-	.row {
-		grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
-		gap: 1.5rem;
-		align-items: start;
 	}
 
 	.row > div {
@@ -541,13 +536,11 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 	}
 
 	.mark {
-		display: inline-flex;
 		flex: none;
 		/* -ink: this icon is on the study's light ground and plain --amber
 		   measures 1.75:1 there. */
 		color: var(--amber-ink);
 		font-size: var(--fs-base);
-		line-height: 1;
 	}
 
 	/* --- the spec strip --------------------------------------------------- */
@@ -556,11 +549,6 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
 		gap: 1.75rem;
 		align-items: start;
-	}
-
-	.intro {
-		display: grid;
-		gap: 0.7rem;
 	}
 
 	/* The one line a reader might actually run. */
@@ -576,13 +564,6 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 	}
 
 	/* Version, Python, dependencies — the header of a datasheet, read across. */
-	.spec {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.35rem 1.4rem;
-		margin: 0;
-	}
-
 	.spec div {
 		display: grid;
 		gap: 0.1rem;
@@ -602,20 +583,6 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		font-family: var(--font-mono);
 		font-size: var(--fs-xs);
 		font-weight: 600;
-	}
-
-	.headline {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 0.6rem;
-	}
-
-	.figure {
-		display: grid;
-		gap: 0.15rem;
-		padding: 0.6rem 0.7rem;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-control);
 	}
 
 	.figure strong {
@@ -752,14 +719,6 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		color: var(--color-foreground);
 		font-size: var(--fs-sm);
 		font-weight: 700;
-	}
-
-	.scope {
-		color: var(--text-faint);
-		font-family: var(--font-mono);
-		font-size: var(--fs-3xs);
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
 	}
 
 	.layer-figure {
@@ -900,15 +859,6 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		display: grid;
 		grid-template-columns: repeat(3, minmax(0, 1fr));
 		gap: 0.6rem;
-	}
-
-	.card-item {
-		display: grid;
-		align-content: start;
-		gap: 0.45rem;
-		padding: 0.8rem 0.9rem;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-panel);
 	}
 
 	.card-item strong {
@@ -1054,14 +1004,6 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 	}
 
 	/* --- limits ----------------------------------------------------------- */
-
-	.limits {
-		display: grid;
-		gap: 0.5rem;
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
 
 	.limits li {
 		display: grid;

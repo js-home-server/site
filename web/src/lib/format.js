@@ -61,6 +61,28 @@ export function duration(seconds) {
 	return hours ? `${hours}h ${pad(Math.floor(seconds / 60) % 60)}m` : `${Math.floor(seconds / 60)}m`;
 }
 
+/* Whole hours off an uptime reading, split from its unit so a caller can size
+   the two differently. Null while there's no figure yet, same as every other
+   reading here that has no data. */
+export const uptimeHours = (seconds) => (Number.isFinite(seconds) ? Math.floor(seconds / 3600) : null);
+
+/* How far a series' first reading sits behind its last, in the word a reader
+   needs it in: short beside a value ("24H"), long where a screen reader says
+   it out loud ("24 hours"). Nothing yet reads as an em dash short, or as
+   nothing at all long — the long form only ever feeds a sentence that already
+   has its own "no history" fallback. */
+export function span(seconds, { short = false } = {}) {
+	if (seconds >= 3600) {
+		const hours = Math.round(seconds / 3600);
+		return short ? `${hours}H` : `${hours} hours`;
+	}
+	if (seconds > 0) {
+		const minutes = Math.round(seconds / 60);
+		return short ? `${minutes}M` : `${minutes} minutes`;
+	}
+	return short ? '—' : null;
+}
+
 const GB = 2 ** 30;
 const TB = 2 ** 40;
 

@@ -23,6 +23,11 @@ export const outages = (points) =>
 		0
 	);
 
+/* How far a series' first reading sits behind its last, in seconds — the
+   window every trace off the same series is actually labelled with, since an
+   API that has not been collecting long only ever returns that much. */
+export const spanSeconds = (points) => (points?.length > 1 ? points.at(-1)[0] - points[0][0] : 0);
+
 export const percentile = (readings, p) => {
 	const sorted = [...readings].sort((a, b) => a - b);
 	return sorted[Math.min(sorted.length - 1, Math.ceil(p * sorted.length) - 1)];

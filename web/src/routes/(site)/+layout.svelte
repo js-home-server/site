@@ -197,6 +197,8 @@
 		}
 	}
 
+	/* Narrowest tier of the breakpoint scale (app.css): the nav has less room
+	   to give than a content grid, so it squeezes before anything else does. */
 	@media (max-width: 36rem) {
 		.site-shell {
 			--nav-line-height: 1rem;

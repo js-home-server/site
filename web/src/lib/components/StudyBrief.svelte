@@ -585,7 +585,7 @@
 
 	/* --- narrow ----------------------------------------------------------- */
 
-	@media (max-width: 62rem) {
+	@media (max-width: 60rem) {
 		.premise-band,
 		.plate-band,
 		.premise,

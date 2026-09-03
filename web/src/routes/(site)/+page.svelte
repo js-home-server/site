@@ -253,6 +253,8 @@
 		}
 	}
 
+	/* Phone tier of the breakpoint scale (app.css) — this is page chrome, not a
+	   dashboard-embedded component, so it reacts at the device width itself. */
 	@media (max-width: 48rem) {
 		.identity::before {
 			inset-inline: -1rem;

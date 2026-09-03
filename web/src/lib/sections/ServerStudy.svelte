@@ -525,11 +525,12 @@
 </div>
 
 <style>
-	/* .study, .box, .lede, .kicker, .thesis, .prose, .foot-note and .arrow are
+	/* .study, .box, .lede, .kicker, .thesis, .prose, .foot-note, .arrow, .intro,
+	   .spec, .limits, .card-item, .scope, .mark, .headline and .figure are
 	   shared across all four studies (app.css) — this file only keeps its own
-	   accent and the two things its layout genuinely does differently: ledes
-	   stacked with a bottom margin, and a stage with no card of its own since
-	   it already sits inside .flow. */
+	   accent and the things its layout genuinely does differently: a wider
+	   label column, ledes stacked with a bottom margin, and a stage with no
+	   card of its own since it already sits inside .flow. */
 	.study {
 		--ink: var(--amber-ink);
 	}
@@ -567,9 +568,7 @@
 	/* Every mark in the study, at one size, whether it came from logos.js or
 	   icons.js — so a brand row and a generic row read as the same row. */
 	.mark {
-		display: inline-flex;
 		font-size: var(--fs-xl);
-		line-height: 1;
 	}
 
 	.mark.small {
@@ -593,19 +592,7 @@
 		align-items: start;
 	}
 
-	.intro {
-		display: grid;
-		gap: 0.7rem;
-	}
-
 	/* Host, disks, OS — the header of a datasheet, read across. */
-	.spec {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.35rem 1.4rem;
-		margin: 0;
-	}
-
 	.spec div {
 		display: grid;
 		gap: 0.1rem;
@@ -625,20 +612,6 @@
 		font-family: var(--font-mono);
 		font-size: var(--fs-xs);
 		font-weight: 600;
-	}
-
-	.headline {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 0.6rem;
-	}
-
-	.figure {
-		display: grid;
-		gap: 0.15rem;
-		padding: 0.6rem 0.7rem;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-control);
 	}
 
 	.figure strong {
@@ -662,7 +635,7 @@
 		display: block;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-2xs);
 		line-height: 1.5;
 	}
 
@@ -935,14 +908,6 @@
 
 	.op .prose {
 		font-size: var(--fs-2xs);
-	}
-
-	.limits {
-		display: grid;
-		gap: 0.5rem;
-		margin: 0;
-		padding: 0;
-		list-style: none;
 	}
 
 	.limits li {

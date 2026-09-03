@@ -2,9 +2,10 @@
 	import Spark from './Spark.svelte';
 	import TimeAxis from './TimeAxis.svelte';
 	import ActionLink from './ActionLink.svelte';
-	import { degrees, ms, stamp } from '$lib/format.js';
+	import UptimeStrip from './UptimeStrip.svelte';
+	import { degrees, ms, span, stamp, uptimeHours } from '$lib/format.js';
 	import { server, watch } from '$lib/server.svelte.js';
-	import { bucket, mean, minMax, outages, percentile, values } from '$lib/stats.js';
+	import { mean, minMax, outages, percentile, spanSeconds, values } from '$lib/stats.js';
 
 	/* StatusBar only ever renders on the homepage, alongside the card this
 	   points at, so there is no page to navigate to — just the accordion to
@@ -17,17 +18,6 @@
 		event.preventDefault();
 		card.scrollIntoView({ behavior: 'smooth', block: 'center' });
 	}
-
-	/* Device pixels a bar needs before it reads as one width rather than a coin
-	   flip between two: a bar under this is thin enough that the ±1 device-pixel
-	   spread every sub-pixel layout leaves somewhere in a long row of bars reads
-	   as one bar doubling in size instead of the rounding noise it actually is.
-	   Counted in device pixels, not CSS ones, so a retina screen earns the extra
-	   bars its sharper grid can actually draw crisply, and a plain one gets fewer,
-	   fatter bars instead of the same count rendered illegibly thin. */
-	const MIN_BAR_DEVICE_PX = 6;
-	const GAP = 1; /* CSS px between bars */
-	const MAX_SEGMENTS = 96;
 
 	$effect(watch);
 
@@ -46,82 +36,30 @@
 	   which is at most `range` but less until it has been collecting that long.
 	   Labelling the window from the data means the caption can never overstate
 	   what the traces cover, and it grows into 24H on its own. */
-	let spanSeconds = $derived(uptime.length > 1 ? uptime.at(-1)[0] - uptime[0][0] : 0);
-	let spanLabel = $derived(
-		spanSeconds >= 3600
-			? `${Math.round(spanSeconds / 3600)}H`
-			: spanSeconds > 0
-				? `${Math.round(spanSeconds / 60)}M`
-				: '—'
-	);
+	let spanLabel = $derived(span(spanSeconds(uptime), { short: true }));
 
-	/* One bar per bucket of that same window, at the finest pitch the strip can
-	   draw: a phone card is narrower than 96 bars and their gaps, and this shrinks
-	   the count rather than every bar. Never more bars than samples either, or the
-	   empty buckets between them read as outages. */
-	let stripWidth = $state(0);
-	let segmentCount = $derived.by(() => {
-		if (!stripWidth) return MAX_SEGMENTS;
-		const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
-		const gapDevice = Math.max(1, Math.round(GAP * dpr));
-		const pitchDevice = MIN_BAR_DEVICE_PX + gapDevice;
-		const fit = Math.floor((stripWidth * dpr + gapDevice) / pitchDevice);
-		return Math.max(12, Math.min(MAX_SEGMENTS, fit));
-	});
-
-	/* Every bar's width in whole device pixels, not CSS pixels handed to the
-	   browser to round. With many fractional-width bars in a row, layout accumulates
-	   sub-pixel position error across the strip and has to snap an edge here and
-	   there at paint time — giving every <i> the same width doesn't stop that,
-	   since each edge still gets rounded on its own. Working the boundaries out
-	   ourselves as integers, then dividing back by the pixel ratio, means every
-	   edge already sits on the device grid and there is nothing left to round. */
-	let barWidths = $derived.by(() => {
-		const n = segmentCount;
-		if (!n || !stripWidth) return [];
-		const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
-		const gapDevice = Math.max(1, Math.round(GAP * dpr));
-		const totalDevice = Math.round(stripWidth * dpr) - (n - 1) * gapDevice;
-		const widths = [];
-		let prevEdge = 0;
-		for (let i = 1; i <= n; i++) {
-			const edge = Math.round((totalDevice * i) / n);
-			widths.push(Math.max(0, edge - prevEdge) / dpr);
-			prevEdge = edge;
-		}
-		return widths;
-	});
-
-	/* Any failed poll in the bucket makes it an outage, not most of them: a bar is
-	   a quarter of an hour, and asking for the average of one is what let a
-	   five-minute outage come out as a clean bar. A bucket the API had nothing for
-	   is unknown, which is not the same as down and must not be drawn as if it
-	   were. */
-	let segments = $derived(
-		bucket(uptime, segmentCount).map((v) => (v === null ? 'unknown' : v < 1 ? 'down' : 'up'))
-	);
-
-	/* Counted off the series itself rather than the bars drawn from it: a bar is a
-	   quarter of an hour averaged, so a single failed poll inside one leaves it
-	   above the half and the strip has nothing to show. The strip is a picture of
-	   the window; this is the count, and the dashboard reads it the same way. */
+	/* Counted off the series itself rather than the bars UptimeStrip draws from
+	   it: a bar is a slice of the window averaged, so a single failed poll inside
+	   one leaves it above the half and the strip has nothing to show. The strip
+	   is a picture of the window; this is the count, and the dashboard reads it
+	   the same way. */
 	let incidents = $derived(outages(uptime));
 
 	/* One entry per reading. Everything the markup needs is settled here, so the
 	   template stays a list of readings rather than a pile of ternaries. The whole
 	   bar is one box now, and the one link in it is the lede's — so these no longer
 	   carry a section of the dashboard to point at. */
+	let hours = $derived(online ? uptimeHours(snapshot?.availability.uptime_seconds) : null);
+
 	let cards = $derived([
 		{
 			label: 'Uptime',
-			value: online && Number.isFinite(snapshot.availability.uptime_seconds)
-				? Math.floor(snapshot.availability.uptime_seconds / 3600)
-				: '—',
-			unit: online && Number.isFinite(snapshot.availability.uptime_seconds) ? 'h' : '',
+			value: hours ?? '—',
+			unit: hours !== null ? 'h' : '',
 			tone: 'mint',
 			/* Silence is not the same as a clean record: with no series behind it
 			   the strip cannot say anything about incidents either way. */
-			stats: segments.length
+			stats: uptime.length > 1
 				? incidents
 					? `${incidents} INCIDENT${incidents > 1 ? 'S' : ''}`
 					: 'NO INCIDENTS'
@@ -155,12 +93,6 @@
 			points: latencies
 		}
 	]);
-
-	let uptimeLabel = $derived(
-		segments.length
-			? `Server uptime over the last ${spanLabel}: ${segments.filter((s) => s === 'up').length} of ${segments.length} intervals up`
-			: 'Server uptime history unavailable'
-	);
 </script>
 
 {#snippet metricCard({ label, value, unit, tight, tone, stats, points, strip })}
@@ -171,11 +103,7 @@
 		</strong>
 		<span class="stats">{stats}</span>
 		{#if strip}
-			<div class="history" bind:clientWidth={stripWidth} role="img" aria-label={uptimeLabel}>
-				{#each segments as state, i}
-					<i class={state} style="width: {barWidths[i]}px"></i>
-				{/each}
-			</div>
+			<UptimeStrip {uptime} height="1.85rem" class="history" />
 		{:else}
 			<Spark {points} tone="var(--{tone})" />
 		{/if}
@@ -364,31 +292,10 @@
 
 	   Every bar takes that full height, which is the height of those traces: this is
 	   a band of colour across the window, not a chart with a reading to stand at. */
-	.history {
-		display: flex;
-		gap: 1px;
-		height: 1.85rem;
+	/* UptimeStrip's own layout and bar colours; this is only the card's slot for
+	   it — level with Spark's own margin-top: auto in the card beside it. */
+	:global(.history) {
 		margin-top: auto;
-	}
-
-	.history i {
-		/* Width is set inline per bar, in whole device pixels (barWidths in the
-		   script) — not left to flex-grow, which would hand each bar a fractional
-		   CSS width and make the browser round it at paint time. flex: none stops
-		   the box from nudging that number to fill any leftover space itself. */
-		flex: none;
-		border-radius: 1px;
-		/* The bare bar is unknown, not down: dim enough to read as "no data"
-		   beside the mint, and never mistakable for an outage. */
-		background: color-mix(in srgb, var(--mint) 12%, var(--color-background));
-	}
-
-	.history i.up {
-		background: var(--mint);
-	}
-
-	.history i.down {
-		background: var(--coral);
 	}
 
 	/* Smaller than a figure on the dashboard: three of these share the width of

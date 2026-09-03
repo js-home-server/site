@@ -184,6 +184,22 @@
 	--fs-base: 0.9375rem; /* 15px – default prose, standalone numerals */
 	--fs-lg: 1.125rem; /* 18px – subheads */
 	--fs-xl: 1.75rem; /* 28px – figures */
+
+	/* The breakpoint scale. CSS custom properties can't be read inside an
+	   @media condition, so this is a convention rather than a token — pick
+	   the narrowest of these that already fits a new query rather than
+	   writing another one-off width, the same discipline the type scale
+	   above keeps for font-size.
+	     36rem – nav-only squeeze (the header has less room to give than a
+	             content grid)
+	     40rem – a component collapses to one column / drops a decoration
+	     48rem – phone, for the page's own top-level chrome (StatusBar, hero)
+	     52rem – phone, for a component embedded in the dashboard's already-
+	             narrowed content column (Heatmap, Spread, Stack, its own rail)
+	     60rem – a study or content grid collapses to one column
+	   Two "phone" tiers exist because a dashboard component reacts to the
+	   width of its own narrower column, not the device's — it hits its
+	   squeeze point at a wider viewport than the page chrome around it does. */
 }
 
 @media (min-resolution: 1.5dppx) {
@@ -578,4 +594,87 @@
 	font-family: var(--font-mono);
 	font-size: var(--fs-2xs);
 	font-weight: 600;
+}
+
+/* A study's two-column shell — banner over the fuller write-up beside it.
+   Server's own request-path study keeps a wider first column as a local
+   override; every other study reads this. */
+.row {
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+	gap: 1.5rem;
+	align-items: start;
+}
+
+/* A block's opening column: the thesis/prose stack, and whatever install
+   chip or spec list sits under it. */
+.intro {
+	display: grid;
+	gap: 0.7rem;
+}
+
+/* The <dl> of terms under a banner's intro — tool names, model sizes,
+   whatever the study's own opening wants to spell out plainly. */
+.spec {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.35rem 1.4rem;
+	margin: 0;
+}
+
+/* A list of qualifications under a study's own claim: what it does and does
+   not cover. */
+.limits {
+	display: grid;
+	gap: 0.5rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+/* One card in a grid of them — a milestone, a cost line, a pattern. */
+.card-item {
+	display: grid;
+	align-content: start;
+	gap: 0.45rem;
+	padding: 0.8rem 0.9rem;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-panel);
+}
+
+/* The rail's word's own scope line: what the section covers, one step
+   quieter than .kicker. */
+.scope {
+	color: var(--text-faint);
+	font-family: var(--font-mono);
+	font-size: var(--fs-3xs);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+/* The icon beside a note or a limit. display/line-height only — the size and,
+   on the studies with a light ground of their own, the -ink colour a plain
+   accent doesn't clear there, are local per study. */
+.mark {
+	display: inline-flex;
+	line-height: 1;
+}
+
+/* Two figures side by side under a banner's opening claim — the study's
+   headline numbers. Scoped under .study: Contact.svelte's own .headline is
+   an unrelated paragraph, not this grid. */
+.study .headline {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.6rem;
+}
+
+/* One of those two numbers, boxed like every other reading on the datasheet.
+   Scoped under .study for the same reason .headline is above — StatusBar and
+   the server dashboard both have their own unrelated .figure. */
+.study .figure {
+	display: grid;
+	gap: 0.15rem;
+	padding: 0.6rem 0.7rem;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-control);
 }

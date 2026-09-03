@@ -387,15 +387,10 @@ test_html_proportions();`}</code></pre>
 <style>
 	/* The study wears the program's own clothes: sections named as flags, the
 	   page kept grey, and the renders the only colour in it. .study, .box,
-	   .lede, .thesis, .prose, .foot-note, .arrow and .stage's card are shared
-	   across all four studies (app.css) — nothing here needs its own accent,
-	   so .study carries no local rule at all. */
-
-	.row {
-		grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
-		gap: 1.5rem;
-		align-items: start;
-	}
+	   .lede, .thesis, .prose, .foot-note, .arrow, .stage's card, .row, .intro,
+	   .spec, .limits, .scope and .mark's base are shared across all four
+	   studies (app.css) — nothing here needs its own accent, so .study
+	   carries no local rule at all. */
 
 	.row > div {
 		display: grid;
@@ -418,7 +413,7 @@ test_html_proportions();`}</code></pre>
 		color: var(--text-faint);
 		font-family: var(--font-mono);
 		font-size: var(--fs-2xs);
-		line-height: 1.55;
+		line-height: 1.5;
 	}
 
 	/* Same treatment as the shared .prose/.foot-note code (app.css), extended
@@ -433,21 +428,11 @@ test_html_proportions();`}</code></pre>
 	}
 
 	.mark {
-		display: inline-flex;
 		flex: none;
 		/* -ink: this icon is on the study's light ground and plain --amber
 		   measures 1.75:1 there. */
 		color: var(--amber-ink);
 		font-size: var(--fs-base);
-		line-height: 1;
-	}
-
-	.scope {
-		color: var(--text-faint);
-		font-family: var(--font-mono);
-		font-size: var(--fs-3xs);
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
 	}
 
 	/* --- the banner ------------------------------------------------------- */
@@ -458,11 +443,6 @@ test_html_proportions();`}</code></pre>
 		align-items: start;
 	}
 
-	.intro {
-		display: grid;
-		gap: 0.7rem;
-	}
-
 	.install {
 		justify-self: start;
 		padding: 0.45rem 0.8rem;
@@ -471,13 +451,6 @@ test_html_proportions();`}</code></pre>
 		color: #d6d5cf;
 		font-family: var(--font-mono);
 		font-size: var(--fs-xs);
-	}
-
-	.spec {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.35rem 1.4rem;
-		margin: 0;
 	}
 
 	.spec div {
@@ -742,14 +715,6 @@ test_html_proportions();`}</code></pre>
 	}
 
 	/* --- limits ----------------------------------------------------------- */
-
-	.limits {
-		display: grid;
-		gap: 0.5rem;
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
 
 	.limits li {
 		display: grid;
