@@ -260,7 +260,7 @@
 		margin: 0;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		letter-spacing: 0.02em;
 	}
 
@@ -302,8 +302,16 @@
 	a.value {
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
-		font-size: var(--fs-sm);
+		font-size: var(--fs-base);
 		text-decoration: none;
+	}
+
+	/* The github/linkedin/CV rows above are ActionLink, not a plain <a>: its own
+	   .action-link.plain rule matches two classes against this file's one, so
+	   a.value's font-size above never reaches them — --link-size does, scoped
+	   to .channels so it cannot leak to some other page's own .value class. */
+	.channels :global(.value) {
+		--link-size: var(--fs-base);
 	}
 
 	a.value:hover {
@@ -359,6 +367,7 @@
 	form .eyebrow {
 		display: block;
 		margin-bottom: -0.25rem;
+		font-size: var(--fs-base);
 	}
 
 	.field {
@@ -369,7 +378,7 @@
 	label {
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-base);
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 	}

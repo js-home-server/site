@@ -3,6 +3,12 @@
 	import ActionLink from '$lib/components/ActionLink.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import Logo from '$lib/components/Logo.svelte';
+	import { fleet } from '$lib/containers.js';
+	import { server } from '$lib/server.svelte.js';
+
+	let runningContainers = $derived(
+		server.snapshot ? fleet(server.snapshot.containers?.items).running : null
+	);
 
 	/* The work worth showing. `tools` are what each is actually built with; `url`
 	   is where the source is, on the ones that are public; `live` is where it
@@ -19,6 +25,7 @@
 			url: 'https://github.com/JS195/ancestree',
 			pypi: 'https://pypi.org/project/ancestree-track/',
 			docs: 'https://js195.github.io/ancestree/',
+			tagline: 'There’s an interactive pipeline hiding in the case study.',
 			route: '/projects/ancestree/',
 			brief: 'ancestree'
 		},
@@ -30,6 +37,7 @@
 			tools: ['Svelte', 'JavaScript', 'Docker', 'Linux', 'Python'],
 			url: 'https://github.com/js-home-server',
 			live: '/server/',
+			tagline: null,
 			route: '/projects/server/',
 			brief: 'server'
 		},
@@ -40,7 +48,7 @@
 				'Order flow cannot be backfilled, and the vendors that sell it retain days rather than years. So I built the collector: 11.5M rows a day off ten venue feeds, folded to 108 MB of Parquet, and the cross-sectional strategy study that reads it back. Its 583 streams cover 100 base assets across six exchanges with 1.0 ms median writer lag. The archive supports a market-neutral strategy with 2.39 net Sharpe over 6.5 years and 1.08 walk-forward; shuffled-signal and lookahead checks test the result.',
 			tools: ['Python', 'Docker', 'Polars', 'NumPy'],
 			url: 'https://github.com/JS195/orderflow-alpha',
-			liveBadge: true,
+			tagline: '1,064 socket drops absorbed. Not one row lost.',
 			route: '/projects/orderflow/',
 			brief: 'orderflow'
 		},
@@ -51,6 +59,7 @@
 				'A photograph is a grid of pixels and a terminal is a grid of characters. A C11 renderer converts one to the other, with sampling, tone curve, glyph selection and encoding as separately tested stages. It runs in 13 ms and draws every image on this site. Its seven modules comprise 1,300 lines of C11, with one vendored dependency and clean builds under -Wall, -Wextra and -Wpedantic. Seventeen tests and 168 assertions cover the pipeline and output geometry; one Make target regenerates five site components byte-identically.',
 			tools: ['C++', 'Git'],
 			url: 'https://github.com/JS195/asciiArt',
+			tagline: 'Every image on this site renders through 1,300 lines of C11.',
 			route: '/projects/ascii-art/',
 			brief: 'ascii'
 		}
@@ -63,14 +72,18 @@
 		<h2 class="section-title">My projects</h2>
 
 		<div class="cards">
-			{#each PROJECTS as { name, year, blurb, tools, url, live, pypi, docs, demo, liveBadge, route, brief } (name)}
+			{#each PROJECTS as { name, year, blurb, tools, url, live, pypi, docs, demo, tagline, route, brief } (name)}
 				<article id={brief} class="card">
 					<div class="identity">
 						<h3>{name}</h3>
 						<p class="meta"><span>{year}</span><span aria-hidden="true">·</span> Solo developer</p>
-						{#if live || liveBadge}
-							<p class="live"><i aria-hidden="true"></i>Live</p>
-						{/if}
+						<p class="tagline" aria-live={live ? 'polite' : undefined}>
+							{live
+								? runningContainers === null
+									? 'Checking the running containers…'
+									: `${runningContainers} containers are running this very second.`
+								: tagline}
+						</p>
 						<div class="tools-row"><ToolPills {tools} /></div>
 					</div>
 
@@ -78,7 +91,7 @@
 
 					<div class="actions">
 						<div class="primary">
-							<ActionLink direction="site" href={route}>Read case study</ActionLink>
+							<a class="case-link" href={route}>Read case study</a>
 						</div>
 						{#if demo || url || pypi || docs || live}
 							<nav class="links" aria-label={`${name} links`}>
@@ -155,7 +168,7 @@
 	}
 
 	.meta,
-	.live {
+	.tagline {
 		font-family: var(--font-mono);
 	}
 
@@ -167,24 +180,11 @@
 		font-size: var(--fs-sm);
 	}
 
-	.live {
-		display: flex;
-		align-items: center;
-		gap: 0.35rem;
+	.tagline {
 		margin: 0.45rem 0 0;
-		color: var(--mint-ink);
-		font-weight: 500;
-		font-size: var(--fs-xs);
-		letter-spacing: 0.05em;
-		text-transform: uppercase;
-	}
-
-	.live i {
-		width: 0.4rem;
-		height: 0.4rem;
-		border-radius: 50%;
-		background: currentcolor;
-		box-shadow: 0 0 0.45rem currentcolor;
+		color: var(--text-faint);
+		font-size: var(--fs-sm);
+		line-height: 1.5;
 	}
 
 	.tools-row {
@@ -205,17 +205,35 @@
 		color: var(--mint-ink);
 	}
 
+	/* No arrow, no underline: this is the one solid button among the section's
+	   links, so it wears the same soft-fill hover the contact form's Send
+	   message button does (Contact.svelte) rather than ActionLink's usual
+	   look. overflow:hidden clips that fill to the button's own rounded
+	   corners. */
 	.primary {
-		padding: 0.6rem 0.8rem;
+		overflow: hidden;
 		border: 1px solid var(--mint-ink);
 		border-radius: var(--radius-control);
-		text-align: center;
 	}
 
-	.primary :global(.action-link) {
+	/* Block and padded here instead of on .primary: the link's own box is then
+	   the whole button, so hovering or clicking anywhere in it — not just the
+	   words — reaches the link. */
+	.case-link {
+		display: block;
+		padding: 0.6rem 0.8rem;
 		color: var(--mint-ink);
+		font-family: var(--font-mono);
+		font-size: var(--fs-base);
 		font-weight: 500;
-		--link-size: var(--fs-base);
+		text-align: center;
+		text-decoration: none;
+		transition: background-color 160ms ease;
+	}
+
+	.case-link:hover,
+	.case-link:focus-visible {
+		background: color-mix(in srgb, var(--mint-ink) 12%, transparent);
 	}
 
 	.links {
