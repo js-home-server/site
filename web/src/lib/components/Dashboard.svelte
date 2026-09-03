@@ -223,7 +223,7 @@
 
 		/* No panel in here is a heading of its own — the section's own h2 is that —
 		   so every one of their titles is turned down to a label. */
-		--title-size: 0.68rem;
+		--title-size: var(--fs-2xs);
 		--title-color: var(--text-faint);
 
 		box-sizing: border-box;

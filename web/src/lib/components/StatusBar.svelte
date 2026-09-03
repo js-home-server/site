@@ -308,7 +308,7 @@
 
 	.unit {
 		margin-left: 0.3em;
-		font-size: 0.5em;
+		font-size: var(--fs-2xs);
 		font-weight: 500;
 		letter-spacing: 0.04em;
 	}

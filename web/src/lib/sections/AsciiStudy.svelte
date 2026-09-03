@@ -424,7 +424,7 @@ test_html_proportions();`}</code></pre>
 		padding: 0.05rem 0.25rem;
 		border-radius: var(--radius-control);
 		background: color-mix(in srgb, var(--color-foreground) 5%, transparent);
-		font-size: 0.95em;
+		font-size: 1em;
 	}
 
 	.mark {
@@ -671,7 +671,7 @@ test_html_proportions();`}</code></pre>
 	.quant .tag {
 		margin-left: 0.4rem;
 		color: var(--text-faint);
-		font-size: 0.9em;
+		font-size: var(--fs-2xs);
 	}
 
 	/* --- the gotcha ------------------------------------------------------- */

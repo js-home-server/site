@@ -153,7 +153,7 @@
 	.uptime .unit {
 		margin-left: 0.15em;
 		color: var(--text-dim);
-		font-size: 0.6em;
+		font-size: var(--fs-2xs);
 		font-weight: 500;
 	}
 

@@ -1,6 +1,7 @@
 <script>
 	import favicon from '$lib/assets/favicon.svg';
 	import '../app.css';
+	import MobileNotice from '$lib/components/MobileNotice.svelte';
 	import { page } from '$app/state';
 	import interWoff2 from '@fontsource/inter/files/inter-latin-400-normal.woff2?url';
 	import jetbrainsMonoWoff2 from '@fontsource/jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2?url';
@@ -42,4 +43,5 @@
 	<meta name="twitter:image" content={ogImage} />
 </svelte:head>
 
+<MobileNotice />
 {@render children()}

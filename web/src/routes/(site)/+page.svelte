@@ -214,7 +214,7 @@
 		max-width: min(100%, 66 * var(--cell));
 		margin: clamp(0.5rem, 1.5 * var(--cell), 1.1rem) auto 0;
 		color: var(--text-dim);
-		font-size: clamp(0.7rem, 1.55 * var(--cell), 1.05rem);
+		font-size: clamp(0.75rem, 1.55 * var(--cell), 1.05rem);
 		font-weight: 400;
 		line-height: 1.6;
 		/* Balanced, not pretty: pretty only guards the last line, which here still

@@ -225,7 +225,7 @@
 		--color-border: var(--border);
 		--text-dim: #a09f98;
 		--text-faint: #8a8a84;
-		--title-size: 0.55rem;
+		--title-size: var(--fs-2xs);
 		--title-color: var(--text-faint);
 		--axis-w: 1.7rem;
 		--graph-min: 3rem;

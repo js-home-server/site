@@ -597,7 +597,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		margin-left: 0.12em;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: 0.36em;
+		font-size: var(--fs-2xs);
 		font-weight: 500;
 		letter-spacing: 0;
 	}
