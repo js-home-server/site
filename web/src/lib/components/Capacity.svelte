@@ -33,7 +33,7 @@
 
 	.reading {
 		color: var(--color-foreground);
-		font-size: var(--fs-lg);
+		font-size: var(--fs-subhead);
 	}
 
 	.bar {

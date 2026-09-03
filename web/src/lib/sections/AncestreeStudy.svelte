@@ -531,7 +531,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		display: block;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		line-height: 1.5;
 	}
 
@@ -572,7 +572,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 	.spec dt {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
 	}
@@ -587,7 +587,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 
 	.figure strong {
 		color: var(--color-foreground);
-		font-size: var(--fs-lg);
+		font-size: var(--fs-subhead);
 		font-weight: 700;
 		letter-spacing: -0.02em;
 		line-height: 1.1;
@@ -597,7 +597,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		margin-left: 0.12em;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: 500;
 		letter-spacing: 0;
 	}
@@ -614,7 +614,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		background: var(--color-background);
 		color: #d6d5cf;
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		line-height: 1.75;
 		tab-size: 4;
 	}
@@ -629,7 +629,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 	.bars-head {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
 	}
@@ -667,7 +667,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 	.bar-value {
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		text-align: right;
 	}
 
@@ -675,7 +675,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		grid-column: 2 / -1;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		line-height: 1.5;
 	}
 
@@ -707,7 +707,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		border-radius: 50%;
 		color: var(--ink);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 	}
 
 	.layer-body {
@@ -772,7 +772,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 	.pattern-value {
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 	}
 
 	.pattern-value {
@@ -826,7 +826,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		margin-top: 0.3rem;
 		border-collapse: collapse;
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 	}
 
 	.cost th,
@@ -881,7 +881,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		padding-left: 0.85rem;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		line-height: 1.55;
 	}
 
@@ -936,7 +936,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		padding: 0.15rem 0.5rem;
 		border-radius: 999px;
 		font-family: var(--font-mono);
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 		font-weight: 600;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
@@ -963,7 +963,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		width: 100%;
 		border-collapse: collapse;
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 	}
 
 	.rewrite th,
@@ -977,7 +977,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 	.rewrite thead th {
 		padding-top: 0;
 		color: var(--text-faint);
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 		font-weight: 500;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
@@ -1012,7 +1012,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		align-items: baseline;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		line-height: 1.6;
 	}
 

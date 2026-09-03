@@ -233,7 +233,7 @@
 	.headline {
 		margin: -0.5rem 0 0;
 		color: var(--color-foreground);
-		font-size: clamp(1.25rem, 2vw, 1.6rem);
+		font-size: var(--fs-subhead);
 		font-weight: 700;
 		letter-spacing: -0.02em;
 		line-height: 1.2;

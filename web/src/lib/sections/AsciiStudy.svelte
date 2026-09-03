@@ -403,7 +403,7 @@ test_html_proportions();`}</code></pre>
 		justify-self: start;
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: 600;
 		letter-spacing: 0.04em;
 	}
@@ -412,7 +412,7 @@ test_html_proportions();`}</code></pre>
 		display: block;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		line-height: 1.5;
 	}
 
@@ -424,7 +424,7 @@ test_html_proportions();`}</code></pre>
 		padding: 0.05rem 0.25rem;
 		border-radius: var(--radius-control);
 		background: color-mix(in srgb, var(--color-foreground) 5%, transparent);
-		font-size: 1em;
+		font-size: var(--fs-xs);
 	}
 
 	.mark {
@@ -461,7 +461,7 @@ test_html_proportions();`}</code></pre>
 	.spec dt {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
 	}
@@ -492,7 +492,7 @@ test_html_proportions();`}</code></pre>
 		margin-top: 0.4rem;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		line-height: 1.5;
 	}
 
@@ -538,14 +538,14 @@ test_html_proportions();`}</code></pre>
 	.rule {
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 	}
 
 	.render figcaption code {
 		justify-self: start;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 		line-height: 1.5;
 	}
 
@@ -569,7 +569,7 @@ test_html_proportions();`}</code></pre>
 	.stage span {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 		line-height: 1.45;
 	}
 
@@ -592,7 +592,7 @@ test_html_proportions();`}</code></pre>
 	.module span {
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 	}
 
 	/* --- code ------------------------------------------------------------- */
@@ -605,7 +605,7 @@ test_html_proportions();`}</code></pre>
 		background: var(--color-background);
 		color: #d6d5cf;
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		line-height: 1.75;
 	}
 
@@ -639,7 +639,7 @@ test_html_proportions();`}</code></pre>
 		width: 100%;
 		border-collapse: collapse;
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 	}
 
 	.quant th,
@@ -652,7 +652,7 @@ test_html_proportions();`}</code></pre>
 	.quant thead th {
 		padding-top: 0;
 		color: var(--text-faint);
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 		border-bottom: 1px solid var(--color-border);
@@ -671,7 +671,7 @@ test_html_proportions();`}</code></pre>
 	.quant .tag {
 		margin-left: 0.4rem;
 		color: var(--text-faint);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 	}
 
 	/* --- the gotcha ------------------------------------------------------- */
@@ -710,7 +710,7 @@ test_html_proportions();`}</code></pre>
 		margin: 0;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		line-height: 1.6;
 	}
 
@@ -723,7 +723,7 @@ test_html_proportions();`}</code></pre>
 		align-items: baseline;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		line-height: 1.6;
 	}
 

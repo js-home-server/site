@@ -113,7 +113,7 @@
 	.projects .section-title {
 		display: block;
 		margin-bottom: 0;
-		font-size: var(--fs-xl);
+		font-size: var(--fs-h2);
 	}
 
 	.cards {
@@ -148,7 +148,7 @@
 
 	.identity h3 {
 		margin: 0;
-		font-size: var(--fs-lg);
+		font-size: var(--fs-subhead);
 		font-weight: 700;
 		letter-spacing: -0.04em;
 		line-height: 1;
@@ -195,7 +195,7 @@
 		margin: 0;
 		max-width: 56ch;
 		color: var(--text-dim);
-		font-size: var(--fs-sm);
+		font-size: var(--fs-base);
 		line-height: 1.75;
 	}
 
@@ -215,6 +215,7 @@
 	.primary :global(.action-link) {
 		color: var(--mint-ink);
 		font-weight: 500;
+		--link-size: var(--fs-base);
 	}
 
 	.links {
@@ -223,12 +224,11 @@
 
 	.links :global(.action-link) {
 		display: flex;
-		gap: 0.3rem;
 		align-items: center;
 		padding: 0.5rem 0.2rem;
 		border-bottom: var(--rule);
-		color: var(--mint-ink);
-		font-size: var(--fs-sm);
+		color: var(--color-foreground);
+		--link-size: var(--fs-base);
 	}
 
 	.links :global(.action-link:last-child) {
@@ -244,13 +244,6 @@
 	.link-label :global(svg),
 	.link-label :global(.icon) {
 		font-size: 1.25em;
-	}
-
-	.links :global(.action-link:hover),
-	.links :global(.action-link:focus-visible),
-	.primary :global(.action-link:hover),
-	.primary :global(.action-link:focus-visible) {
-		text-decoration: underline;
 	}
 
 	@media (max-width: 60rem) {

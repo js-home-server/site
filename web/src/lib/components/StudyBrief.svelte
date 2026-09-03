@@ -208,7 +208,7 @@
 		padding: 0.3rem 0.85rem;
 		color: var(--paper);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: 600;
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
@@ -237,7 +237,7 @@
 		display: block;
 		color: var(--ink);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: 700;
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
@@ -356,7 +356,7 @@
 
 	.block dt {
 		color: var(--ink);
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 		opacity: 0.75;
 	}
 
@@ -509,7 +509,7 @@
 	.tick-label {
 		color: var(--ink);
 		font-family: var(--font-mono);
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 		text-align: center;
 		font-variant-numeric: tabular-nums;
 	}
@@ -522,7 +522,7 @@
 
 	.tick-label {
 		color: var(--body-ink);
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 	}
 
 	/* --- the notes rail --------------------------------------------------- */
@@ -576,7 +576,7 @@
 		margin: 0;
 		color: var(--ink);
 		font-family: var(--font-mono);
-		font-size: var(--fs-lg);
+		font-size: var(--fs-subhead);
 		font-weight: 700;
 		letter-spacing: -0.01em;
 		line-height: 1.2;

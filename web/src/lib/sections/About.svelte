@@ -49,7 +49,6 @@
 					direction="download"
 					href="/cv.pdf"
 					download="joshua-smith-cv.pdf"
-					class="cv"
 				>
 					Download CV
 				</ActionLink>
@@ -158,14 +157,6 @@
 		gap: 0.5rem;
 	}
 
-	/* ActionLink's own .cta size is a step up from this row's own scale — the
-	   two figures the rest of its look (mint, mono, nudge) comes from ActionLink
-	   still hold. */
-	:global(.cv) {
-		font-size: var(--fs-xs);
-		letter-spacing: 0.12em;
-	}
-
 	.milestone {
 		position: relative;
 		padding-left: 1.5rem;
@@ -182,21 +173,21 @@
 		margin: 0;
 		color: var(--mint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		letter-spacing: 0.12em;
 	}
 
 	.title {
 		margin: 0.3rem 0 0;
 		color: var(--color-foreground);
-		font-size: var(--fs-base);
+		font-size: var(--fs-subhead);
 		font-weight: 700;
 	}
 
 	.detail,
 	.milestone li {
 		color: var(--text-dim);
-		font-size: var(--fs-sm);
+		font-size: var(--fs-base);
 		line-height: 1.7;
 	}
 
@@ -220,7 +211,7 @@
 		position: relative;
 		display: grid;
 		gap: 0.45rem;
-		padding-left: 0.9rem;
+		padding-left: 1rem;
 		padding-bottom: 0.35rem;
 	}
 
@@ -228,7 +219,7 @@
 		position: absolute;
 		left: 0;
 		color: var(--mint);
-		content: '—';
+		content: '–';
 	}
 
 	/* The stop on the rail, level with the top of the entry beside it. */

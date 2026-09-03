@@ -101,7 +101,7 @@
 		transform: translateY(-50%);
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 	}
 
 	.canvas {
@@ -158,7 +158,7 @@
 		transform: translateX(-50%);
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 	}
 
 	.key {
@@ -168,7 +168,7 @@
 		gap: 0.35rem 1rem;
 		padding-left: 2.15rem;
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 	}
 
 	.key span {
@@ -190,7 +190,7 @@
 		display: block;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		line-height: 1.5;
 	}
 

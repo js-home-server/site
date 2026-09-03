@@ -1,4 +1,6 @@
 <script>
+	import { page } from '$app/state';
+
 	let { children } = $props();
 
 	/* The portfolio is one scroll now, so these are stops on it rather than
@@ -74,6 +76,13 @@
 	   layout of a page that is ~16k ascii-art spans, on every frame of every
 	   scroll. */
 	$effect(() => {
+		/* Read so the effect reruns on every client-side navigation: the layout
+		   itself never remounts between routes in this group, so without this the
+		   observer keeps watching whichever section elements existed at its first
+		   run — nodes a later navigation away from and back to home has since
+		   thrown away — and `active` freezes on its last value forever. */
+		page.url.pathname;
+
 		const spy = new IntersectionObserver(
 			(entries) => {
 				for (const entry of entries) if (entry.isIntersecting) active = `/#${entry.target.id}`;

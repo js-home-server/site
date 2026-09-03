@@ -24,11 +24,8 @@
 
 		<div class="identity">
 			<h1>Joshua Smith</h1>
-			<p class="tagline">I turn numbers into models, decisions and the occasional bull.</p>
-			<p class="proof">
-				Data Engineer focused on real-time, scientific, and ML systems.
-			</p>
-			<ActionLink variant="cta" direction="site" href="#projects" class="cta">View my work</ActionLink>
+			<p class="tagline">Data Engineer focused on real-time, scientific, and ML systems.<br />I turn numbers into models, decisions and the occasional bull.</p>
+			<ActionLink variant="cta" direction="site" href="#projects" class="hero-cta">View my work</ActionLink>
 		</div>
 	</div>
 
@@ -177,14 +174,13 @@
 		pointer-events: none;
 	}
 
-	/* The name is measured in cells like everything else, so it keeps its size
-	   relative to the face it sits on instead of drifting against it. 11 cells
-	   is the 105.6px it renders at on the reference screen. The clamps are only
-	   end-stops for the extremes the cell cannot sensibly reach. */
+	/* The hero headline, from the global type scale rather than measured in
+	   cells against the bull's own size — every font-size on the site reads
+	   one of these tokens now, this one included. */
 	h1 {
 		margin: 0;
 		color: var(--color-foreground);
-		font-size: clamp(1.7rem, 7.6 * var(--cell), 6.2rem);
+		font-size: var(--fs-h1);
 		font-weight: 700;
 		letter-spacing: -0.05em;
 		line-height: 0.95;
@@ -198,28 +194,10 @@
 	.tagline {
 		margin: clamp(0.6rem, 1.8 * var(--cell), 1.4rem) 0 0;
 		color: var(--color-foreground);
-		font-size: clamp(0.85rem, 2.5 * var(--cell), 1.75rem);
+		font-size: var(--fs-subhead);
 		font-weight: 400;
 		letter-spacing: -0.01em;
 		line-height: 1.35;
-		text-wrap: balance;
-	}
-
-	/* What the line above it is actually claiming, so it is set quieter and to a
-	   measure rather than to the box: the identity is as wide as the horns, and a
-	   sentence this long run across all of it is not a line anyone reads. Capped in
-	   cells like the type itself, so the measure holds its proportion to the face
-	   at every size instead of snapping at a breakpoint. */
-	.proof {
-		max-width: min(100%, 66 * var(--cell));
-		margin: clamp(0.5rem, 1.5 * var(--cell), 1.1rem) auto 0;
-		color: var(--text-dim);
-		font-size: clamp(0.75rem, 1.55 * var(--cell), 1.05rem);
-		font-weight: 400;
-		line-height: 1.6;
-		/* Balanced, not pretty: pretty only guards the last line, which here still
-		   left "lightning strikes." alone under two full ones. Centred type wants
-		   the whole block evened out. */
 		text-wrap: balance;
 	}
 
@@ -227,10 +205,13 @@
 	   the whole identity block scales as one thing — ActionLink's own .cta
 	   carries the rest of the look (mint, mono, small caps, the arrow and its
 	   nudge; see ActionLink.svelte for the site's full down/site/external/
-	   download convention). */
-	:global(.cta) {
+	   download convention). Named .hero-cta, not .cta: every cta-variant link
+	   already wears a literal "cta" class of its own (ActionLink.svelte), and
+	   :global(.cta) here would have unscoped straight past this one link to
+	   override every other cta button on the site. */
+	:global(.hero-cta) {
 		margin-top: clamp(0.8rem, 2.2 * var(--cell), 1.6rem);
-		font-size: clamp(0.66rem, 1.7 * var(--cell), 1rem);
+		--cta-size: var(--fs-base);
 	}
 
 

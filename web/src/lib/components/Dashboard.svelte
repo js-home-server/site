@@ -166,7 +166,7 @@
 
 	.idx {
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		letter-spacing: 0.08em;
 	}
 
@@ -223,7 +223,7 @@
 
 		/* No panel in here is a heading of its own — the section's own h2 is that —
 		   so every one of their titles is turned down to a label. */
-		--title-size: var(--fs-2xs);
+		--title-size: var(--fs-xs);
 		--title-color: var(--text-faint);
 
 		box-sizing: border-box;
@@ -259,7 +259,7 @@
 	h2 {
 		margin: 0;
 		color: var(--color-foreground);
-		font-size: var(--fs-lg);
+		font-size: var(--fs-subhead);
 		font-weight: 700;
 		letter-spacing: -0.01em;
 	}

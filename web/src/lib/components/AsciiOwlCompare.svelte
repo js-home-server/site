@@ -91,7 +91,7 @@
 	figcaption {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 	}

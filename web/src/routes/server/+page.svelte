@@ -166,7 +166,7 @@
 	   and µs are unit symbols and are wrong in any other. */
 	.range {
 		color: var(--text-dim);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: 500;
 		letter-spacing: 0.08em;
 	}

@@ -561,14 +561,14 @@
 
 	code {
 		font-family: var(--font-mono);
-		font-size: 0.92em;
+		font-size: var(--fs-xs);
 		color: var(--color-foreground);
 	}
 
 	/* Every mark in the study, at one size, whether it came from logos.js or
 	   icons.js — so a brand row and a generic row read as the same row. */
 	.mark {
-		font-size: var(--fs-xl);
+		font-size: var(--fs-h2);
 	}
 
 	.mark.small {
@@ -601,7 +601,7 @@
 	.spec dt {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
 	}
@@ -616,7 +616,7 @@
 
 	.figure strong {
 		color: var(--color-foreground);
-		font-size: var(--fs-lg);
+		font-size: var(--fs-subhead);
 		font-weight: 700;
 		letter-spacing: -0.02em;
 		line-height: 1.1;
@@ -626,7 +626,7 @@
 		margin-left: 0.12em;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: 500;
 		letter-spacing: 0;
 	}
@@ -635,7 +635,7 @@
 		display: block;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		line-height: 1.5;
 	}
 
@@ -680,7 +680,7 @@
 		padding-left: 0.85rem;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		line-height: 1.55;
 	}
 
@@ -756,7 +756,7 @@
 	.stage span {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 		line-height: 1.35;
 	}
 
@@ -764,7 +764,7 @@
 	   which is what left every mark down these paths at detail-text size. */
 	.stage .mark {
 		color: inherit;
-		font-size: var(--fs-lg);
+		font-size: var(--fs-subhead);
 	}
 
 	/* The one thing about the path worth saying in words, beside it rather than
@@ -776,7 +776,7 @@
 		background: color-mix(in srgb, var(--color-foreground) 5%, #fff);
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		line-height: 1.6;
 	}
 
@@ -793,7 +793,7 @@
 	.cores-head {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
 	}
@@ -809,7 +809,7 @@
 	.core-value {
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: 600;
 	}
 
@@ -840,7 +840,7 @@
 		grid-column: 2 / -1;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 	}
 
 	/* --- readings, ops, limits -------------------------------------------- */
@@ -864,7 +864,7 @@
 	.rlabel {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
 	}
@@ -879,7 +879,7 @@
 	.rnote {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 		line-height: 1.5;
 	}
 
@@ -907,7 +907,7 @@
 	}
 
 	.op .prose {
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 	}
 
 	.limits li {
@@ -917,7 +917,7 @@
 		align-items: baseline;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		line-height: 1.6;
 	}
 

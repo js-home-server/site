@@ -228,7 +228,7 @@
 	.claim {
 		margin: 0;
 		color: var(--color-foreground);
-		font-size: clamp(0.82rem, 1.05vw, 1.05rem);
+		font-size: var(--fs-base);
 		font-weight: 700;
 		letter-spacing: -0.015em;
 		line-height: 1.3;
@@ -251,12 +251,10 @@
 		font-size: var(--fs-xs);
 	}
 
-	/* ActionLink's own .cta carries the mint/mono/nudge look; this is just the
-	   layout slot and the size step down that fits this card's own scale. */
+	/* ActionLink's own .cta carries the look and size (--fs-sm, its default);
+	   this is just the layout slot. */
 	:global(.lede-link) {
 		margin-top: auto;
-		font-size: var(--fs-2xs);
-		letter-spacing: 0.12em;
 	}
 
 	.metrics {
@@ -302,13 +300,13 @@
 	   the bull rather than a section of their own. */
 	.value {
 		color: var(--color-foreground);
-		font-size: clamp(1.15rem, 1.65vw, 1.6rem);
+		font-size: var(--fs-subhead);
 		letter-spacing: -0.02em;
 	}
 
 	.unit {
 		margin-left: 0.3em;
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: 500;
 		letter-spacing: 0.04em;
 	}
@@ -322,7 +320,7 @@
 	   °C and ms are unit symbols and are wrong in any other case. */
 	.stats {
 		color: var(--text-dim);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: 500;
 		letter-spacing: 0.1em;
 	}
@@ -359,7 +357,7 @@
 		}
 
 		.stats {
-			font-size: var(--fs-2xs);
+			font-size: var(--fs-xs);
 			letter-spacing: 0.05em;
 		}
 

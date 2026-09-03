@@ -26,19 +26,35 @@
 	download={direction === 'download' ? (download ?? true) : undefined}
 	{...rest}
 >
-	{#if direction === 'back'}
-		<span class="arrow" aria-hidden="true">{ARROWS[direction]}</span>
-	{/if}
-	{@render children()}
-	{#if direction !== 'back'}
-		<span class="arrow" aria-hidden="true">{ARROWS[direction]}</span>
-	{/if}
+	<span class="content">
+		{#if direction === 'back'}
+			<span class="arrow" aria-hidden="true">{ARROWS[direction]}</span>
+		{/if}
+		{@render children()}
+		{#if direction !== 'back'}
+			<span class="arrow" aria-hidden="true">{ARROWS[direction]}</span>
+		{/if}
+	</span>
 </a>
 
 <style>
 	.action-link {
 		display: inline-block;
 		text-decoration: none;
+	}
+
+	/* Everything the link shows — label and arrow — lives in one flex row, so
+	   the hover underline below has one box to paint under rather than a run
+	   of inline text next to an atomic arrow glyph of a different size: a
+	   text-decoration drawn by the anchor stops at that glyph's own font
+	   metrics and never reaches it cleanly, which is what left a gap between
+	   the word's underline and the arrow's. Centred here once, this is also
+	   what every consumer's own row/column layout (Projects.svelte's card
+	   links, its case-study button) no longer has to set up itself. */
+	.content {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35em;
 	}
 
 	.arrow {
@@ -53,19 +69,6 @@
 		font-size: 1.3em;
 		line-height: 1;
 		transition: transform 160ms ease;
-	}
-
-	/* → and ← alone have no vertical stroke of their own to sit level on the
-	   baseline with — at this size that reads as sunk below the text beside
-	   them, so these are the glyphs centred on the line rather than set on
-	   their baseline. */
-	.action-link.site .arrow,
-	.action-link.back .arrow {
-		vertical-align: middle;
-	}
-
-	.action-link.back .arrow {
-		margin-right: 0.35em;
 	}
 
 	/* Back: the one way off a page with no nav of its own — quiet until it's
@@ -88,12 +91,22 @@
 	.action-link.plain {
 		color: inherit;
 		font-family: var(--font-mono);
-		font-size: var(--fs-sm);
+		/* --link-size, not a bare var(--fs-sm) — same reason .cta reads
+		   --cta-size: a page overriding font-size directly on its own one-class
+		   hook loses the specificity fight against this rule's two classes. */
+		font-size: var(--link-size, var(--fs-sm));
 	}
 
-	.action-link.plain:hover,
-	.action-link.plain:focus-visible {
-		text-decoration: underline;
+	/* A painted line under .content, not text-decoration on the anchor: a
+	   box-shadow follows .content's own box regardless of the arrow's larger
+	   font-size, so it reaches under the arrow the same way it does the word
+	   instead of two decorations at two different heights. Doesn't affect
+	   layout on hover the way a border would. */
+	.action-link.plain:hover .content,
+	.action-link.plain:focus-visible .content,
+	.action-link.cta:hover .content,
+	.action-link.cta:focus-visible .content {
+		box-shadow: 0 1px currentcolor;
 	}
 
 	/* Cta: the shape every standalone action on the site wears — mint, mono,
@@ -102,25 +115,40 @@
 	.action-link.cta {
 		color: var(--mint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-sm);
+		/* A custom property, not a bare var(--fs-sm): a page wanting this one
+		   button bigger has to win a specificity fight against this rule's two
+		   classes to override font-size directly, and a single extra class never
+		   does — it was losing silently. Setting --cta-size instead, on however
+		   little that page scopes it to, always reaches the one font-size
+		   declaration that actually reads it. */
+		font-size: var(--cta-size, var(--fs-sm));
 		font-weight: 500;
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
 		white-space: nowrap;
 	}
 
-	.action-link.cta.download:hover .arrow,
-	.action-link.cta.download:focus-visible .arrow {
+	/* One hover nudge per direction, not per variant: every link already
+	   carries its direction as a class regardless of variant, so keying off
+	   that alone is what makes plain, cta and back links all move the same
+	   arrow the same way instead of each variant needing its own copy. */
+	.action-link.download:hover .arrow,
+	.action-link.download:focus-visible .arrow {
 		transform: translateY(2px);
 	}
 
-	.action-link.cta.site:hover .arrow,
-	.action-link.cta.site:focus-visible .arrow {
+	.action-link.site:hover .arrow,
+	.action-link.site:focus-visible .arrow {
 		transform: translateX(2px);
 	}
 
-	.action-link.cta.external:hover .arrow,
-	.action-link.cta.external:focus-visible .arrow {
+	.action-link.external:hover .arrow,
+	.action-link.external:focus-visible .arrow {
 		transform: translate(2px, -2px);
+	}
+
+	.action-link.back:hover .arrow,
+	.action-link.back:focus-visible .arrow {
+		transform: translateX(-2px);
 	}
 </style>

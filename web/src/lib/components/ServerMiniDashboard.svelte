@@ -199,7 +199,7 @@
 		gap: 0.4rem;
 		color: #a09f98;
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: 500;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
@@ -225,7 +225,7 @@
 		--color-border: var(--border);
 		--text-dim: #a09f98;
 		--text-faint: #8a8a84;
-		--title-size: var(--fs-2xs);
+		--title-size: var(--fs-xs);
 		--title-color: var(--text-faint);
 		--axis-w: 1.7rem;
 		--graph-min: 3rem;
@@ -278,7 +278,7 @@
 		display: block;
 		margin-top: 0.15rem;
 		color: var(--text-dim);
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 		font-weight: 500;
 		letter-spacing: 0.03em;
 	}
@@ -289,7 +289,7 @@
 		margin-top: 0.35rem;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		letter-spacing: 0.02em;
 	}
 
@@ -305,7 +305,7 @@
 	.mfleet table {
 		width: 100%;
 		border-collapse: collapse;
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 		white-space: nowrap;
 	}
 
@@ -392,7 +392,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.1rem;
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 	}
 
 	.ovolume-name .ostat {

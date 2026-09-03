@@ -121,7 +121,7 @@
 
 	.rail-box .figure {
 		margin: 0;
-		font-size: var(--fs-lg);
+		font-size: var(--fs-subhead);
 	}
 
 	.status .verdict {
@@ -153,14 +153,14 @@
 	.uptime .unit {
 		margin-left: 0.15em;
 		color: var(--text-dim);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: 500;
 	}
 
 	.uptime .stats {
 		margin: 0.3rem 0 0.7rem;
 		color: var(--text-dim);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: 500;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;

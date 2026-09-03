@@ -734,7 +734,7 @@
 		border-radius: 999px;
 		color: var(--ink-azure);
 		font-family: var(--font-mono);
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
 	}
@@ -747,12 +747,12 @@
 		display: block;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		line-height: 1.5;
 	}
 
 	.mark {
-		font-size: var(--fs-xl);
+		font-size: var(--fs-h2);
 	}
 
 	.mark.warn {
@@ -777,7 +777,7 @@
 
 	.figure strong {
 		color: var(--color-foreground);
-		font-size: var(--fs-lg);
+		font-size: var(--fs-subhead);
 		font-weight: 700;
 		letter-spacing: -0.02em;
 		line-height: 1.1;
@@ -787,7 +787,7 @@
 		margin-left: 0.3em;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: 500;
 		letter-spacing: 0;
 	}
@@ -812,7 +812,7 @@
 	.stage-detail {
 		color: var(--ink-azure);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 	}
 
 	/* --- what it captures ------------------------------------------------- */
@@ -828,7 +828,7 @@
 		width: 100%;
 		border-collapse: collapse;
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 	}
 
 	.streams th,
@@ -850,7 +850,7 @@
 		font-weight: 500;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 		border-bottom: 1px solid var(--color-border);
 	}
 
@@ -900,7 +900,7 @@
 		gap: 0.4rem;
 		color: #a09f98;
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: 500;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
@@ -925,7 +925,7 @@
 		width: 100%;
 		border-collapse: collapse;
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 	}
 
 	.tape-table th,
@@ -994,7 +994,7 @@
 		padding-left: 0.85rem;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		line-height: 1.55;
 	}
 
@@ -1032,7 +1032,7 @@
 		margin-top: 0.35rem;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		line-height: 1.5;
 	}
 
@@ -1065,7 +1065,7 @@
 		width: 100%;
 		border-collapse: collapse;
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 	}
 
 	.measured th,
@@ -1079,7 +1079,7 @@
 	.measured thead th {
 		padding-top: 0;
 		color: var(--text-faint);
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 		font-weight: 500;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
@@ -1142,7 +1142,7 @@
 		margin: 0;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		line-height: 1.6;
 	}
 
@@ -1201,7 +1201,7 @@
 	.day-label {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 		text-align: center;
 	}
 
@@ -1210,7 +1210,7 @@
 		margin-top: -0.4rem;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 	}
 
 	/* Three columns of one story: what happened, what the software did about
@@ -1249,7 +1249,7 @@
 
 	.cost strong {
 		color: var(--color-foreground);
-		font-size: var(--fs-lg);
+		font-size: var(--fs-subhead);
 		font-weight: 700;
 		letter-spacing: -0.02em;
 	}
@@ -1307,7 +1307,7 @@
 		border-radius: 999px;
 		color: var(--coral-ink);
 		font-family: var(--font-mono);
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
 	}
@@ -1321,7 +1321,7 @@
 		align-items: baseline;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		line-height: 1.6;
 	}
 

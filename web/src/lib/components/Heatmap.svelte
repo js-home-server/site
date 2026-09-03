@@ -157,7 +157,7 @@
 	.row-id,
 	.row-now {
 		align-self: center;
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		text-align: right;
 	}
 
@@ -172,7 +172,7 @@
 		grid-column: 2;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: 0.3rem 1.5rem;
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 		font-weight: 500;
 		letter-spacing: 0.1em;
 	}

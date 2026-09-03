@@ -39,7 +39,7 @@
 	h5 {
 		margin: 0;
 		color: var(--title-color, var(--color-foreground));
-		font-size: var(--title-size, 0.88rem);
+		font-size: var(--title-size, var(--fs-xs));
 		font-weight: 700;
 		letter-spacing: 0.16em;
 		text-transform: uppercase;

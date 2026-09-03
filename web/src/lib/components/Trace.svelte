@@ -111,7 +111,7 @@
 	.key {
 		display: flex;
 		gap: 1rem;
-		font-size: var(--fs-3xs);
+		font-size: var(--fs-xs);
 	}
 
 	.key span {
