@@ -782,16 +782,6 @@
 		gap: 0.6rem;
 	}
 
-	/* One sentence at reading size, because it is the only one that has to be
-	   read. Everything under it is detail for whoever wants it. */
-	.thesis {
-		margin: 0;
-		max-width: 62ch;
-		font-size: var(--fs-base);
-		font-weight: 500;
-		line-height: 1.55;
-	}
-
 	.headline {
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -835,37 +825,15 @@
 		overflow-x: auto;
 	}
 
+	/* Wider than the shared card: this pipeline's stage names run longer. */
 	.stage {
-		display: grid;
-		align-content: start;
-		gap: 0.3rem;
-		flex: 1;
 		min-width: 8.5rem;
-		padding: 0.7rem 0.75rem;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-panel);
-		background: color-mix(in srgb, var(--color-foreground) 2%, #fff);
-	}
-
-	.stage strong {
-		color: var(--color-foreground);
-		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
-		font-weight: 600;
 	}
 
 	.stage-detail {
 		color: var(--ink-azure);
 		font-family: var(--font-mono);
 		font-size: var(--fs-2xs);
-	}
-
-	.arrow {
-		align-self: center;
-		flex: none;
-		color: var(--text-faint);
-		font-size: var(--fs-sm);
-		line-height: 1;
 	}
 
 	/* --- what it captures ------------------------------------------------- */
