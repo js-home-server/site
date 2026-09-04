@@ -118,6 +118,14 @@
 		overflow: clip;
 	}
 
+	/* Landing sections live in child components, so this reaches them by id — jumping to a hash would otherwise land its top flush under the sticky header instead of below it, unlike a fresh load. */
+	:global(#home),
+	:global(#projects),
+	:global(#experience),
+	:global(#contact) {
+		scroll-margin-top: var(--header-height);
+	}
+
 	/* Sticky not fixed, so it keeps its grid row and --header-height stays accurate. overflow: clip on the shell doesn't make it a scroll container. */
 	header {
 		position: sticky;
