@@ -6,6 +6,12 @@
 	import LoadingDots from '$lib/components/LoadingDots.svelte';
 	import { PUBLIC_WEB3FORMS_KEY } from '$env/static/public';
 	import { ticking } from '$lib/clock.svelte.js';
+	import { fetchWithTimeout } from '$lib/http.js';
+
+	const EMAIL = 'js-195@outlook.com';
+	/* Long enough that a slow but working submission isn't cut off, short enough
+	   that "Sending…" can't hang forever on a stalled dependency. */
+	const SUBMIT_TIMEOUT_MS = 25_000;
 
 	/* Kept live, not stamped at build time. Intl's own tz database handles BST/GMT — no manual DST rule to forget. */
 	const TIME_ZONE = 'Europe/London';
@@ -37,8 +43,8 @@
 		{
 			key: 'email',
 			icon: 'Email',
-			label: 'js-195@outlook.com',
-			href: 'mailto:js-195@outlook.com'
+			label: EMAIL,
+			href: `mailto:${EMAIL}`
 		},
 		{
 			key: 'github',
@@ -67,32 +73,39 @@
 	let email = $state('');
 	let message = $state('');
 	let honeypot = $state('');
-	let status = $state('idle'); // idle | sending | sent | error
+	let status = $state('idle'); // idle | sending | sent | timeout | error
 
 	async function sendMessage(event) {
 		event.preventDefault();
 		status = 'sending';
 		try {
-			const response = await fetch('https://api.web3forms.com/submit', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-				body: JSON.stringify({
-					access_key: PUBLIC_WEB3FORMS_KEY,
-					subject: `New message from ${name} via js195.co.uk`,
-					name,
-					email,
-					message,
-					botcheck: honeypot
-				})
-			});
+			const response = await fetchWithTimeout(
+				'https://api.web3forms.com/submit',
+				{
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+					body: JSON.stringify({
+						access_key: PUBLIC_WEB3FORMS_KEY,
+						subject: `New message from ${name} via js195.co.uk`,
+						name,
+						email,
+						message,
+						botcheck: honeypot
+					})
+				},
+				SUBMIT_TIMEOUT_MS
+			);
 			const result = await response.json();
 			if (!result.success) throw new Error(result.message);
 			status = 'sent';
 			name = '';
 			email = '';
 			message = '';
-		} catch {
-			status = 'error';
+		} catch (err) {
+			/* Aborted on our own deadline, not a real answer either way — Web3Forms may
+			   still have received it, so this can't promise the send failed. Values stay
+			   put either way: only a confirmed 'sent' clears the form. */
+			status = err.name === 'AbortError' ? 'timeout' : 'error';
 		}
 	}
 </script>
@@ -180,9 +193,15 @@
 					<div role="status" aria-live="polite">
 						{#if status === 'sent'}
 							<p class="feedback ok">Sent — thanks, I'll get back to you.</p>
+						{:else if status === 'timeout'}
+							<!-- Genuinely unknown whether this arrived — never claim a failure we can't back up. -->
+							<p class="feedback err">
+								Taking too long to confirm — it may still have gone through. Try again, or
+								<a href="mailto:{EMAIL}">email me directly</a>.
+							</p>
 						{:else if status === 'error'}
 							<p class="feedback err">
-								Something went wrong — try again, or email me directly instead.
+								Something went wrong — try again, or <a href="mailto:{EMAIL}">email me directly</a>.
 							</p>
 						{/if}
 					</div>
@@ -416,9 +435,21 @@
 		color: var(--coral);
 	}
 
+	.feedback a {
+		color: inherit;
+		text-decoration: underline;
+	}
+
 	@media (max-width: 60rem) {
 		.panel {
 			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+
+	/* Dish needs real width to read — drop it rather than crop it further on a phone. */
+	@media (max-width: 40rem) {
+		.bracket-frame {
+			display: none;
 		}
 	}
 </style>

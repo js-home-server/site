@@ -4,7 +4,7 @@
 	import Dashboard from '$lib/components/Dashboard.svelte';
 	import TimeAxis from '$lib/components/TimeAxis.svelte';
 	import UptimeStrip from '$lib/components/UptimeStrip.svelte';
-	import { stamp, uptimeHours } from '$lib/format.js';
+	import { span, stamp, uptimeHours } from '$lib/format.js';
 	import { server, watch } from '$lib/server.svelte.js';
 	import { outages } from '$lib/stats.js';
 
@@ -30,9 +30,17 @@
 	$effect(watch);
 
 	let snapshot = $derived(server.snapshot);
-	let online = $derived(snapshot?.availability.server_status === 'online');
+	/* Gated on the request, not just the data — a snapshot the latest poll couldn't
+	   refresh doesn't get to keep claiming online (see server.svelte.js). */
+	let online = $derived(server.status.snapshot === 'ok' && snapshot?.availability.server_status === 'online');
+	let stale = $derived(server.status.snapshot === 'stale');
+	let staleFor = $derived(
+		snapshot ? span((Date.now() - Date.parse(snapshot.generated_at)) / 1000) : null
+	);
 
-	/* 1 = answered, 0 = didn't. UptimeStrip buckets it into bars; this counts it outright for the incident line. */
+	/* 1 = answered, 0 = didn't, fractional mid-bucket. UptimeStrip buckets it into bars; this counts runs
+	   of the same under-1 readings for the line below — "affected intervals", since each point is already
+	   an aggregate, not a guarantee that a run maps one-to-one onto a real-world outage. */
 	let uptime = $derived(server.series?.availability.status ?? []);
 	let incidents = $derived(outages(uptime));
 	let hours = $derived(online ? uptimeHours(snapshot?.availability.uptime_seconds) : null);
@@ -46,11 +54,11 @@
 			<!-- Not a heading — this renders ahead of the page's own <h1> in source order, so an <h2> here would jump the doc outline. -->
 			<p class="eyebrow">Status</p>
 			<!-- aria-live fires only on a real flip — online/incidents come off a 5-min-stepped series, not the 30s poll. -->
-			<p class="figure verdict" class:down={!online} role="status" aria-live="polite">
-				<i class="dot" aria-hidden="true"></i>{online ? 'Healthy' : 'Unreachable'}
+			<p class="figure verdict" class:down={!stale && !online} class:stale role="status" aria-live="polite">
+				<i class="dot" aria-hidden="true"></i>{stale ? 'Unconfirmed' : online ? 'Healthy' : 'Unreachable'}
 			</p>
 			<p class="note">
-				{incidents ? `${incidents} incident${incidents > 1 ? 's' : ''}` : 'Nothing to report'}
+				{incidents ? `${incidents} affected interval${incidents > 1 ? 's' : ''}` : 'Nothing to report'}
 			</p>
 		</div>
 
@@ -62,7 +70,7 @@
 			<p class="stats">
 				{uptime.length
 					? incidents
-						? `${incidents} incident${incidents > 1 ? 's' : ''}`
+						? `${incidents} affected interval${incidents > 1 ? 's' : ''}`
 						: 'No incidents'
 					: 'No history yet'}
 			</p>
@@ -72,9 +80,14 @@
 	{/snippet}
 
 	{#snippet foot()}
-		<span class="eyebrow">Last updated</span>
-		<!-- The snapshot's own stamp, not the clock — how fresh the numbers are, not what time it is. -->
-		<span class="mono">{stamp(snapshot?.generated_at)}</span>
+		{#if stale}
+			<span class="eyebrow">Last known status</span>
+			<span class="mono">updated {staleFor ?? 'a while'} ago</span>
+		{:else}
+			<span class="eyebrow">Last updated</span>
+			<!-- The snapshot's own stamp, not the clock — how fresh the numbers are, not what time it is. -->
+			<span class="mono">{stamp(snapshot?.generated_at)}</span>
+		{/if}
 		<!-- Off the site nav — the only way back. -->
 		<ActionLink direction="back" href="/">joshuasmith</ActionLink>
 	{/snippet}
@@ -120,6 +133,15 @@
 
 	.status .verdict.down {
 		color: var(--coral);
+	}
+
+	/* Unproven either way, not a verdict — same dim treatment as the home-page status bar. */
+	.status .verdict.stale {
+		color: var(--text-faint);
+	}
+
+	.status .verdict.stale .dot {
+		box-shadow: none;
 	}
 
 	/* The same lit dot the rail marks the current stop with. */

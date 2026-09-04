@@ -86,7 +86,9 @@
 								{#if brief === 'ancestree'}
 									Interactive demo in the <ActionLink direction="external" href="https://js195.github.io/ancestree/demo/">docs</ActionLink>
 								{:else if brief === 'orderflow'}
-									{#if retainedDays !== null}
+									{#if server.status.month === 'stale'}
+										{retainedDays} retained days as of the last check
+									{:else if retainedDays !== null}
 										{retainedDays} retained days with no dropped rows
 									{:else if server.status.month === 'error'}
 										Live data unavailable
@@ -94,7 +96,9 @@
 										Checking retained history <LoadingDots />
 									{/if}
 								{:else if live}
-									{#if runningContainers !== null}
+									{#if server.status.snapshot === 'stale'}
+										{runningContainers} containers as of the last check
+									{:else if runningContainers !== null}
 										{runningContainers} containers currently running
 									{:else if server.status.snapshot === 'error'}
 										Live data unavailable

@@ -46,7 +46,9 @@
 		return widths;
 	});
 
-	/* Any failed poll marks a bucket down, not most of them — averaging let a short outage look clean. Unknown (nothing collected) ≠ down. */
+	/* Any failed poll marks a bucket down, not most of them — averaging let a short outage look clean.
+	   Unknown (nothing collected) ≠ down. Same `< 1` threshold stats.js's outages() runs on, so this
+	   strip and that count can't call the same reading down in one place and fine in the other. */
 	let segments = $derived(
 		bucket(uptime, segmentCount).map((v) => (v === null ? 'unknown' : v < 1 ? 'down' : 'up'))
 	);

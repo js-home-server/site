@@ -170,10 +170,37 @@
 		}
 	}
 
-	/* Phone tier (app.css) — page chrome reacts at device width, not a dashboard component's container. */
+	/* Phone tier (app.css) — page chrome reacts at device width, not a dashboard component's container.
+	   Identity moves into flow below the art here too (see the max-height query below for why), so the
+	   bull, name and intro can own the whole first screen — the status strip scrolls in below the fold,
+	   and doesn't need art shrunk to leave room for it up front. */
 	@media (max-width: 48rem) {
 		.identity::before {
 			inset-inline: -1rem;
+		}
+
+		.landing {
+			--bar-reserve: 0px;
+			--tuck: 0rem;
+			height: auto;
+			min-height: calc(100svh - var(--header-height));
+		}
+
+		/* Forced to a full screen's height and centred, not left at its natural (bull + identity)
+		   size — that's how the status strip actually lands below the fold instead of just peeking in. */
+		.wrap {
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			min-height: calc(100svh - var(--header-height));
+		}
+
+		.identity {
+			position: relative;
+			top: auto;
+			left: auto;
+			margin-top: 1rem;
+			transform: none;
 		}
 	}
 

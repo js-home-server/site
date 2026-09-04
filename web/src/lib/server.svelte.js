@@ -1,6 +1,8 @@
 /* Live server data, in one place — read by both the status bar and the
    dashboard, owned by neither. An object, not a `let`, since only its properties survive as $state across a module boundary. */
 
+import { fetchWithTimeout } from '$lib/http.js';
+
 /* Anything labelling an x axis reads this, so no chart can claim a span the request didn't make. */
 export const RANGE = '24h';
 
@@ -16,13 +18,18 @@ const SNAPSHOT_MS = 30_000;
 const HISTORY_MS = 300_000;
 const MONTH_MS = 1_800_000;
 const MONTH_DELAY_MS = 10_000;
+/* Below the 30s poll interval, so a hung request can't still be in flight when
+   the next one would otherwise fire — it fails and frees the `inFlight` guard first. */
+const REQUEST_TIMEOUT_MS = 15_000;
 
 export const server = $state({
 	snapshot: null,
 	series: null,
 	month: null,
-	/* Per-key 'pending' | 'ok' | 'error', so a card can tell "still loading" from
-	   "tried and failed" instead of reading null forever as "Checking…". */
+	/* Per-key 'pending' | 'ok' | 'stale' | 'error'. A card needs to tell "still
+	   loading" from "tried and failed" instead of reading null forever as
+	   "Checking…" — and, once it has data, tell "this reading is current" from
+	   "this is the last one we got, we can't currently confirm it still holds". */
 	status: { snapshot: 'pending', series: 'pending', month: 'pending' }
 });
 
@@ -33,14 +40,16 @@ async function load(key, url) {
 	inFlight.add(key);
 
 	try {
-		const response = await fetch(url);
+		const response = await fetchWithTimeout(url, {}, REQUEST_TIMEOUT_MS);
 		if (!response.ok) throw new Error(`${key} request failed: ${response.status}`);
 		server[key] = await response.json();
 		server.status[key] = 'ok';
 	} catch {
 		/* Keep the last good data on the wire dropping out; the next poll picks it
-		   back up. Only flip to 'error' if we never got any — stale data beats no data. */
-		server.status[key] = server[key] === null ? 'error' : 'ok';
+		   back up. But the request state has to say so — 'stale' data beats no
+		   data, it doesn't beat honesty about how current it is. 'error' only
+		   when we never got any. */
+		server.status[key] = server[key] === null ? 'error' : 'stale';
 	} finally {
 		inFlight.delete(key);
 	}

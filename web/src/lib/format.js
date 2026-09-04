@@ -54,11 +54,11 @@ export const uptimeHours = (seconds) => (Number.isFinite(seconds) ? Math.floor(s
 export function span(seconds, { short = false } = {}) {
 	if (seconds >= 3600) {
 		const hours = Math.round(seconds / 3600);
-		return short ? `${hours}H` : `${hours} hours`;
+		return short ? `${hours}H` : `${hours} hour${hours === 1 ? '' : 's'}`;
 	}
 	if (seconds > 0) {
-		const minutes = Math.round(seconds / 60);
-		return short ? `${minutes}M` : `${minutes} minutes`;
+		const minutes = Math.max(1, Math.round(seconds / 60));
+		return short ? `${minutes}M` : `${minutes} minute${minutes === 1 ? '' : 's'}`;
 	}
 	return short ? '—' : null;
 }

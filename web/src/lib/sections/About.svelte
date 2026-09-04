@@ -231,4 +231,11 @@
 			padding-bottom: var(--pad);
 		}
 	}
+
+	/* Portrait needs real width to read — drop it rather than crop it further on a phone. */
+	@media (max-width: 40rem) {
+		.visual {
+			display: none;
+		}
+	}
 </style>

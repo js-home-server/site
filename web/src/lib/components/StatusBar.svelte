@@ -14,11 +14,27 @@
 	/* [unixSeconds, value] pairs. status is 1 up, 0 down, fractional mid-bucket. */
 	let series = $derived(server.series);
 
-	let online = $derived(snapshot?.availability.server_status === 'online');
+	/* Only trust the snapshot's own verdict while the request that fetched it is
+	   still the current one — once it's 'stale' the snapshot is just the last
+	   thing we heard, not a live reading, so it doesn't get to claim online. */
+	let online = $derived(server.status.snapshot === 'ok' && snapshot?.availability.server_status === 'online');
 	/* A null snapshot means "haven't checked yet", not "down" — only a completed
-	   request gets to claim online or offline. */
+	   request gets to claim online or offline. 'stale' outranks both: we have a
+	   snapshot, but the request that would confirm it still holds just failed. */
 	let statusState = $derived(
-		snapshot ? (online ? 'online' : 'offline') : server.status.snapshot === 'error' ? 'error' : 'loading'
+		server.status.snapshot === 'stale'
+			? 'stale'
+			: snapshot
+				? (online ? 'online' : 'offline')
+				: server.status.snapshot === 'error'
+					? 'error'
+					: 'loading'
+	);
+
+	/* How long ago the snapshot we're still showing was actually current — only
+	   meaningful once it's stale, so callers gate on that themselves. */
+	let staleFor = $derived(
+		snapshot ? span((Date.now() - Date.parse(snapshot.generated_at)) / 1000) : null
 	);
 
 	/* Live region goes armed only once the first request has settled, one tick
@@ -36,7 +52,9 @@
 	/* Labelled from the data, not `range` — so the caption can't overstate what the traces actually cover. */
 	let spanLabel = $derived(span(spanSeconds(uptime), { short: true }));
 
-	/* Counted off the raw series, not UptimeStrip's bars — a bar averages a slice, so one bad poll inside it can vanish. */
+	/* Counted off the raw series, not UptimeStrip's bars — a bar averages a slice, so one bad poll inside it can vanish.
+	   "Affected intervals", not "incidents" — each point is already a 5-minute bucket, so a run of them is a count
+	   of aggregated readings, not a promise that it maps one-to-one onto a real-world outage. */
 	let incidents = $derived(outages(uptime));
 
 	/* Everything settled here so the template stays a list of readings, not a pile of ternaries. */
@@ -51,7 +69,7 @@
 			/* Silence ≠ a clean record — no series means the strip can't say either way. */
 			stats: uptime.length > 1
 				? incidents
-					? `${incidents} INCIDENT${incidents > 1 ? 'S' : ''}`
+					? `${incidents} AFFECTED INTERVAL${incidents > 1 ? 'S' : ''}`
 					: 'NO INCIDENTS'
 				: 'NO HISTORY YET',
 			strip: true
@@ -101,7 +119,8 @@
 <aside class="status-bar" aria-label="Live server status">
 	<div class="lede">
 		<h2 class="eyebrow">
-			<!-- Same live dot as the contact page — mint when answering, coral when proven down, dim while unknown. -->
+			<!-- Same live dot as the contact page — mint when answering, coral when proven down, dim while unknown
+			     (loading, or stale: a last reading we can no longer vouch for isn't a verdict either way). -->
 			<span class="dot" class:down={statusState === 'offline'} class:pending={statusState !== 'online' && statusState !== 'offline'} aria-hidden="true"></span>
 			Home server
 		</h2>
@@ -113,18 +132,28 @@
 				Checking live status <LoadingDots />
 			{:else if statusState === 'error'}
 				Live status unavailable.
-			{:else if online}
+			{:else if statusState === 'stale'}
+				Live status unavailable — showing the last known reading.
+			{:else if statusState === 'online'}
 				It seems to be working.
 			{:else}
 				It isn't answering right now.
 			{/if}
 		</p>
 
-		<!-- Same reading as the dashboard's rail-foot, stamp() and all — never a different age for the same snapshot. -->
-		<p class="updated">
-			<span class="eyebrow">Last updated</span>
-			<span class="mono">{stamp(snapshot?.generated_at)}</span>
-		</p>
+		{#if statusState === 'stale'}
+			<!-- No live connection right now, so this reads as an age, not a fresh reading — the wording itself is the disclosure. -->
+			<p class="updated">
+				<span class="eyebrow">Last known status</span>
+				<span class="mono">updated {staleFor ?? 'a while'} ago</span>
+			</p>
+		{:else}
+			<!-- Same reading as the dashboard's rail-foot, stamp() and all — never a different age for the same snapshot. -->
+			<p class="updated">
+				<span class="eyebrow">Last updated</span>
+				<span class="mono">{stamp(snapshot?.generated_at)}</span>
+			</p>
+		{/if}
 
 		<ActionLink variant="cta" direction="site" href="/server/" class="lede-link">
 			About this server
@@ -299,25 +328,14 @@
 		color: var(--azure);
 	}
 
-	/* Two columns won't fit a phone — claim stacks above the readings, rule moves between them. */
+	/* A phone's width can't give the three graphs room to read — drop them and keep just the claim. */
 	@media (max-width: 48rem) {
 		.status-bar {
 			grid-template-columns: minmax(0, 1fr);
 		}
 
 		.metrics {
-			gap: 0.5rem;
-			border-top: 1px solid var(--color-border);
-			border-left: 0;
-		}
-
-		.metric {
-			min-height: 5.9rem;
-		}
-
-		.stats {
-			font-size: var(--fs-xs);
-			letter-spacing: 0.05em;
+			display: none;
 		}
 
 		.eyebrow {

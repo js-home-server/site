@@ -9,12 +9,11 @@ export const mean = (readings) => readings.reduce((sum, v) => sum + v, 0) / read
 /* What the series says now. Null with no data — format.js writes that as an em dash. */
 export const last = (points) => (points?.length ? points.at(-1)[1] : null);
 
-/* Runs, not readings — a four-poll outage is one incident, not four. */
+/* Runs, not readings — a four-poll outage is one interval, not four. Anything
+   under fully up counts as affected, the same threshold UptimeStrip buckets
+   on — a 0.75 reading can't be "down" on the strip and "fine" in this count. */
 export const outages = (points) =>
-	(points ?? []).reduce(
-		(n, [, v], i, all) => n + (v < 0.5 && !(i && all[i - 1][1] < 0.5) ? 1 : 0),
-		0
-	);
+	(points ?? []).reduce((n, [, v], i, all) => n + (v < 1 && !(i && all[i - 1][1] < 1) ? 1 : 0), 0);
 
 /* First-to-last span in seconds — the actual window an API that hasn't been collecting long can return. */
 export const spanSeconds = (points) => (points?.length > 1 ? points.at(-1)[0] - points[0][0] : 0);
