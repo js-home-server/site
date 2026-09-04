@@ -150,6 +150,7 @@
 		gap: 0.6rem;
 		align-items: center;
 		padding: 0.55rem 0;
+		font-family: var(--font-mono);
 		font-size: var(--fs-xs);
 		text-decoration: none;
 		transition: color 160ms ease;

@@ -81,9 +81,6 @@
 		{/if}
 	</div>
 
-	{#each Array(3) as _, i (i)}
-		<div class="box"><Placeholder note="—" lines={6} /></div>
-	{/each}
 </div>
 
 <style>

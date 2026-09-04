@@ -2,12 +2,19 @@
 @import '@fontsource/inter/latin-400.css';
 @import '@fontsource/inter/latin-500.css';
 @import '@fontsource/inter/latin-700.css';
-/* The ASCII art (bull, clock, astronaut, ship, radio dish) is pixel-calibrated to
-   JetBrains Mono's exact glyph metrics. Naming it in font-family without shipping
-   it relies on it being installed as a system font — Safari's local-font-matching
-   privacy protection won't honour that, so it silently falls back to a font with
-   different metrics and every art component renders visibly misaligned. */
+/* JetBrains Mono is the site's other half of its two-font system (see
+   --font-sans/--font-mono below) — every label, stat, timestamp and nav item
+   reads in it, not just the ASCII art. Shipping the four weights those actually
+   use (400/500/600/700, the same set Inter ships) rather than naming the
+   family and hoping it is installed matters doubly here: the ASCII art (bull,
+   clock, astronaut, ship, radio dish) is pixel-calibrated to this exact font's
+   glyph metrics, and Safari's local-font-matching privacy protection won't
+   honour a system install anyway, so an unshipped weight silently falls back
+   to a font with different metrics and the art renders visibly misaligned. */
 @import '@fontsource/jetbrains-mono/latin-400.css';
+@import '@fontsource/jetbrains-mono/latin-500.css';
+@import '@fontsource/jetbrains-mono/latin-600.css';
+@import '@fontsource/jetbrains-mono/latin-700.css';
 
 /* The four surfaces the site is actually painted on. What started here as a full
    generated palette had a token for every part of a component library this site
@@ -34,7 +41,7 @@
 
 @theme inline {
 	--font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
-	--font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	--font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
@@ -331,13 +338,14 @@
 /* What a block is called: small caps, quiet, above whatever it labels. */
 .eyebrow {
 	color: var(--text-faint);
+	font-family: var(--font-mono);
 	font-size: var(--fs-xs);
 	font-weight: 500;
 	letter-spacing: 0.14em;
 	text-transform: uppercase;
 }
 
-/* A page's own section headings — "My projects", "My journey", "Contact" —
+/* A page's own section headings — "Projects", "Experience", "Contact" —
    deliberately not .eyebrow: that class is an instrument label, quiet and
    uppercase by design, and a heading set the same way cannot be found by eye
    before it is read. This is bold enough to register as a heading on its own
@@ -376,6 +384,7 @@
 	display: flex;
 	align-items: center;
 	gap: 0.4rem;
+	font-family: var(--font-mono);
 	font-size: var(--fs-xs);
 	letter-spacing: 0.12em;
 }
@@ -535,7 +544,7 @@
 	gap: 0.35rem;
 }
 
-.lede h4 {
+.lede h2 {
 	margin: 0;
 	font-size: var(--fs-base);
 	font-weight: 700;
@@ -567,13 +576,15 @@
 	font-size: var(--fs-sm);
 }
 
-/* The reading, at the length a study actually runs to — see typography.md's
-   note on prose read as instrumentation: this is the fix. */
+/* The reading, at the length a study actually runs to. A study is three
+   thousand words, so it reads at --fs-base like any other body text — the
+   instrument sizes below it (--fs-xs) are for labels, ticks and table rows,
+   not for sentences. 62ch holds the measure at this size. */
 .prose {
 	margin: 0;
 	max-width: 62ch;
 	color: var(--text-dim);
-	font-size: var(--fs-sm);
+	font-size: var(--fs-base);
 	line-height: 1.65;
 }
 
@@ -582,7 +593,8 @@
 	padding: 0.05rem 0.25rem;
 	border-radius: var(--radius-control);
 	background: color-mix(in srgb, var(--color-foreground) 5%, transparent);
-	font-size: var(--fs-xs);
+	font-family: var(--font-mono);
+	font-size: var(--fs-sm);
 }
 
 /* The quiet line under a table, a chart or a diagram: the caveat, the
@@ -591,7 +603,7 @@
 	margin: 0;
 	color: var(--text-faint);
 	font-family: var(--font-mono);
-	font-size: var(--fs-xs);
+	font-size: var(--fs-sm);
 	line-height: 1.6;
 }
 
@@ -603,7 +615,7 @@
 	display: block;
 	color: var(--text-faint);
 	font-family: var(--font-mono);
-	font-size: var(--fs-xs);
+	font-size: var(--fs-sm);
 	line-height: 1.5;
 }
 
@@ -635,7 +647,7 @@
 .stage strong {
 	color: var(--color-foreground);
 	font-family: var(--font-mono);
-	font-size: var(--fs-xs);
+	font-size: var(--fs-sm);
 	font-weight: 600;
 }
 
@@ -685,7 +697,7 @@
 	margin: 0;
 	color: var(--color-foreground);
 	font-family: var(--font-mono);
-	font-size: var(--fs-xs);
+	font-size: var(--fs-sm);
 	font-weight: 600;
 }
 
@@ -707,8 +719,7 @@
 	gap: 0.5rem;
 	align-items: baseline;
 	color: var(--text-dim);
-	font-family: var(--font-mono);
-	font-size: var(--fs-xs);
+	font-size: var(--fs-sm);
 	line-height: 1.6;
 }
 
@@ -725,7 +736,7 @@
 /* What the card is called, the points under it, and one of those points. */
 .card-item strong {
 	color: var(--color-foreground);
-	font-size: var(--fs-xs);
+	font-size: var(--fs-sm);
 	font-weight: 700;
 	line-height: 1.4;
 }
@@ -742,8 +753,7 @@
 	position: relative;
 	padding-left: 0.85rem;
 	color: var(--text-dim);
-	font-family: var(--font-mono);
-	font-size: var(--fs-xs);
+	font-size: var(--fs-sm);
 	line-height: 1.55;
 }
 

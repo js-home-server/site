@@ -306,6 +306,7 @@
 	.ticks span {
 		position: absolute;
 		top: 0;
+		font-family: var(--font-mono);
 		text-transform: uppercase;
 		transform: translateX(-50%);
 		white-space: nowrap;

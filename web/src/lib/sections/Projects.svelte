@@ -32,7 +32,7 @@
 			pypi: 'https://pypi.org/project/ancestree-track/',
 			docs: 'https://js195.github.io/ancestree/',
 			proofLabel: 'Try it',
-			proof: 'Interactive pipeline in the docs',
+			proof: 'Interactive demo in the docs',
 			route: '/projects/ancestree/',
 			brief: 'ancestree'
 		},
@@ -205,6 +205,7 @@
 
 	.proof-label {
 		color: var(--text-faint);
+		font-family: var(--font-mono);
 		font-size: var(--fs-xs);
 		letter-spacing: 0.08em;
 		text-transform: uppercase;

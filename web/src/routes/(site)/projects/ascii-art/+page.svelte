@@ -3,6 +3,6 @@
 	import AsciiStudy from '$lib/sections/AsciiStudy.svelte';
 </script>
 
-<StudyPage title="ascii-art">
+<StudyPage title="ascii-art" year={2025}>
 	<AsciiStudy />
 </StudyPage>

@@ -30,7 +30,7 @@ import {
    because simple-icons dropped the mark after a takedown request; this is
    simple-icons' own last published 24x24 LinkedIn path (MIT-licensed), not a
    redrawing -- and a plain envelope for email, Heroicons' 24px solid mark
-   (already a dependency for the about page's category icons), concatenated
+   (already a dependency for the experience page's category icons), concatenated
    from its two subpaths since this component takes a single path -- and a
    document with a download arrow for the CV, the same Heroicons set's
    document-arrow-down, also concatenated from its two subpaths. */

@@ -59,7 +59,7 @@
 	<div class="mini-dashboard">
 		<div class="mgrid">
 			<div class="obox" style={gridArea({ col: 1, row: 1 })}>
-				<Panel label="Uptime" level={5}>
+				<Panel label="Uptime" level={3}>
 					<strong class="ofigure" style:color="var(--mint)">
 						{uptimeDays === null ? '—' : `${uptimeDays}d ${uptimeRest}`}
 					</strong>
@@ -68,7 +68,7 @@
 			</div>
 
 			<div class="obox" style={gridArea({ col: 2, row: 1 })}>
-				<Panel label="Temperature" level={5}>
+				<Panel label="Temperature" level={3}>
 					<strong class="ofigure" style:color="var(--amber)">
 						{degrees(snapshot?.cpu.temperature_c)}
 					</strong>
@@ -78,7 +78,7 @@
 			</div>
 
 			<div class="obox fill" style={gridArea({ col: 3, row: 1, w: 2, h: 3 })}>
-				<Panel label="Containers" level={5}>
+				<Panel label="Containers" level={3}>
 					{#if containers.slots.length}
 						<div class="mfleet">
 							<table>
@@ -122,7 +122,7 @@
 			</div>
 
 			<div class="obox fill" style={gridArea({ col: 1, row: 2, w: 2, h: 2 })}>
-				<Panel label="CPU & RAM Usage (%)" level={5}>
+				<Panel label="CPU & RAM Usage (%)" level={3}>
 					<Trace
 						lines={[
 							{ id: 'cpu', points: series?.cpu.percent, tone: 'var(--mint)', label: 'CPU' },
@@ -135,7 +135,7 @@
 			</div>
 
 			<div class="obox" style={gridArea({ col: 1, row: 4, w: 2 })}>
-				<Panel label="Storage Overview" level={5}>
+				<Panel label="Storage Overview" level={3}>
 					<div class="ovolumes">
 						{#each volumes as vol (vol.id)}
 							<div class="ovolume">
@@ -157,7 +157,7 @@
 			</div>
 
 			<div class="obox" style={gridArea({ col: 3, row: 4 })}>
-				<Panel label="Time Offset" level={5}>
+				<Panel label="Time Offset" level={3}>
 					<strong class="ofigure" style:color="var(--azure)">
 						{microseconds(clockOffset(snapshot?.time))}
 					</strong>
@@ -167,7 +167,7 @@
 			</div>
 
 			<div class="obox" style={gridArea({ col: 4, row: 4 })}>
-				<Panel label="Latency" level={5}>
+				<Panel label="Latency" level={3}>
 					<strong class="ofigure" style:color="var(--azure)">
 						{ms(snapshot?.availability.latency_ms)}
 					</strong>
@@ -278,6 +278,7 @@
 		display: block;
 		margin-top: 0.15rem;
 		color: var(--text-dim);
+		font-family: var(--font-mono);
 		font-size: var(--fs-xs);
 		font-weight: 500;
 		letter-spacing: 0.03em;
@@ -305,6 +306,7 @@
 	.mfleet table {
 		width: 100%;
 		border-collapse: collapse;
+		font-family: var(--font-mono);
 		font-size: var(--fs-xs);
 		white-space: nowrap;
 	}

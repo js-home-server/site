@@ -111,6 +111,7 @@
 	.key {
 		display: flex;
 		gap: 1rem;
+		font-family: var(--font-mono);
 		font-size: var(--fs-xs);
 	}
 

@@ -1,6 +1,5 @@
 <script>
 	import Panel from '$lib/components/Panel.svelte';
-	import Placeholder from '$lib/components/Placeholder.svelte';
 	import Spread from '$lib/components/Spread.svelte';
 	import StatsTable from '$lib/components/StatsTable.svelte';
 	import Trace from '$lib/components/Trace.svelte';
@@ -42,11 +41,7 @@
 </svelte:head>
 
 <div class="grid">
-	<div class="box" style={gridArea({ col: 1, row: 1, w: 2 })}>
-		<Placeholder note="—" lines={6} />
-	</div>
-
-	<div class="box fill" style={gridArea({ col: 1, row: 2, w: 2, h: 2 })}>
+	<div class="box fill" style={gridArea({ col: 1, row: 1, w: 2, h: 3 })}>
 		<!-- The bar is what each source admits it could be wrong by, so a short
 		     one is a source worth following. They agree on the offset to a
 		     fraction of a millisecond and differ sevenfold on their confidence,

@@ -1,5 +1,6 @@
 <script>
 	import Icon from '$lib/components/Icon.svelte';
+	import StudyHead from '$lib/components/StudyHead.svelte';
 
 	/* Ancestree's own study. This one is a published library rather than a
 	   system or a piece of research, so it is written as a datasheet: what it
@@ -186,14 +187,6 @@
 
 <!-- A section's name, in the rail down the left of the study. A word rather
      than a number: this is a datasheet, and the sections are its headings. -->
-{#snippet head(kicker, title, lede)}
-	<div class="lede">
-		<span class="kicker">{kicker}</span>
-		<h4>{title}</h4>
-		{#if lede}<p class="prose">{lede}</p>{/if}
-	</div>
-{/snippet}
-
 <div class="study">
 	<!-- What it is, in one command and four numbers. -->
 	<section class="box banner">
@@ -231,7 +224,7 @@
 	<!-- The API, which is the whole of the user-facing design. -->
 	<section class="box row">
 		<div>
-			{@render head('interface', 'Four lines of yours, everything else recorded')}
+			<StudyHead label="interface" title="Four lines of yours, everything else recorded" />
 			<p class="prose">
 				Your code writes files at native speed into a scratch directory. At block exit the
 				artifact is chunked, hashed, compressed and committed in one transaction. A step
@@ -264,11 +257,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 	<!-- The ingest path, and where its time actually goes. -->
 	<section class="box row">
 		<div>
-			{@render head(
-				'ingest',
-				'Where the time goes',
-				'Five things happen to an artifact at block exit. Two of them are the entire budget.'
-			)}
+			<StudyHead label="ingest" title="Where the time goes" lede="Five things happen to an artifact at block exit. Two of them are the entire budget." />
 			<p class="foot-note">
 				Chunking and compression are the whole budget, and hashing is free. The parameter
 				that matters is average chunk size. At 32 KiB a delta base sits exactly on zlib’s
@@ -293,11 +282,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 
 	<!-- The three layers, and the spread a single ratio hides. -->
 	<section class="box">
-		{@render head(
-			'storage',
-			'Three ways of not storing it twice',
-			'Each layer catches what the one above it missed. The top one is free, and the bottom one is the only part that costs anything.'
-		)}
+		<StudyHead label="storage" title="Three ways of not storing it twice" lede="Each layer catches what the one above it missed. The top one is free, and the bottom one is the only part that costs anything." />
 
 		<div class="layers">
 			{#each LAYERS as layer, i (layer.name)}
@@ -318,7 +303,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 
 		<div class="spread">
 			<div>
-				<h5>The same 1% of bytes, edited in four places</h5>
+				<h3>The same 1% of bytes, edited in four places</h3>
 				<p class="prose">
 					Twelve revisions of one 4 MB CSV. Insert, delete and append concentrate the
 					edit at a point, so the boundary algorithm re-syncs within a chunk or two and
@@ -348,11 +333,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 
 	<!-- The thing itself, running. -->
 	<section class="box">
-		{@render head(
-			'explorer',
-			'Every node, and everything recorded about it',
-			'A real exported store, laid out by generation and coloured by step type. Click a node for what was recorded when it ran.'
-		)}
+		<StudyHead label="explorer" title="Every node, and everything recorded about it" lede="A real exported store, laid out by generation and coloured by step type. Click a node for what was recorded when it ran." />
 
 		<div class="demo">
 			<!-- The snapshot is a fully self-contained static page (no
@@ -377,11 +358,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 
 	<!-- What it costs to call, in the only unit that matters. -->
 	<section class="box">
-		{@render head(
-			'measured',
-			'Three cost classes, three orders of magnitude',
-			'The write path is the only thing that scales with data volume, and it is paid at block exit rather than while your code runs. Everything on the query side is indexed.'
-		)}
+		<StudyHead label="measured" title="Three cost classes, three orders of magnitude" lede="The write path is the only thing that scales with data volume, and it is paid at block exit rather than while your code runs. Everything on the query side is indexed." />
 
 		<div class="costs">
 			{#each COSTS as cost (cost.tier)}
@@ -408,11 +385,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 
 	<!-- What a reader has to trust before putting it in a pipeline. -->
 	<section class="box">
-		{@render head(
-			'shipping',
-			'Guarantees, checks, and what runs on every push',
-			'A lineage store holds somebody else’s work, so what matters is what it promises across versions and what it verifies rather than assumes.'
-		)}
+		<StudyHead label="shipping" title="Guarantees, checks, and what runs on every push" lede="A lineage store holds somebody else’s work, so what matters is what it promises across versions and what it verifies rather than assumes." />
 
 		<div class="cards">
 			{#each SHIPPING as card (card.term)}
@@ -429,11 +402,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 
 	<!-- What an adversarial read of the documentation turned up. -->
 	<section class="box">
-		{@render head(
-			'audit',
-			'Audited against its own documentation',
-			'806 tests in 14 modules, written by treating every falsifiable sentence in the docs as an assertion, then adding hostile inputs, seeded property tests, real SIGKILLs, multi-process concurrency and 1,000-node scale runs.'
-		)}
+		<StudyHead label="audit" title="Audited against its own documentation" lede="806 tests in 14 modules, written by treating every falsifiable sentence in the docs as an assertion, then adding hostile inputs, seeded property tests, real SIGKILLs, multi-process concurrency and 1,000-node scale runs." />
 
 		<div class="defects">
 			{#each DEFECTS as defect (defect.term)}
@@ -460,11 +429,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 	<!-- What the rewrite bought, and what it cost. -->
 	<section class="box row">
 		<div>
-			{@render head(
-				'rewrite',
-				'0.1 was a directory per node',
-				'It worked, and it carried a hand-rolled index to make it work: a snapshot, a journal, a reconcile pass, a background packer with fork handling, and a GC lock file. 0.2 deletes all of it and lets SQLite be the index.'
-			)}
+			<StudyHead label="rewrite" title="0.1 was a directory per node" lede="It worked, and it carried a hand-rolled index to make it work: a snapshot, a journal, a reconcile pass, a background packer with fork handling, and a GC lock file. 0.2 deletes all of it and lets SQLite be the index." />
 			<p class="foot-note">
 				The break is deliberate and total. There is no migration, and a 0.1 store is
 				refused rather than half-read.
@@ -490,7 +455,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 	<!-- Where it is the wrong tool. -->
 	<section class="box row">
 		<div>
-			{@render head('limits', 'What it is not for')}
+			<StudyHead label="limits" title="What it is not for" />
 			<p class="prose">
 				A single SQLite file buys simplicity and crash safety. These are the consequences,
 				and they are in the shipped documentation rather than only here.
@@ -642,7 +607,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		grid-column: 2 / -1;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		line-height: 1.5;
 	}
 
@@ -717,7 +682,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		gap: 0.5rem;
 	}
 
-	.spread h5 {
+	.spread h3 {
 		margin: 0;
 		font-size: var(--fs-sm);
 		font-weight: 700;
@@ -868,7 +833,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 
 	.defect-head strong {
 		color: var(--color-foreground);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		font-weight: 700;
 		line-height: 1.4;
 	}
@@ -894,13 +859,13 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 	}
 
 	.severity.high {
-		border-color: color-mix(in srgb, var(--coral) 70%, #0b0b0b);
-		color: color-mix(in srgb, var(--coral) 30%, #0b0b0b);
+		border-color: var(--coral-ink);
+		color: var(--coral-ink);
 	}
 
 	.closed {
-		border: 1px solid color-mix(in srgb, var(--mint) 70%, #0b0b0b);
-		color: color-mix(in srgb, var(--mint) 30%, #0b0b0b);
+		border: 1px solid var(--mint-ink);
+		color: var(--mint-ink);
 	}
 
 	/* --- the rewrite table ------------------------------------------------ */

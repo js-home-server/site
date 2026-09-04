@@ -294,6 +294,7 @@
 	.channels .icon {
 		display: grid;
 		place-items: center;
+		justify-self: center;
 		width: 1.35rem;
 		height: 1.35rem;
 		color: var(--text-dim);
@@ -318,43 +319,18 @@
 		text-decoration: underline;
 	}
 
-	/* A character grid has one size -- how big one cell is -- so the art is sized
-	   by setting that from the box it sits in: 137 columns times the 0.6021em
-	   JetBrains Mono advances per character, which spans this box at the bull's
-	   own digit size. See ../asciiArt's Makefile for how the 137 was measured. */
+	/* The dish is a single rasterised image now (F11), so there is no character
+	   grid left to size by cell — it just fills the box, and its own natural
+	   137:104-column aspect ratio (baked in when it was rendered) carries the
+	   proportions the 0.6021em-per-character math used to. */
 	.visual {
-		/* How many characters wide the dish is. */
-		--cols: 137;
-
-		container-type: inline-size;
 		display: grid;
-
-		/* The dish is ~5.7k one-character spans, the largest block of inline
-		   layout on the page after the hero. Contact is the last section, so
-		   anything above it changing height reflows all of it. Off screen it is
-		   skipped instead. Safe to
-		   contain: the <pre> is sized by this container (100cqw below), so
-		   nothing outside measures the art to size itself. */
-		content-visibility: auto;
-		contain-intrinsic-size: auto 1px;
 	}
 
-	/* Sized to the box it stands in: a character grid has exactly one size, so
-	   the font size is what scales the picture. --cols above is how many
-	   characters wide the art is and JetBrains Mono advances 0.6021em per
-	   character, so dividing the container's width by that span gives the cell
-	   size that fills it exactly.
-
-	   Scoped here rather than shared in app.css on purpose: the generated art
-	   component carries its own `.ascii-art pre { font-size: 6px }`, and only a
-	   rule with this one's specificity beats it.
-
-	   The line height is rounded to whole device pixels because baselines are
-	   painted on them — a fractional pitch comes out as a 7, 7, 7, 6 rhythm and
-	   bands the picture. */
-	.visual :global(pre) {
-		font-size: calc(100cqw / (var(--cols) * 0.6021));
-		line-height: round(0.72em, var(--device-px, 1px));
+	.visual :global(img) {
+		display: block;
+		width: 100%;
+		height: auto;
 	}
 
 	/* Stacked, not the two-up row the wider standalone box would have room for:
@@ -378,7 +354,7 @@
 	label {
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: var(--fs-base);
+		font-size: var(--fs-sm);
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 	}
@@ -390,8 +366,8 @@
 		background: var(--color-background);
 		color: var(--color-foreground);
 		font: inherit;
-		font-family: var(--font-mono);
-		font-size: var(--fs-sm);
+		font-family: var(--font-sans);
+		font-size: var(--fs-base);
 		padding: 0.6rem 0.7rem;
 	}
 
@@ -432,7 +408,7 @@
 		background: none;
 		color: var(--mint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
 		padding: 0.7rem 1.1rem;

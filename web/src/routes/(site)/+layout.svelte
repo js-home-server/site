@@ -14,7 +14,7 @@
 	const links = [
 		{ href: '/#home', label: 'Home' },
 		{ href: '/#projects', label: 'Projects' },
-		{ href: '/#about', label: 'Experience' },
+		{ href: '/#experience', label: 'Experience' },
 		{ href: '/#contact', label: 'Contact' }
 	];
 
@@ -25,6 +25,14 @@
 
 	let height = $state(0);
 	let active = $state(links[0].href);
+	/* A case study is a stop under Projects, so the bar says so. It carries none
+	   of the landing page's sections, so the spy below has nothing to observe
+	   there and `active` is whatever it last read — the stop that was on screen
+	   when the study was opened on a client-side navigation, and the initial
+	   '/#home' on a cold load or a refresh, which lit the wrong link outright.
+	   Marked from the route instead of left to whatever the observer happened to
+	   leave behind. */
+	let current = $derived(page.url.pathname.startsWith('/projects/') ? '/#projects' : active);
 	/* 0 is fully down, `height` fully gone; the stretch past that is the slack
 	   above. Moved by the scroll rather than animated on a class — a transition
 	   is a second opinion on where the bar is, and the two disagreeing is what
@@ -113,7 +121,7 @@
 	>
 		<nav aria-label="Primary navigation">
 			{#each links as { href, label } (href)}
-				<a {href} onclick={jump} aria-current={active === href ? 'location' : undefined}>{label}</a>
+				<a {href} onclick={jump} aria-current={current === href ? 'location' : undefined}>{label}</a>
 			{/each}
 		</nav>
 	</header>
@@ -168,6 +176,7 @@
 		position: relative;
 		padding-bottom: var(--nav-underhang);
 		color: var(--text-faint);
+		font-family: var(--font-mono);
 		font-size: var(--fs-base);
 		line-height: var(--nav-line-height);
 		letter-spacing: 0.22em;

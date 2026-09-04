@@ -3,6 +3,7 @@
 	import AsciiOwlGray from '$lib/components/AsciiOwlGray.svelte';
 	import AsciiOwlMono from '$lib/components/AsciiOwlMono.svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import StudyHead from '$lib/components/StudyHead.svelte';
 
 	/* ascii-art's own study. The other three projects are shown through
 	   screenshots and figures; this one can be shown as itself — the renders
@@ -97,14 +98,6 @@
 </script>
 
 <!-- A section's name, written the way it is passed. -->
-{#snippet head(flag, title, lede)}
-	<div class="lede">
-		<span class="flag">{flag}</span>
-		<h4>{title}</h4>
-		{#if lede}<p class="prose">{lede}</p>{/if}
-	</div>
-{/snippet}
-
 <div class="study">
 	<!-- What it is, and the command that does it. -->
 	<section class="box banner">
@@ -138,11 +131,7 @@
 
 	<!-- The demonstration. This is text, and that is the point. -->
 	<section class="box">
-		{@render head(
-			'--mode',
-			'Three modes, one photograph',
-			'Glyph density carries luminance and foreground colour carries colour. Neither is smuggled into the other, which is why the three panels differ in exactly one thing each.'
-		)}
+		<StudyHead label="--mode" title="Three modes, one photograph" lede="Glyph density carries luminance and foreground colour carries colour. Neither is smuggled into the other, which is why the three panels differ in exactly one thing each." tagClass="flag" />
 
 		<div class="modes">
 			{#each MODES as mode (mode.id)}
@@ -174,7 +163,7 @@
 
 	<!-- The loop that produces one character. -->
 	<section class="box">
-		{@render head('--pipeline', 'One cell, start to finish', 'Every cell in the output grid runs the same sequence once. render.c decides everything tonal and chromatic, and output.c only encodes a grid that is already final, which is why the three formats can never disagree about content.')}
+		<StudyHead label="--pipeline" title="One cell, start to finish" lede="Every cell in the output grid runs the same sequence once. render.c decides everything tonal and chromatic, and output.c only encodes a grid that is already final, which is why the three formats can never disagree about content." tagClass="flag" />
 
 		<div class="pipeline">
 			{#each PIPELINE as stage, s (stage.name)}
@@ -199,7 +188,7 @@
 	<!-- The decision the whole thing rests on. -->
 	<section class="box row">
 		<div>
-			{@render head('--width', 'Averaging, not sampling')}
+			<StudyHead label="--width" title="Averaging, not sampling" tagClass="flag" />
 			<p class="prose">
 				The naive renderer walks the image and reads one pixel per character. That throws
 				away almost everything in a downscale, and it is unstable: shift the source by a
@@ -233,7 +222,7 @@ test_html_proportions();`}</code></pre>
 	<!-- The bug that only shows up on the web. -->
 	<section class="box row">
 		<div>
-			{@render head('--char-aspect', 'A character is not a square')}
+			<StudyHead label="--char-aspect" title="A character is not a square" tagClass="flag" />
 			<p class="prose">
 				In a terminal a cell is about twice as tall as it is wide, so a grid with as many
 				rows as columns renders the picture stretched to double height. The row count is
@@ -279,7 +268,7 @@ test_html_proportions();`}</code></pre>
 	<!-- What the encoder does with a finished grid. -->
 	<section class="box row">
 		<div>
-			{@render head('--format', 'Three encodings of the same grid', 'TXT for files and logs, ANSI true-colour for terminals, and an embeddable HTML fragment. Only the foreground is ever set, so trailing blanks are invisible in all three.')}
+			<StudyHead label="--format" title="Three encodings of the same grid" lede="TXT for files and logs, ANSI true-colour for terminals, and an embeddable HTML fragment. Only the foreground is ever set, so trailing blanks are invisible in all three." tagClass="flag" />
 			<p class="prose">
 				The HTML encoder groups adjacent cells sharing a foreground into one
 				<code>&lt;span&gt;</code> and emits spaces bare, because they show no ink. On a
@@ -312,7 +301,7 @@ test_html_proportions();`}</code></pre>
 	<!-- The integration, which is this website. -->
 	<section class="box row">
 		<div>
-			{@render head('--charset safe', 'This site is the client')}
+			<StudyHead label="--charset safe" title="This site is the client" tagClass="flag" />
 			<p class="prose">
 				Every render on this site comes out of a <code>make site</code> target in the
 				repo, straight into the components the pages import. They all share one ramp,
@@ -347,7 +336,7 @@ test_html_proportions();`}</code></pre>
 	<!-- Why the art on this site is a build output rather than a keepsake. -->
 	<section class="box row">
 		<div>
-			{@render head('make site', 'The art is a build artifact')}
+			<StudyHead label="make site" title="The art is a build artifact" tagClass="flag" />
 			<p class="prose">
 				One command regenerates every render on this site from its source photograph, and
 				the output is deterministic. The art is something the build produces rather than
@@ -365,7 +354,7 @@ test_html_proportions();`}</code></pre>
 	<!-- What it does not do. -->
 	<section class="box row">
 		<div>
-			{@render head('--not-implemented', 'Where it stops')}
+			<StudyHead label="--not-implemented" title="Where it stops" tagClass="flag" />
 			<p class="prose">
 				A 667 × 667 source at 400 columns takes about 13 ms, allocates one grid of cells
 				plus the decoded image, and is byte-for-byte deterministic. The limits are in the
@@ -393,8 +382,9 @@ test_html_proportions();`}</code></pre>
 	   carries no local rule at all. */
 
 
-	/* The section's name, written as the flag it is. */
-	.flag {
+	/* The section's name, written as the flag it is. Global: the span itself
+	   is rendered by StudyHead now, not this component's own template. */
+	:global(.flag) {
 		justify-self: start;
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
@@ -466,7 +456,7 @@ test_html_proportions();`}</code></pre>
 		margin-top: 0.4rem;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		line-height: 1.5;
 	}
 
@@ -505,7 +495,7 @@ test_html_proportions();`}</code></pre>
 	.render figcaption strong {
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		font-weight: 700;
 	}
 
@@ -543,7 +533,7 @@ test_html_proportions();`}</code></pre>
 	.stage span {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		line-height: 1.45;
 	}
 
@@ -566,7 +556,7 @@ test_html_proportions();`}</code></pre>
 	.module span {
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 	}
 
 	/* --- code ------------------------------------------------------------- */
@@ -684,7 +674,7 @@ test_html_proportions();`}</code></pre>
 		margin: 0;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		line-height: 1.6;
 	}
 

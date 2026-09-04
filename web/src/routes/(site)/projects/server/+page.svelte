@@ -3,6 +3,6 @@
 	import ServerStudy from '$lib/sections/ServerStudy.svelte';
 </script>
 
-<StudyPage title="This server">
+<StudyPage title="This server" year={2026}>
 	<ServerStudy />
 </StudyPage>

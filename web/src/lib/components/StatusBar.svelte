@@ -15,7 +15,10 @@
 		const card = document.getElementById('server');
 		if (!card) return;
 		event.preventDefault();
-		card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		card.scrollIntoView({
+			behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+			block: 'center'
+		});
 	}
 
 	$effect(watch);
@@ -319,6 +322,7 @@
 	   °C and ms are unit symbols and are wrong in any other case. */
 	.stats {
 		color: var(--text-dim);
+		font-family: var(--font-mono);
 		font-size: var(--fs-xs);
 		font-weight: 500;
 		letter-spacing: 0.1em;

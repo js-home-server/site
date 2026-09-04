@@ -59,12 +59,12 @@
 </div>
 
 <style>
-	/* Set apart from the rest of the panel's own type: this is a live reading,
-	   not a label, so it wears the mono face every figure on the page does — and
-	   the azure the trace under it and the Latency row beside it are drawn in. */
+	/* The one number this panel is read for, so it takes the same face and size
+	   as every other headline reading on the dashboard (.figure, app.css) —
+	   noticed rather than compared, unlike the axis figures around it. The
+	   azure matches the trace under it and the Latency row beside it. */
 	.latency-reading strong {
 		color: var(--azure);
-		font-family: var(--font-mono);
 		font-size: var(--fs-h2);
 	}
 

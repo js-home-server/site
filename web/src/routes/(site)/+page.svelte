@@ -92,7 +92,7 @@
 
 		display: grid;
 		/* The generator crops the art to its ink bounding box in both axes (see
-		   asciiArt src/output.c), so the <pre>'s own box is the horn span: its
+		   asciiArt src/output.c), so the art's own box is the horn span: its
 		   width is tip to tip, its top edge is the tips themselves. One
 		   min-content column sized by the bull hands that exact width to the
 		   status bar, and .wrap hangs the top edge off the nav's midline. */
@@ -129,20 +129,27 @@
 		pointer-events: none;
 	}
 
-	/* The generated component hard-codes font-size: 6px. Overriding it here is
-	   what actually resizes the art — a character grid has no other size — and
-	   it beats the old zoom because the layout box follows natively, so the
-	   column above still measures the art at the size it is painted. */
-	.bull :global(pre) {
-		font-size: var(--cell);
-		/* Safari floors a fractional line-height to the nearest CSS pixel on <pre>
-		   text (Chrome doesn't), which at this font-size quietly shaved ~13% off
-		   every row and left the whole art short — reading as the bull sitting too
-		   low under the nav. Rounding to a device pixel ourselves, the same fix
-		   already used for every other ascii-art component (see --device-px in
-		   app.css), makes both browsers land on the same pixel instead of one of
-		   them truncating. */
-		line-height: round(0.72em, var(--device-px, 1px));
+	/* The bull is a single rasterised image now (F11), not a character grid, so
+	   there is no font-size left to resize it with. It is sized directly in the
+	   same 96.34 x 80.64 cell units the --cell comment above measures the art
+	   in — width from --cell, height from the image's own aspect ratio, which
+	   was baked in at the same ratio when it was rendered. width alone (not a
+	   percentage) is what lets grid-template-columns: min-content above still
+	   size the column to the art, exactly as the old text's own rendered width
+	   did. */
+	.bull :global(img) {
+		display: block;
+		/* The global img reset (app.css) caps every image at max-width: 100% of
+		   its containing block -- fine everywhere else, but this element's own
+		   containing block (.wrap, by way of .landing's grid-template-columns:
+		   min-content) is sized FROM this image's width, so leaving the cap in
+		   would make the two depend on each other and collapse to nothing.
+		   Explicit width, no percentage anywhere in the chain, is what min-
+		   content sizing needs to size the column off the art like the old
+		   text did. */
+		max-width: none;
+		width: calc(var(--cell) * 96.34);
+		height: auto;
 	}
 
 	.identity {

@@ -1,5 +1,4 @@
 <script>
-	import favicon from '$lib/assets/favicon.svg';
 	import '../app.css';
 	import { page } from '$app/state';
 	import interWoff2 from '@fontsource/inter/files/inter-latin-400-normal.woff2?url';
@@ -19,7 +18,9 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
+	<link rel="icon" href="/favicon.png" type="image/png" />
+	<link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
+	<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
 	<link rel="preload" href={interWoff2} as="font" type="font/woff2" crossorigin="anonymous" />
 	<link
 		rel="preload"
@@ -36,6 +37,9 @@
 	<meta property="og:description" content={DESCRIPTION} />
 	<meta property="og:url" content={canonical} />
 	<meta property="og:image" content={ogImage} />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta property="og:image:alt" content="Joshua Smith — Data Engineer" />
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content="Joshua Smith — Data Engineer" />
 	<meta name="twitter:description" content={DESCRIPTION} />

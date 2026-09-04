@@ -2,6 +2,7 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import Logo from '$lib/components/Logo.svelte';
 	import ServerMiniDashboard from '$lib/components/ServerMiniDashboard.svelte';
+	import StudyHead from '$lib/components/StudyHead.svelte';
 	import { brandColors } from '$lib/logos.js';
 
 	/* "This server"'s own study, in the same shape as the other three: named
@@ -226,14 +227,6 @@
 
 <!-- A section's name, in the rail down the left of the study — the same
      vocabulary the other three use. -->
-{#snippet head(kicker, title, lede)}
-	<div class="lede">
-		<span class="kicker">{kicker}</span>
-		<h4>{title}</h4>
-		{#if lede}<p class="prose">{lede}</p>{/if}
-	</div>
-{/snippet}
-
 <!-- A stage of a path: a mark over a name, with whatever qualifies it
      underneath. -->
 {#snippet mark(stage)}
@@ -250,7 +243,7 @@
      about it worth saying beside it rather than under it. -->
 {#snippet path(flow)}
 	<div class="flow">
-		<h5>{flow.title}</h5>
+		<h3>{flow.title}</h3>
 		<div class="flow-body">
 			<div class="stages">
 				{#each flow.stages as stage, s (stage.name)}
@@ -302,11 +295,7 @@
 	<!-- The boundary, which is the whole argument. -->
 	<section class="box row">
 		<div>
-			{@render head(
-				'boundary',
-				'What is public is a list, not a side effect',
-				'The usual answer is to point Grafana at node_exporter and put a password on it. That publishes whatever the exporter exposes, and an exporter’s job is to expose everything.'
-			)}
+			<StudyHead label="boundary" title="What is public is a list, not a side effect" lede="The usual answer is to point Grafana at node_exporter and put a password on it. That publishes whatever the exporter exposes, and an exporter’s job is to expose everything." />
 			<p class="prose">
 				Instead the public surface is a checked-in inventory, and the collectors enforce it
 				in the direction that fails safe. A container appears only if it carries a
@@ -325,7 +314,7 @@
 		<div class="surface">
 			{#each SURFACE as column (column.title)}
 				<div class="tray">
-					<h5><span class="mark small"><Icon name={column.icon} /></span>{column.title}</h5>
+					<h3><span class="mark small"><Icon name={column.icon} /></span>{column.title}</h3>
 					<ul>
 						{#each column.items as item (item)}
 							<li>{item}</li>
@@ -339,11 +328,7 @@
 	<!-- Ingress: nothing listens. -->
 	<section class="box row">
 		<div>
-			{@render head(
-				'ingress',
-				'Nothing on the box listens to the internet',
-				'There is no port forwarding and no public SSH to find. A tunnel daemon dials out and holds the connection open from the inside.'
-			)}
+			<StudyHead label="ingress" title="Nothing on the box listens to the internet" lede="There is no port forwarding and no public SSH to find. A tunnel daemon dials out and holds the connection open from the inside." />
 			<p class="prose">
 				Two services bind a host port at all, and both bind loopback only. Everything else
 				talks over a private Docker network. Containers drop all capabilities and run with
@@ -364,11 +349,7 @@
 	<!-- Egress: 229 lines instead of a daemon. -->
 	<section class="box row">
 		<div>
-			{@render head(
-				'collect',
-				'229 lines instead of cAdvisor',
-				'cAdvisor publishes several hundred series per container. This site draws five of them.'
-			)}
+			<StudyHead label="collect" title="229 lines instead of cAdvisor" lede="cAdvisor publishes several hundred series per container. This site draws five of them." />
 			<p class="prose">
 				Two scripts read <code>docker inspect</code>, <code>docker stats</code> and
 				<code>chronyc</code>, then write five numbers per container and twenty about the
@@ -389,11 +370,7 @@
 	<!-- The API, and the fact that degradation is a type. -->
 	<section class="box row">
 		<div>
-			{@render head(
-				'serve',
-				'Degradation is a type, not an exception',
-				'This page is the client, so its failure modes had to be designed rather than discovered.'
-			)}
+			<StudyHead label="serve" title="Degradation is a type, not an exception" lede="This page is the client, so its failure modes had to be designed rather than discovered." />
 			<p class="prose">
 				Each group in the response carries its own state: live, stale, partial or
 				unavailable. The cache only overwrites itself with a response it trusts, so if
@@ -422,11 +399,7 @@
 	<!-- The machine itself, up and answering while the study is read. -->
 	<section class="box row">
 		<div>
-			{@render head(
-				'live',
-				'The box, while you read about it',
-				'Current telemetry from this machine, through the API described above. A dash means the degradation path is doing its job, not that the tile is broken.'
-			)}
+			<StudyHead label="live" title="The box, while you read about it" lede="Current telemetry from this machine, through the API described above. A dash means the degradation path is doing its job, not that the tile is broken." />
 		</div>
 
 		<ServerMiniDashboard />
@@ -435,7 +408,7 @@
 	<!-- The same box, read off its own instruments rather than described. -->
 	<section class="box row">
 		<div>
-			{@render head('measured', 'What it costs to run', 'Read off Prometheus and node_exporter on 2026-09-02.')}
+			<StudyHead label="measured" title="What it costs to run" lede="Read off Prometheus and node_exporter on 2026-09-02." />
 
 			<div class="cores">
 				<span class="cores-head">7-day mean busy, per core</span>
@@ -475,11 +448,7 @@
 	<!-- Shipping, which on a single box is mostly about how to undo it. -->
 	<section class="box row">
 		<div>
-			{@render head(
-				'shipping',
-				'Deploys are commit-only',
-				'The script refuses to run against a dirty tree and tags the image with the commit SHA, so whatever is running has a name in the history.'
-			)}
+			<StudyHead label="shipping" title="Deploys are commit-only" lede="The script refuses to run against a dirty tree and tags the image with the commit SHA, so whatever is running has a name in the history." />
 			<p class="prose">
 				A rollback trap is armed before anything changes. Its target defaults to the parent
 				commit and can be named explicitly, which matters the one time you need to skip back
@@ -495,7 +464,7 @@
 	<div class="pair">
 		<!-- What running it involves, as opposed to what building it did. -->
 		<section class="box">
-			{@render head('operate', 'Day to day')}
+			<StudyHead label="operate" title="Day to day" />
 
 			<div class="ops">
 				{#each OPERATING as op (op.term)}
@@ -510,7 +479,7 @@
 
 		<!-- Where it stops. One host is one host. -->
 		<section class="box">
-			{@render head('limits', 'Where it stops')}
+			<StudyHead label="limits" title="Where it stops" />
 
 			<ul class="limits">
 				{#each LIMITS as limit (limit.term)}
@@ -543,16 +512,6 @@
 		grid-template-columns: minmax(0, 21rem) minmax(0, 1fr);
 		gap: 1.75rem;
 		align-items: start;
-	}
-
-	/* Stacked rather than the other studies' single lede: each section here
-	   opens with one of several. */
-	.lede {
-		margin-bottom: 0.7rem;
-	}
-
-	.lede:last-child {
-		margin-bottom: 0;
 	}
 
 	.prose + .foot-note {
@@ -629,13 +588,13 @@
 		background: color-mix(in srgb, var(--color-foreground) 2%, #fff);
 	}
 
-	.tray h5 {
+	.tray h3 {
 		display: flex;
 		align-items: center;
 		gap: 0.4rem;
 		margin: 0 0 0.55rem;
 		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		font-weight: 600;
 	}
 
@@ -652,7 +611,7 @@
 		padding-left: 0.85rem;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		line-height: 1.55;
 	}
 
@@ -682,10 +641,10 @@
 		background: color-mix(in srgb, var(--color-foreground) 2%, #fff);
 	}
 
-	.flow h5 {
+	.flow h3 {
 		margin: 0 0 0.6rem;
 		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		font-weight: 600;
 	}
 
@@ -728,7 +687,7 @@
 	.stage span {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		line-height: 1.35;
 	}
 
@@ -748,7 +707,7 @@
 		background: color-mix(in srgb, var(--color-foreground) 5%, #fff);
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		line-height: 1.6;
 	}
 
@@ -812,7 +771,7 @@
 		grid-column: 2 / -1;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 	}
 
 	/* --- readings, ops, limits -------------------------------------------- */
@@ -851,7 +810,7 @@
 	.rnote {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		line-height: 1.5;
 	}
 
@@ -874,12 +833,12 @@
 	.op strong {
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		font-weight: 600;
 	}
 
 	.op .prose {
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 	}
 
 

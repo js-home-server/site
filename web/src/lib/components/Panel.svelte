@@ -7,12 +7,13 @@
 
 	   `level` is the heading this panel's own label renders as, in document
 	   terms rather than visual ones — every /server route sits it directly under
-	   the route's own h2, which is what h3 (the default) is right for. A panel
-	   nested one document level deeper — under a project's own h3 (Projects.svelte)
-	   or a study section's own h4 (ServerStudy.svelte) — passes the level down
-	   from there instead, so the outline stays unbroken however deep the panel
-	   sits. The visual size is unaffected either way: --title-size/--title-color
-	   already carry that, set by whichever ancestor turns a nested panel down. */
+	   the route's own h2, which is what h3 (the default) is right for. A study's
+	   own sections are h2 as well (StudyPage.svelte renders the project name as
+	   the h1 above them), so a panel nested in one lands on the same h3. A panel
+	   sitting a document level deeper than that passes the level down instead, so
+	   the outline stays unbroken however deep the panel sits. The visual size is
+	   unaffected either way: --title-size/--title-color already carry that, set
+	   by whichever ancestor turns a nested panel down. */
 	let { label, tone, level = 3, children } = $props();
 </script>
 
@@ -39,6 +40,7 @@
 	h5 {
 		margin: 0;
 		color: var(--title-color, var(--color-foreground));
+		font-family: var(--font-mono);
 		font-size: var(--title-size, var(--fs-xs));
 		font-weight: 700;
 		letter-spacing: 0.16em;

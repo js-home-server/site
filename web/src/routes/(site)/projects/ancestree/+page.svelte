@@ -3,6 +3,6 @@
 	import AncestreeStudy from '$lib/sections/AncestreeStudy.svelte';
 </script>
 
-<StudyPage title="Ancestree">
+<StudyPage title="Ancestree" year={2026}>
 	<AncestreeStudy />
 </StudyPage>

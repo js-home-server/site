@@ -3,6 +3,6 @@
 	import OrderflowStudy from '$lib/sections/OrderflowStudy.svelte';
 </script>
 
-<StudyPage title="Crypto orderflow">
-	<OrderflowStudy open={true} />
+<StudyPage title="Crypto orderflow" year={2026}>
+	<OrderflowStudy />
 </StudyPage>

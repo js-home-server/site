@@ -1,7 +1,6 @@
 <script>
 	import Capacity from '$lib/components/Capacity.svelte';
 	import Panel from '$lib/components/Panel.svelte';
-	import Placeholder from '$lib/components/Placeholder.svelte';
 	import Trace from '$lib/components/Trace.svelte';
 	import { fleet } from '$lib/containers.js';
 	import { degrees, gigabytes, microseconds, ms, pct } from '$lib/format.js';
@@ -133,13 +132,6 @@
 		</Panel>
 	</div>
 
-	<div class="box">
-		<Panel label="Processes">
-			<!-- Not wired up: nothing the status endpoint carries counts processes
-			     yet, so this holds the shape of it rather than a number. -->
-			<Placeholder note="—" lines={4} />
-		</Panel>
-	</div>
 </div>
 
 <style>
@@ -166,6 +158,7 @@
 	   and µs are unit symbols and are wrong in any other. */
 	.range {
 		color: var(--text-dim);
+		font-family: var(--font-mono);
 		font-size: var(--fs-xs);
 		font-weight: 500;
 		letter-spacing: 0.08em;

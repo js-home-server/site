@@ -2,6 +2,7 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import OrderflowEquityChart from '$lib/components/OrderflowEquityChart.svelte';
 	import Placeholder from '$lib/components/Placeholder.svelte';
+	import StudyHead from '$lib/components/StudyHead.svelte';
 
 	/* The combined study for the crypto work. It was two cards — the collector
 	   and the research that reads it — and they were never two projects: one
@@ -13,11 +14,6 @@
 	   are read off the running box (`ssh phobos`, 2026-09-01, 18 retained days);
 	   the strategy numbers are from `intraday/REPORT.md` and the equity curve is
 	   the backtest's own hourly P&L, resampled weekly — see the note under it. */
-
-	/* The card is mounted whether or not it is open — a shut fold is clipped,
-	   not unmounted — so the live tape needs to be told, or it holds a socket
-	   open for a card nobody is reading. */
-	let { open = false } = $props();
 
 	/* Whichever number a reader takes away, it should be one of these four. */
 	const HEADLINE = [
@@ -46,7 +42,7 @@
 		{
 			name: 'WAL',
 			icon: 'database',
-			detail: '~16 GB/day, transient',
+			detail: '~14 GB/day, transient',
 			figure: 'One file per stream per UTC hour on NVMe. 98% of it is the raw trade tape'
 		},
 		{
@@ -204,7 +200,7 @@
 	/* A real public trade feed, read straight from the browser. Not a claim that
 	   this is the archive's own tape: that one is on a box at home and is not
 	   served publicly, and this is the same shape of row arriving at the same
-	   rate. Connected only while the card is open. */
+	   rate. */
 	const TICKER_SYMBOLS = [
 		'btc', 'eth', 'bnb', 'sol', 'xrp', 'ada', 'doge', 'trx', 'avax', 'dot',
 		'link', 'matic', 'ton', 'shib', 'ltc', 'bch', 'uni', 'atom', 'xlm', 'etc',
@@ -227,8 +223,6 @@
 	const MAX_ATTEMPTS = 4;
 
 	$effect(() => {
-		if (!open) return;
-
 		let socket;
 		let torndown = false;
 		let attempts = 0;
@@ -283,14 +277,6 @@
 <!-- The heading of a block: which half of the project it belongs to, and what
      it is. The part tag is the study's own navigation — there are two tracks
      here and a reader should always know which one they are on. -->
-{#snippet head(part, title, lede)}
-	<div class="lede">
-		<span class="track" class:research={part === 'alpha'}>{part}</span>
-		<h4>{title}</h4>
-		{#if lede}<p class="prose">{lede}</p>{/if}
-	</div>
-{/snippet}
-
 <div class="study">
 	<!-- The thesis, and the four figures that stand behind it. -->
 	<section class="box banner">
@@ -321,11 +307,7 @@
 
 	<!-- PART ONE — the collector. -->
 	<section class="box">
-		{@render head(
-			'archive',
-			'The pipeline',
-			'A socket to a research panel, in five processes. Each stage is separate so that none can stall the one in front of it, because the tape has to be written whatever compaction is doing.'
-		)}
+		<StudyHead label="archive" title="The pipeline" lede="A socket to a research panel, in five processes. Each stage is separate so that none can stall the one in front of it, because the tape has to be written whatever compaction is doing." tagClass="track" />
 
 		<div class="pipeline">
 			{#each PIPELINE as stage, s (stage.name)}
@@ -368,7 +350,7 @@
 	<!-- What arrives, and what it looks like arriving. -->
 	<section class="box row">
 		<div class="capture">
-			{@render head('archive', 'What it captures', null)}
+			<StudyHead label="archive" title="What it captures" tagClass="track" />
 
 			<table class="streams">
 				<thead>
@@ -433,14 +415,14 @@
 			<p class="note">
 				A public Binance feed, read straight from your browser. The archive’s own tape is
 				not served publicly, but this is the same shape of row at the same rate: about
-				16 GB a day across 583 streams.
+				14 GB a day across 583 streams.
 			</p>
 		</div>
 	</section>
 
 	<!-- Why the numbers above should be believed. -->
 	<section class="box">
-		{@render head('archive', 'Running it is the hard part', 'Collecting for an hour is a script. Collecting for months, unattended, on hardware that is also doing something else, is the engineering.')}
+		<StudyHead label="archive" title="Running it is the hard part" lede="Collecting for an hour is a script. Collecting for months, unattended, on hardware that is also doing something else, is the engineering." tagClass="track" />
 
 		<div class="cards">
 			{#each ENGINEERING as card (card.term)}
@@ -457,11 +439,7 @@
 
 	<!-- The claims above, with their measurements. -->
 	<section class="box">
-		{@render head(
-			'archive',
-			'What it actually does, measured',
-			'Every ten seconds a watcher writes a row of throughput, wire delay, writer lag, memory and disk. This is 149,059 of those rows, covering 23 days of the running box. Percentiles rather than averages, because the p99 decides whether a machine copes.'
-		)}
+		<StudyHead label="archive" title="What it actually does, measured" lede="Every ten seconds a watcher writes a row of throughput, wire delay, writer lag, memory and disk. This is 149,059 of those rows, covering 23 days of the running box. Percentiles rather than averages, because the p99 decides whether a machine copes." tagClass="track" />
 
 		<table class="measured">
 			<thead>
@@ -493,7 +471,7 @@
 	<!-- Where the rows go, and what an adapter has to satisfy to write one. -->
 	<section class="box row">
 		<div>
-			{@render head('archive', 'The write contract', 'Eleven streams, one Parquet file per stream per UTC day in Hive-style date partitions at zstd-19. Before any of its rows are allowed in, a venue adapter has to satisfy four rules.')}
+			<StudyHead label="archive" title="The write contract" lede="Eleven streams, one Parquet file per stream per UTC day in Hive-style date partitions at zstd-19. Before any of its rows are allowed in, a venue adapter has to satisfy four rules." tagClass="track" />
 			<p class="foot-note">
 				A day of footprint is 7.0M to 15.2M rows and 37 to 116 MB. Partition keys live in
 				the path rather than as columns, so nothing pays to store the stream and the date
@@ -510,11 +488,7 @@
 
 	<!-- The gap, and why it is still there. -->
 	<section class="box">
-		{@render head(
-			'archive',
-			'The six days that are missing',
-			'Live capture is the one kind of data engineering with no backfill. The research half can re-download six and a half years from a public archive whenever it likes. This half has exactly what it was listening for at the time.'
-		)}
+		<StudyHead label="archive" title="The six days that are missing" lede="Live capture is the one kind of data engineering with no backfill. The research half can re-download six and a half years from a public archive whenever it likes. This half has exactly what it was listening for at the time." tagClass="track" />
 
 		<div class="days">
 			{#each DAYS as day (day.day)}
@@ -562,7 +536,7 @@
 	<!-- Read back: the archive as a chart, and the pipeline it fed first. -->
 	<section class="box">
 		<div>
-			{@render head('archive', 'Read back', 'Every pane is built from captured rows and aggregated across whichever venues are ticked. It is the same view a commercial terminal sells, off my own data.')}
+			<StudyHead label="archive" title="Read back" lede="Every pane is built from captured rows and aggregated across whichever venues are ticked. It is the same view a commercial terminal sells, off my own data." tagClass="track" />
 			<p class="foot-note">
 				Below it, the earlier bar-level pipeline this grew out of: five exchanges
 				aggregated in one call, with CVD reconstructed as a continuous series and funding
@@ -585,11 +559,7 @@
 
 	<!-- PART TWO — the research. -->
 	<section class="box">
-		{@render head(
-			'alpha',
-			'The strategy',
-			'A market-neutral cross-sectional book on Binance perpetuals. The signal is exchange-reported taker-buy share, so aggressive flow is measured rather than inferred from a tick rule. Averaged over a week, held for two.'
-		)}
+		<StudyHead label="alpha" title="The strategy" lede="A market-neutral cross-sectional book on Binance perpetuals. The signal is exchange-reported taker-buy share, so aggressive flow is measured rather than inferred from a tick rule. Averaged over a week, held for two." tagClass="track" tagModifier="research" />
 
 		<div class="research">
 			<OrderflowEquityChart />
@@ -626,7 +596,7 @@
 	<!-- The part that decides whether any of the above is real. -->
 	<section class="box row">
 		<div>
-			{@render head('alpha', 'How it was falsified', 'Each of these is a way the result could have been an artifact. All were run on the final configuration, not on the version that happened to survive them.')}
+			<StudyHead label="alpha" title="How it was falsified" lede="Each of these is a way the result could have been an artifact. All were run on the final configuration, not on the version that happened to survive them." tagClass="track" tagModifier="research" />
 			<p class="foot-note">
 				The delayed fill matters most. A strategy whose edge disappears when you fill a
 				day late is measuring bid-ask bounce rather than information, and this one is
@@ -652,7 +622,7 @@
 
 	<!-- The negative results, which are most of the work. -->
 	<section class="box">
-		{@render head('alpha', 'What was killed, and by what', 'Four hypotheses that looked good enough to build. Each was rejected by a specific measurement rather than abandoned.')}
+		<StudyHead label="alpha" title="What was killed, and by what" lede="Four hypotheses that looked good enough to build. Each was rejected by a specific measurement rather than abandoned." tagClass="track" tagModifier="research" />
 
 		<div class="rejected">
 			{#each REJECTED as item (item.term)}
@@ -676,7 +646,7 @@
 	<!-- Where it actually stands. -->
 	<section class="box row">
 		<div>
-			{@render head('alpha', 'Status and limits', null)}
+			<StudyHead label="alpha" title="Status and limits" tagClass="track" tagModifier="research" />
 			<p class="prose">
 				The archive has been live since 2026-08-04. The research is at the end of its
 				validation phase: the book is specified, falsified and packaged for paper trading,
@@ -713,15 +683,12 @@
 	   they are not one block: without this the foot-note runs straight on from
 	   the paragraph above it. */
 
-	/* A hair wider than the shared gap: this study's ledes carry more text. */
-	.lede {
-		gap: 0.4rem;
-	}
-
 	/* Which half of the project a block belongs to. The study has two tracks
 	   running through it and the tag is how a reader keeps their place — the
-	   collector in one colour, the research it feeds in the other. */
-	.track {
+	   collector in one colour, the research it feeds in the other. Global:
+	   the span itself is rendered by StudyHead now, not this component's own
+	   template. */
+	:global(.track) {
 		justify-self: start;
 		padding: 0.15rem 0.5rem;
 		border: 1px solid currentcolor;
@@ -733,7 +700,7 @@
 		text-transform: uppercase;
 	}
 
-	.track.research {
+	:global(.track.research) {
 		color: var(--ink-violet);
 	}
 
@@ -792,7 +759,7 @@
 	.stage-detail {
 		color: var(--ink-azure);
 		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 	}
 
 	/* --- what it captures ------------------------------------------------- */
@@ -991,7 +958,7 @@
 		margin-top: 0.35rem;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		line-height: 1.5;
 	}
 
@@ -1101,7 +1068,7 @@
 		margin: 0;
 		color: var(--text-dim);
 		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		line-height: 1.6;
 	}
 
@@ -1169,7 +1136,7 @@
 		margin-top: -0.4rem;
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 	}
 
 	/* Three columns of one story: what happened, what the software did about
@@ -1218,7 +1185,7 @@
 	.falsify .value {
 		text-align: right;
 		white-space: nowrap;
-		color: color-mix(in srgb, var(--mint) 45%, #0b0b0b);
+		color: var(--mint-ink);
 		font-weight: 600;
 	}
 
@@ -1252,7 +1219,7 @@
 
 	.reject-head strong {
 		color: var(--color-foreground);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		font-weight: 700;
 	}
 

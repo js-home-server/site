@@ -147,6 +147,7 @@
 	.status .note {
 		margin: 0.35rem 0 0;
 		color: var(--text-dim);
+		font-family: var(--font-mono);
 		font-size: var(--fs-xs);
 	}
 
@@ -160,6 +161,7 @@
 	.uptime .stats {
 		margin: 0.3rem 0 0.7rem;
 		color: var(--text-dim);
+		font-family: var(--font-mono);
 		font-size: var(--fs-xs);
 		font-weight: 500;
 		letter-spacing: 0.08em;
