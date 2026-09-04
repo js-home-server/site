@@ -598,29 +598,8 @@
 		gap: 0.1rem;
 	}
 
-	.spec dt {
-		color: var(--text-faint);
-		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-	}
 
-	.spec dd {
-		margin: 0;
-		color: var(--color-foreground);
-		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
-		font-weight: 600;
-	}
 
-	.figure strong {
-		color: var(--color-foreground);
-		font-size: var(--fs-subhead);
-		font-weight: 700;
-		letter-spacing: -0.02em;
-		line-height: 1.1;
-	}
 
 	.figure .unit {
 		margin-left: 0.12em;
@@ -631,13 +610,6 @@
 		letter-spacing: 0;
 	}
 
-	.note {
-		display: block;
-		color: var(--text-faint);
-		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
-		line-height: 1.5;
-	}
 
 	/* --- the boundary ----------------------------------------------------- */
 
@@ -910,16 +882,6 @@
 		font-size: var(--fs-xs);
 	}
 
-	.limits li {
-		display: grid;
-		grid-template-columns: auto minmax(0, 1fr);
-		gap: 0.5rem;
-		align-items: baseline;
-		color: var(--text-dim);
-		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
-		line-height: 1.6;
-	}
 
 	.limits strong {
 		color: var(--color-foreground);

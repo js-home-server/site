@@ -186,13 +186,6 @@
 		border-top-style: dashed;
 	}
 
-	.note {
-		display: block;
-		color: var(--text-faint);
-		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
-		line-height: 1.5;
-	}
 
 	@media (max-width: 60rem) {
 		.canvas {

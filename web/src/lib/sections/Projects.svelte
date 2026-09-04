@@ -127,17 +127,10 @@
 </section>
 
 <style>
+	/* The paper shadow itself is app.css's .projects; this is the one thing only
+	   this copy of it needs — the card grid bleeds into the box's own padding. */
 	.projects {
-		--color-foreground: var(--paper-foreground);
-		--color-border: var(--paper-rule);
-		--text-dim: var(--paper-text-dim);
-		--text-faint: var(--paper-text-faint);
-		--focus-ring: var(--mint-ink);
-
 		overflow: hidden;
-		border-color: var(--paper-border);
-		background: var(--paper-background);
-		color: var(--color-foreground);
 	}
 
 	.projects .section-title {

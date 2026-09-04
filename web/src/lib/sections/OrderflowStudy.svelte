@@ -1,6 +1,5 @@
 <script>
 	import Icon from '$lib/components/Icon.svelte';
-	import Logo from '$lib/components/Logo.svelte';
 	import OrderflowEquityChart from '$lib/components/OrderflowEquityChart.svelte';
 	import Placeholder from '$lib/components/Placeholder.svelte';
 
@@ -713,11 +712,6 @@
 	/* A column of a split row holds a heading and whatever qualifies it, and
 	   they are not one block: without this the foot-note runs straight on from
 	   the paragraph above it. */
-	.row > div {
-		display: grid;
-		align-content: start;
-		gap: 0.6rem;
-	}
 
 	/* A hair wider than the shared gap: this study's ledes carry more text. */
 	.lede {
@@ -743,13 +737,6 @@
 		color: var(--ink-violet);
 	}
 
-	.note {
-		display: block;
-		color: var(--text-faint);
-		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
-		line-height: 1.5;
-	}
 
 	.mark {
 		font-size: var(--fs-h2);
@@ -775,13 +762,6 @@
 		gap: 0.6rem;
 	}
 
-	.figure strong {
-		color: var(--color-foreground);
-		font-size: var(--fs-subhead);
-		font-weight: 700;
-		letter-spacing: -0.02em;
-		line-height: 1.1;
-	}
 
 	.figure .unit {
 		margin-left: 0.3em;
@@ -974,29 +954,8 @@
 		gap: 0.6rem;
 	}
 
-	.card-item strong {
-		color: var(--color-foreground);
-		font-size: var(--fs-xs);
-		font-weight: 700;
-		line-height: 1.4;
-	}
 
-	.card-item ul {
-		display: grid;
-		gap: 0.35rem;
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
 
-	.card-item li {
-		position: relative;
-		padding-left: 0.85rem;
-		color: var(--text-dim);
-		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
-		line-height: 1.55;
-	}
 
 	.card-item li::before {
 		position: absolute;
@@ -1314,16 +1273,6 @@
 
 	/* --- limits ----------------------------------------------------------- */
 
-	.limits li {
-		display: grid;
-		grid-template-columns: auto minmax(0, 1fr);
-		gap: 0.5rem;
-		align-items: baseline;
-		color: var(--text-dim);
-		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
-		line-height: 1.6;
-	}
 
 	.limits strong {
 		color: var(--color-foreground);

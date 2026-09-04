@@ -521,19 +521,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		--ink: var(--amber-ink);
 	}
 
-	.row > div {
-		display: grid;
-		align-content: start;
-		gap: 0.6rem;
-	}
 
-	.note {
-		display: block;
-		color: var(--text-faint);
-		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
-		line-height: 1.5;
-	}
 
 	.mark {
 		flex: none;
@@ -569,29 +557,8 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		gap: 0.1rem;
 	}
 
-	.spec dt {
-		color: var(--text-faint);
-		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-	}
 
-	.spec dd {
-		margin: 0;
-		color: var(--color-foreground);
-		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
-		font-weight: 600;
-	}
 
-	.figure strong {
-		color: var(--color-foreground);
-		font-size: var(--fs-subhead);
-		font-weight: 700;
-		letter-spacing: -0.02em;
-		line-height: 1.1;
-	}
 
 	.figure .unit {
 		margin-left: 0.12em;
@@ -861,29 +828,8 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		gap: 0.6rem;
 	}
 
-	.card-item strong {
-		color: var(--color-foreground);
-		font-size: var(--fs-xs);
-		font-weight: 700;
-		line-height: 1.4;
-	}
 
-	.card-item ul {
-		display: grid;
-		gap: 0.35rem;
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
 
-	.card-item li {
-		position: relative;
-		padding-left: 0.85rem;
-		color: var(--text-dim);
-		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
-		line-height: 1.55;
-	}
 
 	.card-item li::before {
 		position: absolute;
@@ -1005,16 +951,6 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 
 	/* --- limits ----------------------------------------------------------- */
 
-	.limits li {
-		display: grid;
-		grid-template-columns: auto minmax(0, 1fr);
-		gap: 0.5rem;
-		align-items: baseline;
-		color: var(--text-dim);
-		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
-		line-height: 1.6;
-	}
 
 	.limits strong {
 		color: var(--color-foreground);

@@ -284,6 +284,25 @@
 	background: var(--surface);
 }
 
+/* The one light surface inside the dark site: the projects box and the case
+   studies it opens into. Shadows the site's own semantic tokens to the --paper-*
+   palette above, so everything nested inside reads the same names it always does
+   and comes out light. Must follow .surface-box, whose border and background it
+   overrides at equal specificity. Here rather than in the two components that
+   wear it — they had a copy each, and the copies had already drifted to raw
+   literals on one side and tokens on the other. */
+.projects {
+	--color-foreground: var(--paper-foreground);
+	--color-border: var(--paper-rule);
+	--text-dim: var(--paper-text-dim);
+	--text-faint: var(--paper-text-faint);
+	--focus-ring: var(--mint-ink);
+
+	border-color: var(--paper-border);
+	background: var(--paper-background);
+	color: var(--color-foreground);
+}
+
 /* Corner brackets around whatever stands in them — eight hairlines, two to a
    corner, drawn as backgrounds rather than elements: the same trick Placeholder
    draws its dotted edges with. Here rather than in each page that wants it,
@@ -576,6 +595,18 @@
 	line-height: 1.6;
 }
 
+/* The same quiet line drawn inline rather than as its own paragraph — a
+   caption under a figure, a gloss beside a term. Scoped under .study because
+   .note is not a study-only name: Spread and the dashboard's own rail both
+   carry one, and neither wants this. */
+.study .note {
+	display: block;
+	color: var(--text-faint);
+	font-family: var(--font-mono);
+	font-size: var(--fs-xs);
+	line-height: 1.5;
+}
+
 /* Between two stages of a pipeline or a flow. */
 .arrow {
 	align-self: center;
@@ -617,6 +648,14 @@
 	align-items: start;
 }
 
+/* Either column of that shell, stacked from the top. Scoped under .study:
+   Projects and Heatmap carry a .row of their own that is not this one. */
+.study .row > div {
+	display: grid;
+	align-content: start;
+	gap: 0.6rem;
+}
+
 /* A block's opening column: the thesis/prose stack, and whatever install
    chip or spec list sits under it. */
 .intro {
@@ -633,6 +672,23 @@
 	margin: 0;
 }
 
+/* The term, and the figure against it. */
+.spec dt {
+	color: var(--text-faint);
+	font-family: var(--font-mono);
+	font-size: var(--fs-xs);
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+}
+
+.spec dd {
+	margin: 0;
+	color: var(--color-foreground);
+	font-family: var(--font-mono);
+	font-size: var(--fs-xs);
+	font-weight: 600;
+}
+
 /* A list of qualifications under a study's own claim: what it does and does
    not cover. */
 .limits {
@@ -643,6 +699,19 @@
 	list-style: none;
 }
 
+/* One qualification: its mark in the first column, its text in the second,
+   sharing a baseline however long either runs. */
+.limits li {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	gap: 0.5rem;
+	align-items: baseline;
+	color: var(--text-dim);
+	font-family: var(--font-mono);
+	font-size: var(--fs-xs);
+	line-height: 1.6;
+}
+
 /* One card in a grid of them — a milestone, a cost line, a pattern. */
 .card-item {
 	display: grid;
@@ -651,6 +720,31 @@
 	padding: 0.8rem 0.9rem;
 	border: 1px solid var(--color-border);
 	border-radius: var(--radius-panel);
+}
+
+/* What the card is called, the points under it, and one of those points. */
+.card-item strong {
+	color: var(--color-foreground);
+	font-size: var(--fs-xs);
+	font-weight: 700;
+	line-height: 1.4;
+}
+
+.card-item ul {
+	display: grid;
+	gap: 0.35rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.card-item li {
+	position: relative;
+	padding-left: 0.85rem;
+	color: var(--text-dim);
+	font-family: var(--font-mono);
+	font-size: var(--fs-xs);
+	line-height: 1.55;
 }
 
 /* The rail's word's own scope line: what the section covers, one step
@@ -689,4 +783,13 @@
 	padding: 0.6rem 0.7rem;
 	border: 1px solid var(--color-border);
 	border-radius: var(--radius-control);
+}
+
+/* The number itself, over the word under it. */
+.study .figure strong {
+	color: var(--color-foreground);
+	font-size: var(--fs-subhead);
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	line-height: 1.1;
 }

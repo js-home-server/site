@@ -392,11 +392,6 @@ test_html_proportions();`}</code></pre>
 	   studies (app.css) — nothing here needs its own accent, so .study
 	   carries no local rule at all. */
 
-	.row > div {
-		display: grid;
-		align-content: start;
-		gap: 0.6rem;
-	}
 
 	/* The section's name, written as the flag it is. */
 	.flag {
@@ -408,13 +403,6 @@ test_html_proportions();`}</code></pre>
 		letter-spacing: 0.04em;
 	}
 
-	.note {
-		display: block;
-		color: var(--text-faint);
-		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
-		line-height: 1.5;
-	}
 
 	/* Same treatment as the shared .prose/.foot-note code (app.css), extended
 	   to the other places this study sets code inline. */
@@ -458,21 +446,7 @@ test_html_proportions();`}</code></pre>
 		gap: 0.1rem;
 	}
 
-	.spec dt {
-		color: var(--text-faint);
-		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-	}
 
-	.spec dd {
-		margin: 0;
-		color: var(--color-foreground);
-		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
-		font-weight: 600;
-	}
 
 	/* The photograph, small and beside the claim — it is the input, not the
 	   work. Everything below it is what the program made of it. */
@@ -716,16 +690,6 @@ test_html_proportions();`}</code></pre>
 
 	/* --- limits ----------------------------------------------------------- */
 
-	.limits li {
-		display: grid;
-		grid-template-columns: auto minmax(0, 1fr);
-		gap: 0.5rem;
-		align-items: baseline;
-		color: var(--text-dim);
-		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
-		line-height: 1.6;
-	}
 
 	.limits strong {
 		color: var(--color-foreground);
