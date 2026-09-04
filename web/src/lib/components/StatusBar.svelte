@@ -20,6 +20,14 @@
 		snapshot ? (online ? 'online' : 'offline') : server.status.snapshot === 'error' ? 'error' : 'loading'
 	);
 
+	/* Live region goes armed only once the first request has settled, one tick
+	   after that first render — so a screen reader hears a real status flip
+	   later, not the "Checking…" → first reading transition every page load makes. */
+	let announceStatus = $state(false);
+	$effect(() => {
+		if (statusState !== 'loading' && !announceStatus) queueMicrotask(() => (announceStatus = true));
+	});
+
 	let temps = $derived(series?.cpu.temperature_c ?? []);
 	let latencies = $derived(series?.availability.latency_ms ?? []);
 	let uptime = $derived(series?.availability.status ?? []);
@@ -97,8 +105,8 @@
 			Home server
 		</h2>
 
-		<!-- aria-live announces a real state flip, not every 30s poll — text only changes when `statusState` actually does. -->
-		<p class="claim" role="status" aria-live="polite">
+		<!-- Live-region attributes withheld until the first request settles (see announceStatus) — a screen reader shouldn't hear ordinary hydration as a status alert. -->
+		<p class="claim" role={announceStatus ? 'status' : undefined} aria-live={announceStatus ? 'polite' : undefined}>
 			Site served from a box under my stairs.
 			{statusState === 'loading'
 				? 'Checking live status…'
