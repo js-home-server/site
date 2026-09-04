@@ -13,17 +13,17 @@
    generated palette had a token for every part of a component library this site
    does not use — a card, a popover, five chart colours — none of which anything
    ever read. These four are the ones the pages and the base layer below name, and
-   the accents further down are the rest of the paint. */
-:root {
-	--background: #f9f9f7;
-	--foreground: #0b0b0b;
-	--border: #e1e0d9;
-	--ring: #77746f;
-}
+   the accents further down are the rest of the paint.
 
-/* The site as it is actually served: app.html carries this class, and the light
-   values above are what a viewer would get without it. */
-.dark {
+   One palette, not a theme: the site is dark and there is no switch, so these
+   are the values every page gets. This was a :root light set overridden by a
+   .dark block that app.html always carried, which meant the light half could
+   never apply and was only ever read as a set of defaults nothing could reach.
+   color-scheme is declared here so form controls, scrollbars and the canvas
+   the browser paints behind the page match. The one light surface on the site
+   is deliberate and separate — see --paper-* below, which the projects box and
+   the case studies wear on purpose. */
+:root {
 	color-scheme: dark;
 
 	--background: #090909;
