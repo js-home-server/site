@@ -22,7 +22,7 @@
 
 		<div class="identity">
 			<h1>Joshua Smith</h1>
-			<p class="tagline">Data Engineer focused on real-time, scientific, and ML systems.<br />I turn numbers into models, decisions and the occasional bull.</p>
+			<p class="tagline">Data Engineer focused on real-time, scientific, and ML systems.<br class="tagline-break" /> I turn numbers into models, decisions and the occasional bull.</p>
 			<ActionLink variant="cta" direction="site" href="#projects" class="hero-cta">View my work</ActionLink>
 		</div>
 	</div>
@@ -177,11 +177,30 @@
 		}
 	}
 
-	/* Too short for the composition even at the floor — keep proportions, let the rest scroll into view. */
+	/* Too short for the composition even at the floor — keep proportions, let the rest scroll into view.
+	   The identity block also drops out of the absolute overlay here: at this height there isn't enough
+	   clearance between the art and the status strip below for the two to overlap safely (see StatusBar). */
 	@media (max-height: 40rem) {
 		.landing {
 			height: auto;
 			min-height: calc(100svh - var(--header-height));
+		}
+
+		.wrap {
+			margin-bottom: 0;
+		}
+
+		.identity {
+			position: relative;
+			top: auto;
+			left: auto;
+			margin-top: 1rem;
+			transform: none;
+		}
+
+		/* The line break only exists to balance two lines under the art — flow layout wraps it naturally. */
+		.tagline-break {
+			display: none;
 		}
 	}
 </style>
