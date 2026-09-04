@@ -1,16 +1,10 @@
-/* How readings are written down. One place, so the same quantity is never
-   spelled two ways on the same page. Every one of these answers an em dash for a
-   number it has not got, so a caller never has to guard a reading before writing
-   it down. */
+/* One place readings get written down, so a quantity is never spelled two ways.
+   Every function here returns an em dash for missing data — no caller has to guard. */
 
-/* A percentage as a share of a whole: between nothing and all of it, or nothing at
-   all where there is no reading. What is drawn as a ring or a bar has to be one of
-   those, whatever the API says. */
+/* Clamped 0-100, or null with no reading — whatever a ring or bar draws has to be one of those. */
 export const share = (v) => (Number.isFinite(v) ? Math.min(100, Math.max(0, v)) : null);
 
-/* Whole percentages, except under one: pressure runs in hundredths of a percent,
-   and rounding every reading of it to 0% would print the same figure for a machine
-   that is stalling and one that is idle. Zero stays zero. */
+/* Whole percentages, except under 1% — pressure runs in hundredths, and rounding to 0% would hide a stalling machine. */
 export const pct = (v) => {
 	if (!Number.isFinite(v)) return '—';
 	if (v !== 0 && Math.abs(v) < 0.01) return '<0.01%';
@@ -19,20 +13,14 @@ export const pct = (v) => {
 
 export const degrees = (v) => (Number.isFinite(v) ? `${Math.round(v)}°C` : '—');
 
-/* A round trip. Whole milliseconds: the probe itself is not accurate to
-   fractions of one, and a column of these is read against each other. */
+/* Whole ms — the probe isn't accurate to fractions anyway. */
 export const ms = (v) => (Number.isFinite(v) ? `${Math.round(v)} ms` : '—');
 
-/* A clock offset, at the precision a clock is actually disciplined to:
-   microseconds. Always signed, because which side of the reference it sits on is
-   half the reading. */
+/* Signed — which side of the reference it's on is half the reading. */
 export const microseconds = (v) =>
 	Number.isFinite(v) ? `${v < 0 ? '−' : '+'}${Math.round(Math.abs(v) * 1e6)} µs` : '—';
 
-/* The same quantity unsigned, for the ones that have no side to be on — a
-   dispersion or a delay is a width, not a direction. In the same unit as the
-   offsets, because the whole point of reading them together is that a path a
-   hundred times the machine's own error is a path worth noticing. */
+/* Unsigned — a dispersion or delay is a width, not a direction. Same unit as microseconds() so the two compare directly. */
 export const microspan = (v) =>
 	Number.isFinite(v) ? `${Math.round(Math.abs(v) * 1e6)} µs` : '—';
 
@@ -46,10 +34,7 @@ export const clockPosition = (v) => {
 export const ppm = (v) =>
 	Number.isFinite(v) ? `${v < 0 ? '−' : '+'}${Math.abs(v).toFixed(3)} ppm` : '—';
 
-/* How long, in the two units that read at that distance: a machine up for a
-   fortnight is not read in minutes, and one up for an hour is not read in days.
-   The smaller unit is padded so a column of these does not jump about as it
-   crosses ten. */
+/* Two units at whatever scale reads best — a fortnight isn't read in minutes. Padded so a column doesn't jump crossing ten. */
 export function duration(seconds) {
 	if (!Number.isFinite(seconds) || seconds < 0) return '—';
 
@@ -61,16 +46,11 @@ export function duration(seconds) {
 	return hours ? `${hours}h ${pad(Math.floor(seconds / 60) % 60)}m` : `${Math.floor(seconds / 60)}m`;
 }
 
-/* Whole hours off an uptime reading, split from its unit so a caller can size
-   the two differently. Null while there's no figure yet, same as every other
-   reading here that has no data. */
+/* Split from its unit so a caller can size them differently. */
 export const uptimeHours = (seconds) => (Number.isFinite(seconds) ? Math.floor(seconds / 3600) : null);
 
-/* How far a series' first reading sits behind its last, in the word a reader
-   needs it in: short beside a value ("24H"), long where a screen reader says
-   it out loud ("24 hours"). Nothing yet reads as an em dash short, or as
-   nothing at all long — the long form only ever feeds a sentence that already
-   has its own "no history" fallback. */
+/* Short form for a value ("24H"), long for a screen reader ("24 hours"). No
+   history reads as an em dash short, or null long (the caller has its own fallback sentence). */
 export function span(seconds, { short = false } = {}) {
 	if (seconds >= 3600) {
 		const hours = Math.round(seconds / 3600);
@@ -86,8 +66,7 @@ export function span(seconds, { short = false } = {}) {
 const GB = 2 ** 30;
 const TB = 2 ** 40;
 
-/* Sizes to the precision the number deserves: two decimals once a figure is
-   small enough for them to mean something, one below that. */
+/* Two decimals once a figure is small enough for them to mean something, one below that. */
 export function bytes(n) {
 	if (!Number.isFinite(n)) return '—';
 	if (n >= TB) return `${(n / TB).toFixed(2)} TB`;
@@ -95,16 +74,10 @@ export function bytes(n) {
 	return `${(n / 2 ** 20).toFixed(0)} MB`;
 }
 
-/* The same size pinned to one unit, for the two halves of a ratio: "58.4 /
-   468.4 GB" only reads as a fraction of a whole if both sides are measured in
-   the same thing, which bytes() above will not promise — it scales each figure
-   to whatever unit that figure alone lands in. */
+/* Pinned to one unit for ratio pairs ("58.4 / 468.4 GB") — bytes() would scale each side independently and break the comparison. */
 export const gigabytes = (n) => (Number.isFinite(n) ? (n / GB).toFixed(1) : '—');
 
-/* A rate, signed: a volume that is emptying is as much a fact as one filling.
-   Small rates drop to MB, because a headline made of this figure has to be
-   checkable against it — 0.1577 GB/day printed as 0.2 puts the date it implies
-   eight months out. */
+/* Signed — emptying is as much a fact as filling. Drops to MB for small rates, since 0.1577 GB/day rounded to 0.2 misdates a projection by months. */
 export function perDay(bytesPerDay) {
 	if (!Number.isFinite(bytesPerDay)) return '—';
 
@@ -125,17 +98,13 @@ export function rate(bytesPerSecond) {
 	return `${Math.round(bytesPerSecond)} B/s`;
 }
 
-/* When a reading was taken, as the API stamped it. UTC, because that is the
-   clock the server keeps: a page read from another zone would otherwise show a
-   time the logs do not use. */
+/* UTC — that's the clock the server keeps, so this matches the logs. */
 export function stamp(iso) {
 	const at = new Date(iso ?? NaN);
 	return Number.isNaN(+at) ? '—' : `${at.toISOString().slice(0, 19).replace('T', ' ')} UTC`;
 }
 
-/* How long until it is full, in the unit that reads best at that distance. A
-   volume that is not filling has no answer, and says so rather than quoting an
-   infinity. */
+/* Best unit for the distance. A volume that isn't filling gets null, not an infinity. */
 export function untilFull(days) {
 	if (!Number.isFinite(days) || days <= 0) return null;
 	const months = days / 30.44;

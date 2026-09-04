@@ -1,17 +1,12 @@
-/* What the dashboard knows about the containers, worked out from the list the
-   snapshot carries: the fleet in three numbers, and each container as its name,
-   its state, and the resources it is drawn against. Written out here rather than
-   in the page for the same reason memory and the volumes are — the markup's job
-   is the shape of the box, not what goes in it. */
+/* The fleet in three numbers, each container as name/state/resources. Kept out
+   of the page for the same reason memory and volumes are — markup's job is the box shape, not what fills it. */
 import { bytes, duration, pct } from './format.js';
 
 /* Docker's own words for a container that is doing its job. Anything else —
    exited, restarting, unhealthy — is not. */
 const operational = (status) => status === 'healthy' || status === 'running';
 
-/* A limit nobody set is not a limit of zero: the container may have the whole
-   machine. It says so, and the bar under it stays empty, because there is no
-   share to draw of an unbounded allowance. */
+/* No limit set ≠ a limit of zero — says "Unlimited" and leaves the bar empty, since there's no share to draw of an unbounded allowance. */
 const allocation = (value, format) => (Number.isFinite(value) ? format(value) : 'Unlimited');
 
 const cores = (value) =>
@@ -29,16 +24,14 @@ export function fleet(containers = []) {
 	return {
 		running,
 		unhealthy: containers.length - running,
-		/* Joined by a narrow no-break space, so the figure and its unit stay one
-		   reading in a cell too tight to hold them on one line otherwise. */
+		/* No-break space so the figure and unit stay one reading in a tight cell. */
 		memory: bytes(used).replace(' ', ' '),
 		slots: containers.map((container) => ({
 			name: container.name,
 			status: container.status,
 			healthy: operational(container.status),
 			uptime: duration(container.uptime_seconds),
-			/* In the order the table's columns name them: each is a reading and the
-			   allowance it is drawn against, so one entry fills two cells. */
+			/* Table column order — each entry is a reading + its allowance, filling two cells. */
 			resources: [
 				{
 					id: 'cpu',

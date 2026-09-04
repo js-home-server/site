@@ -1,8 +1,5 @@
-/* Heroicons' 24px outline marks, imported as their own files rather than
-   re-typed as paths the way logos.js has to carry them: these are stroke
-   drawings of two or three subpaths each, not a single fillable path, so the
-   whole <svg> is what gets used. Everything here is a generic mark — a clock,
-   a globe, a warning — brand marks stay in logos.js. */
+/* Heroicons' 24px outline marks — whole <svg>, not a path like logos.js, since
+   these are multi-subpath stroke drawings. Generic marks only; brands stay in logos.js. */
 import adjustments from 'heroicons/24/outline/adjustments-horizontal.svg?raw';
 import book from 'heroicons/24/outline/book-open.svg?raw';
 import chart from 'heroicons/24/outline/chart-bar-square.svg?raw';

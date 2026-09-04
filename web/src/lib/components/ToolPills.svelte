@@ -1,11 +1,7 @@
 <script>
 	import Logo from './Logo.svelte';
 
-	/* What a piece of work was built with, one pill each. Lives here rather than
-	   in a page because the same row is now read in three places — under a
-	   milestone, under a project, and anywhere else the question is "with what".
-	   Everything is written in tokens, so the row follows the box it stands in:
-	   the projects box paints itself light and the pills come with it. */
+	/* One pill per tool. Lives here, not in a page, since the same row shows up under a milestone, a project, and anywhere else. All tokens, so it follows its box's theme. */
 	let { tools } = $props();
 </script>
 

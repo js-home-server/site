@@ -13,13 +13,10 @@
 	import { DISKS, volume } from '$lib/storage.js';
 	import { clockOffset, clockOffsetHistory } from '$lib/time.js';
 
-	/* /server's own overview grid (routes/server/+page.svelte), scaled down —
-	   the same live box ServerStudy.svelte shows under "The box, while you
-	   read about it", pulled out so the project card's FIG. 01 can show the
-	   real thing instead of a static chart. `server` is a module-level
-	   singleton, so wherever this mounts it reads whatever is already polling
-	   (StatusBar's, on the homepage) or starts its own — the store's
-	   in-flight guard collapses two watchers into one fetch either way. */
+	/* /server's overview grid, scaled down for the project card's FIG. 01 so it
+	   shows the real thing, not a static chart. `server` is a module-level
+	   singleton, so this reads whatever's already polling (or starts its own —
+	   the in-flight guard collapses two watchers into one fetch). */
 	$effect(watch);
 
 	let snapshot = $derived(server.snapshot);
@@ -42,9 +39,7 @@
 	let containers = $derived(fleet(snapshot?.containers.items));
 	let clockHistory = $derived(clockOffsetHistory(series));
 
-	/* Days and the hours left over, rather than the hour count the rest of the
-	   site quotes this same figure as: a box this small is still up long enough
-	   that hours stop being the unit worth leading with. */
+	/* Days + leftover hours, not the hour count the rest of the site uses — this box stays up long enough that hours alone stop being useful. */
 	let uptimeSeconds = $derived(snapshot?.availability.uptime_seconds);
 	let uptimeDays = $derived(Number.isFinite(uptimeSeconds) ? Math.floor(uptimeSeconds / 86400) : null);
 	let uptimeRest = $derived(
@@ -180,9 +175,7 @@
 </div>
 
 <style>
-	/* The dark box the live grid stands in, tagged the way the crypto study's
-	   tape is: a window into a real feed, not a panel of whatever card it sits
-	   in. */
+	/* Tagged like the crypto study's tape — a window into a real feed, not just another card panel. */
 	.proof {
 		--visual-h: 32rem;
 
@@ -213,9 +206,7 @@
 		box-shadow: 0 0 0.5rem var(--mint);
 	}
 
-	/* /server's own overview grid (routes/server/+page.svelte), copied and
-	   scaled down rather than embedded live. Not a box of its own — just the
-	   frame the individual .obox tiles read their dark tokens from. */
+	/* Not a box of its own — just the frame the .obox tiles read their dark tokens from. */
 	.mini-dashboard {
 		box-sizing: border-box;
 		width: 100%;
@@ -248,11 +239,8 @@
 		background: var(--color-background);
 	}
 
-	/* Opt-in, same as the real dashboard's own .box.fill (Dashboard.svelte):
-	   a panel given more than one row is otherwise however tall its content
-	   needs, which is what left the CPU & RAM trace a squashed line at the
-	   top of a box mostly empty underneath it. This stretches the chain down
-	   to the drawing instead. */
+	/* Opt-in, same as Dashboard.svelte's .box.fill — without it a multi-row panel
+	   sits at content height, squashing the CPU & RAM trace at the top of empty space. */
 	.obox.fill {
 		display: flex;
 		flex-direction: column;
@@ -294,10 +282,7 @@
 		letter-spacing: 0.02em;
 	}
 
-	/* The containers table (routes/server/containers/+page.svelte), copied at
-	   card scale the same way the overview grid above it is: a real table
-	   rather than the running/unhealthy count it replaces, scrolling
-	   sideways in its own two-column box rather than dropping columns. */
+	/* Real table, not a running/unhealthy count — scrolls sideways rather than dropping columns. */
 	.mfleet {
 		height: 100%;
 		overflow: auto;
@@ -337,8 +322,7 @@
 		font-weight: 500;
 	}
 
-	/* A square of the state's own colour, and the word beside it — the colour
-	   is never the only thing saying which way a row reads. */
+	/* Colour square + word — colour is never the only signal. */
 	.mstate {
 		color: var(--mint);
 		text-transform: capitalize;

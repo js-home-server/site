@@ -10,8 +10,7 @@
 
 	let series = $derived(server.series);
 
-	/* Per-core utilisation as a map: one row a core, one cell a bucket, straight
-	   off the same 0-100% scale the traces are drawn against. */
+	/* One row per core, one cell per bucket, same 0-100% scale as the traces. */
 	let cores = $derived(
 		Object.entries(series?.cpu.per_core_percent ?? {})
 			.sort(([a], [b]) => Number(a) - Number(b))
@@ -49,9 +48,7 @@
 	</div>
 
 	<div class="box" style={gridArea({ col: 3, row: 1, w: 2 })}>
-		<!-- Not zero-based like usage and pressure: nothing here runs near an
-		     ambient 0°C, so the bottom 40° of the axis would be empty and the
-		     trace flat against the top of it. -->
+		<!-- Not zero-based — nothing here runs near ambient 0°C, so the bottom 40° would just be empty. -->
 		<Panel label="CPU Temperature (°C)">
 			<Trace
 				lines={[{ id: 'temperature', points: series?.cpu.temperature_c, tone: 'var(--amber)' }]}
@@ -63,8 +60,7 @@
 	</div>
 
 	<div class="box" style={gridArea({ col: 3, row: 2, w: 2 })}>
-		<!-- Sustained pressure is the reading that matters rather than any one
-		     spike, so the rules are the two levels worth seeing a trace cross. -->
+		<!-- Sustained pressure matters, not one spike — marks are the levels worth crossing. -->
 		<Panel label="CPU Pressure (%)">
 			<Trace
 				lines={[{ id: 'pressure', points: series?.cpu.pressure_percent, tone: 'var(--coral)' }]}

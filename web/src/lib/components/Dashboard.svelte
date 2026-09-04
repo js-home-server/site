@@ -1,25 +1,18 @@
 <script>
 	import AsciiClock from './AsciiClock.svelte';
 
-	/* The shell every dashboard-style page wears: a fixed rail of stops down the
-	   left, one stop's own content down the right. Each stop is its own route,
-	   so `sections` is [{ label, href }] and `current` is the path of the one
-	   being shown — the rail marks it and the heading names it off the same
-	   list, which is what stops the two disagreeing. `children` is that route's
-	   content, `rail` is extra content stood under the nav list if the caller
-	   has any, `foot` is the note pinned to the foot of the rail, and `max` is
-	   how wide the whole thing is allowed to get. */
+	/* The shared dashboard shell: a fixed rail of route links on the left, the
+	   current route's content on the right. Rail and heading read off the same
+	   `sections` list so they can't disagree about which page you're on. */
 	let { title, sections, current, rail, foot, max = '82rem', children } = $props();
 
 	let currentLabel = $derived(sections.find((section) => section.href === current)?.label ?? title);
 </script>
 
-<!-- --dash-max is the same length as max-width, read back as a custom property
-     so the fixed rail's own `left` calc can centre against it too. -->
+<!-- --dash-max mirrors max-width so the fixed rail's `left` calc can centre against it. -->
 <div class="dash" style="max-width: {max}; --dash-max: {max}">
 	<aside class="rail" aria-label="Page sections">
-		<!-- Decorative: the rail's own nav already names the page you're on, and
-		     the digits are ascii art rather than a reading to a screen reader. -->
+		<!-- Decorative — the nav already names the page, this is just ascii art. -->
 		<div class="rail-art" aria-hidden="true">
 			<AsciiClock />
 		</div>
@@ -48,9 +41,7 @@
 	</aside>
 
 	<main class="body">
-		<!-- The page's own heading. The section carries the titling now, so this is
-		     for the outline rather than the eye: without it the document starts at
-		     h2 and the section is under nothing. -->
+		<!-- For the outline, not the eye — without it the doc starts at h2 with nothing above it. -->
 		<h1 class="sr-only">{title}</h1>
 
 		<section class="surface-box">
@@ -59,9 +50,7 @@
 		</section>
 
 		{#if foot}
-			<!-- The rail becomes the horizontal bar at this width, and there is no
-			     room in it for a foot of its own — so the note reads from here
-			     instead, below the section, rather than going unread. -->
+			<!-- Narrow width: the rail becomes a bar with no room for its own foot, so it reads here instead. -->
 			<div class="body-foot">{@render foot()}</div>
 		{/if}
 	</main>
@@ -69,35 +58,26 @@
 
 <style>
 	.dash {
-		/* The rail is a fixed column and the page takes the rest. Centred like
-		   .page; the cap on it is the caller's, since a dashboard and a page of
-		   prose do not want the same one. */
+		/* Rail is a fixed column, page takes the rest. Cap is the caller's — a dashboard and prose don't want the same one. */
 		--rail: 13rem;
 		--dash-gap: clamp(1.5rem, 3vw, 3rem);
 		--dash-pad-top: clamp(1.5rem, 4vh, 2.5rem);
 
 		margin-inline: auto;
-		/* Same token top and bottom as the header's own padding, so the page ends
-		   exactly as far off the fold as it began — this is what keeps the box
-		   below from having to guess how much room is left past its own height. */
+		/* Same top/bottom token as the header, so the page ends as far off the fold as it began. */
 		padding: var(--dash-pad-top) var(--gutter) var(--nav-pad-top);
 	}
 
-	/* Fixed, not sticky, and the same on every route: this shell is never asked
-	   to hold more than one screen's worth of section, so there is no long page
-	   underneath it for a sticky rail to run out of room in — fixed is just the
-	   simpler of the two ways to get the same picture. Its left edge is worked
-	   out by hand to land where a grid column would have: half of whatever
-	   space is left over past --dash-max, plus the page's own gutter; its top
-	   is this box's own padding, since fixed positioning does not inherit it. */
+	/* Fixed not sticky: every route is capped at one screen, so there's no long
+	   page for a sticky rail to run out of room in. Left edge is calc'd by hand
+	   to land where a grid column would; top is its own padding since fixed
+	   positioning doesn't inherit any. */
 	.rail {
 		position: fixed;
 		top: var(--dash-pad-top);
 		left: calc(max(0px, (100vw - min(100vw, var(--dash-max))) / 2) + var(--gutter));
 		width: var(--rail);
-		/* Bottom edge held off the fold by --nav-pad-top — the same distance the
-		   nav's own text sits off the top, so the rail is framed the way the
-		   header is rather than by an unrelated fixed inset. */
+		/* Same --nav-pad-top the header text sits off the top by, so the rail frames the same way. */
 		height: calc(100vh - var(--dash-pad-top) - var(--nav-pad-top));
 		box-sizing: border-box;
 		display: flex;
@@ -109,19 +89,13 @@
 		background: var(--surface);
 	}
 
-	/* The page's own column: pushed clear of the fixed rail beside it by hand,
-	   since the rail no longer holds that width open in a grid track. */
+	/* Pushed clear of the fixed rail by hand — no grid track holding that width open anymore. */
 	.body {
 		margin-left: calc(var(--rail) + var(--dash-gap));
 		min-width: 0;
 	}
 
-	/* Whatever the caller stands under the nav — a page-specific reading or two,
-	   stacked the same way the rail's other parts are. The boxes themselves are
-	   the caller's own styling, carried in from wherever the snippet is written.
-	   Pushed to the foot of the rail's own (viewport-capped) box, so it and the
-	   foot below it sit together at the bottom of the panel rather than
-	   trailing straight under the nav's own short list. */
+	/* Caller-supplied content, pushed to the foot of the rail so it and .rail-foot sit together at the bottom. */
 	.rail-status {
 		display: flex;
 		flex-direction: column;
@@ -132,18 +106,13 @@
 	nav {
 		display: flex;
 		flex-direction: column;
-		/* The list is the only part allowed to scroll if the sections ever outgrow
-		   the viewport; the art and the footer stay put. min-height: 0 overrides
-		   a flex column's default of never shrinking a child under its content
-		   size, which is what lets this scroll instead of just pushing the
-		   capped rail taller than its own max-height. */
+		/* min-height: 0 lets the list scroll instead of pushing the rail past its cap — art and footer stay put. */
 		min-height: 0;
 		overflow-y: auto;
 		scrollbar-width: thin;
 	}
 
-	/* The stops on the rail: the same small caps every label on the page is set
-	   in, a size up because this list is navigation rather than a caption. */
+	/* Same small caps as every label on the page, a size up since this is nav not a caption. */
 	nav a {
 		display: grid;
 		grid-template-columns: auto 1fr auto;
@@ -184,79 +153,46 @@
 		opacity: 1;
 	}
 
-	/* The page's own foot, under the section rather than under the rail: the
-	   same small note, just read at the end of the page instead of at the end of
-	   the column that navigates it. No sticky trick of its own needed now — the
-	   rail itself is the fixed box, so sitting last in it (after .rail-status'
-	   own margin-top: auto) is enough to land at the panel's foot and stay
-	   there. */
+	/* Same note as .rail-status, just at the page's end instead of the nav's. Lands at the panel foot via margin-top: auto above it. */
 	.rail-foot {
 		display: flex;
 		flex-direction: column;
 		gap: 0.25rem;
 	}
 
-	/* The rail's own copy is the one read at this width and above; this one only
-	   exists for when the rail has nowhere to put it. */
+	/* Only shown when the rail has nowhere to put its own foot (narrow width). */
 	.body-foot {
 		display: none;
 	}
 
-	/* The one box every route wears — .surface-box (app.css) draws it; this is
-	   the tighter of the two sizes it comes in, and everything the parts inside
-	   divide themselves with.
-
-	   Every rule runs the full width of what it divides — wall to wall, not
-	   inset by the padding — which it does by bleeding out by --pad and putting
-	   the same back as padding. --divide is the air either side of a rule, and
-	   the gap of whatever lays the parts out, so the two cannot drift apart. */
+	/* .surface-box (app.css) draws the card; --pad/--divide below keep every rule
+	   bleeding wall-to-wall instead of inset by the padding. */
 	section {
-		/* 24px, the standard card padding — every .box below inherits the same
-		   figure, since it reads this custom property off its nearest section. */
+		/* 24px card padding, inherited by every .box below. */
 		--pad: 1.5rem;
 		--radius: var(--radius-panel);
-		/* The colour on its own as well as the border it is usually written as: a
-		   lattice drawn with grid gaps needs the one, everything else the other, and
-		   a rule is a rule wherever it turns up. */
+		/* Colour on its own too, for lattices drawn with grid gaps rather than borders. */
 		--rule-color: color-mix(in srgb, var(--color-border) 75%, transparent);
 		--rule: 1px solid var(--rule-color);
 		--divide: 1.5rem;
 
-		/* No panel in here is a heading of its own — the section's own h2 is that —
-		   so every one of their titles is turned down to a label. */
+		/* Route's own h2 is the real heading, so panel titles here are downgraded to labels. */
 		--title-size: var(--fs-xs);
 		--title-color: var(--text-faint);
 
 		box-sizing: border-box;
 		display: grid;
-		/* Two rows, not an implicit stack of auto ones: the name takes whatever it
-		   needs, and the grid below it — the route's own single top-level child —
-		   is handed everything left over rather than only what its own content
-		   asks for, which is what lets that grid's rows stretch to fill it.
-		   minmax(0, 1fr), not a bare 1fr: a bare 1fr is minmax(auto, 1fr), whose
-		   auto floor is the content's own min-content height — exactly the size
-		   this row is meant to be freed from. */
+		/* minmax(0, 1fr) not bare 1fr: a bare 1fr floors at min-content height, which defeats the stretch this row needs. */
 		grid-template-rows: auto minmax(0, 1fr);
 		align-content: start;
 		gap: var(--divide);
-		/* A page to a screen, exactly — not a floor a page is free to run past.
-		   There is no scroll to carry anything out of view (a stop on the rail is
-		   a fresh page load, not a jump down one long one), so this is what the
-		   box's own top padding actually leaves. Held back from the bottom edge
-		   by --nav-pad-top, the same token the landing page's own status-bar
-		   cards keep off it and the rail now keeps too — so the three ends line
-		   up rather than this one running past the fold. */
+		/* Exactly one screen — a route is a fresh page load, never a long scroll. Same --nav-pad-top the rail keeps off the fold. */
 		height: calc(100vh - var(--dash-pad-top) - var(--nav-pad-top));
-		/* Cut, not scrolled: a route with more in it than one screen holds loses
-		   whatever doesn't fit rather than growing a scrollbar of its own or
-		   pushing the page past the fold. The wireframe is still catching up to
-		   this — what's cut here is the cue to trim it, not a bug to route
-		   around. */
+		/* Cut, not scrolled — overflow is the cue to trim the page, not a bug to work around. */
 		overflow: hidden;
 	}
 
-	/* The route's own name, sitting directly in the section — not a card of its
-	   own, just the first line in the same box everything else stands in. */
+	/* Just the first line in the shared box, not a card of its own. */
 	h2 {
 		margin: 0;
 		color: var(--color-foreground);
@@ -265,17 +201,9 @@
 		letter-spacing: -0.01em;
 	}
 
-	/* How a section is divided, wherever the parts themselves are written: the
-	   markup inside one belongs to the page rather than to this file, so the
-	   vocabulary it is laid out with has to reach out of this scope to meet it. */
-
-	/* A standalone card: bordered and given its own background, set apart from
-	   whatever holds it by a gap — each graph gets its own frame rather than
-	   sharing one. */
+	/* A standalone card, bordered with its own background — each graph gets its own frame rather than sharing one. */
 	.body :global(.box) {
-		/* A box takes its height from the grid row it stretches to fill (below),
-		   not from what's inside it — cut rather than let out, the same rule the
-		   section around it already keeps. */
+		/* Height comes from the grid row it fills, not its content — cut, same as the section around it. */
 		overflow: hidden;
 		padding: var(--pad);
 		border: 1px solid var(--color-border);
@@ -283,15 +211,9 @@
 		background: var(--surface);
 	}
 
-	/* Opt-in, on any box given more than a single cell: a panel's own height is
-	   otherwise however tall its content needs, which leaves the rest of a
-	   taller box blank under a chart that only ever asked for one row.
-
-	   .fill turns the whole chain down to the drawing into a flex column, so
-	   each link stretches to the one above it — the panel, then whichever of
-	   .plot (Trace and Heatmap both render one), .spread (Spread's) or .fleet
-	   (a table) it holds. The last of those needs to be a flex parent itself
-	   for the table inside it to have anything to stretch against. */
+	/* Opt-in for a box spanning more than one cell: without it, content just sits
+	   at its natural height and leaves the rest of a tall box blank. .fill turns
+	   the chain (panel → .plot/.spread/.fleet) into a flex column so each link stretches. */
 	.body :global(.box.fill) {
 		display: flex;
 		flex-direction: column;
@@ -309,25 +231,13 @@
 		display: flex;
 	}
 
-	/* The one board every card on the page is placed on: a 4x4 of equal cells,
-	   24px apart. A card takes one cell unless it says otherwise, and says so
-	   through $lib/grid.js's gridArea() — one vocabulary for both how big a box
-	   is and where it sits, so no two pages divide the same grid a different
-	   way. */
+	/* The 4x4 board every card sits on. One cell unless $lib/grid.js's gridArea() says otherwise. */
 	.body :global(.grid) {
 		display: grid;
 		grid-template-columns: repeat(4, minmax(0, 1fr));
-		/* Every row the same height, dividing up whatever the section (above)
-		   handed this grid rather than each row taking its own content's height
-		   — that's what makes a page of one-cell boxes all come out the same
-		   size. minmax(0, …), not auto: a box with more in it than its row is
-		   tall isn't allowed to stretch the row to fit, it's cropped by the
-		   box's own overflow: hidden instead. */
+		/* minmax(0, ...) not auto — a tall box gets cropped by its own overflow: hidden, never stretches the row. */
 		grid-auto-rows: minmax(0, 1fr);
-		/* Dense, not the default sparse flow: a card placed by hand at a later
-		   cell leaves a gap in the normal reading order behind it, and dense is
-		   what lets the boxes after it in the markup back-fill that gap rather
-		   than leaving it empty. */
+		/* Dense: a hand-placed card leaves a gap in reading order; dense back-fills it. */
 		grid-auto-flow: dense;
 		height: 100%;
 		gap: 1.5rem;
@@ -337,10 +247,7 @@
 		grid-column: span 1;
 	}
 
-	/* A row is read across, so it is never broken up to fit: under the width
-	   the columns need, the table keeps its shape and the box scrolls instead.
-	   Shared by the 24h stats table every route ends on and the containers
-	   route's own fleet table. */
+	/* A row reads across, never wraps — under min width, the table keeps shape and the box scrolls instead. */
 	.body :global(.fleet) {
 		overflow-x: auto;
 		scrollbar-width: thin;
@@ -353,10 +260,7 @@
 		font-size: var(--fs-xs);
 	}
 
-	/* Left, like everything else on the page, and never wrapped: a reading broken
-	   over two lines stops being one. The gutter is on the right of every cell, and
-	   the section's own padding on the two outside ones, so the rules still run wall
-	   to wall. */
+	/* No wrap — a reading split over two lines stops being one reading. Gutter right, section padding on the outer edges. */
 	.body :global(.fleet th),
 	.body :global(.fleet td) {
 		padding: 0.65rem 1.5rem 0.65rem 0;
@@ -373,8 +277,7 @@
 		padding-right: var(--pad);
 	}
 
-	/* The header names the columns once. It is the one row set in the page's small
-	   caps rather than mono: it is a label, not a reading. */
+	/* Small caps not mono — a label, not a reading. */
 	.body :global(.fleet thead th) {
 		padding-top: var(--divide);
 		padding-bottom: 0.5rem;
@@ -386,17 +289,13 @@
 		border-top: var(--rule);
 	}
 
-	/* Under this the rail cannot hold its column and its labels at once. It goes
-	   horizontal along the top instead — sticky rather than fixed, since a bar
-	   this short never runs the risk of running out of room to stick in. */
+	/* Rail can't hold its column + labels below this width — goes horizontal along the top, sticky not fixed. */
 	@media (max-width: 52rem) {
 		.body {
 			margin-left: 0;
 		}
 
-		/* The one-screen height is measured against the fixed sidebar beside it;
-		   the bar this width folds the rail into sits above the section instead,
-		   so holding the section to that same figure here would just clip it. */
+		/* The one-screen height assumed a fixed sidebar; here the rail sits above the section, so that height would just clip it. */
 		section {
 			height: auto;
 			overflow-y: visible;
@@ -444,18 +343,12 @@
 			white-space: nowrap;
 		}
 
-		/* One column, so a graph keeps its own width instead of splitting it
-		   with three neighbours. Collapsing the board itself is what does it:
-		   a box that never asked to be placed already spans its one column,
-		   and only the ones gridArea() put somewhere by hand need undoing. */
+		/* One column — a box never placed by hand already spans it; only gridArea()'s manual placements need undoing. */
 		.body :global(.grid) {
 			grid-template-columns: minmax(0, 1fr);
 		}
 
-		/* Any box gridArea() placed, on any page — matched by the inline style
-		   itself rather than a marker class, so a page never has to remember a
-		   mobile hook of its own. !important because an inline style is the one
-		   thing a stylesheet rule cannot otherwise outrank. */
+		/* Matched by the inline style itself, not a marker class, so no page needs its own mobile hook. !important beats the inline style. */
 		.body :global(.grid > .box[style*='grid-column']) {
 			grid-column: 1 / -1 !important;
 			grid-row: auto !important;

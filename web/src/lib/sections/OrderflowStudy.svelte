@@ -4,18 +4,11 @@
 	import Placeholder from '$lib/components/Placeholder.svelte';
 	import StudyHead from '$lib/components/StudyHead.svelte';
 
-	/* The combined study for the crypto work. It was two cards — the collector
-	   and the research that reads it — and they were never two projects: one
-	   exists because the other needed data nobody sells, and the research is
-	   what says whether the collecting was worth it. So one card, in two parts,
-	   with the seam between them named rather than hidden.
+	/* One card, two halves: the collector and the research it feeds, never
+	   really two projects. Every figure is measured off the real thing —
+	   `ssh phobos` for the archive, `intraday/REPORT.md` for the strategy. */
 
-	   Every figure below is measured rather than claimed. The archive numbers
-	   are read off the running box (`ssh phobos`, 2026-09-01, 18 retained days);
-	   the strategy numbers are from `intraday/REPORT.md` and the equity curve is
-	   the backtest's own hourly P&L, resampled weekly — see the note under it. */
-
-	/* Whichever number a reader takes away, it should be one of these four. */
+	/* The four numbers worth walking away with. */
 	const HEADLINE = [
 		{ figure: '11.5M', unit: 'rows/day', note: 'archived off 10 venue feeds since August 2026' },
 		{ figure: '583', unit: 'streams', note: '100 base assets, 6 exchanges, spot, perp and options' },
@@ -23,9 +16,7 @@
 		{ figure: '15.2', unit: '× equity', note: '2020-01 to 2026-06, with a −16.7% worst drawdown' }
 	];
 
-	/* The path a trade takes from a socket to a research panel. Five stages
-	   because that is how many there are — each is a separate process with its
-	   own failure mode, and the figure under each is what it costs. */
+	/* Socket to research panel, five stages, each isolated so none can stall the rest. */
 	const PIPELINE = [
 		{
 			name: 'Venues',
@@ -59,7 +50,7 @@
 		}
 	];
 
-	/* Rows/day are the 18 retained days divided out, not a design target. */
+	/* Rows/day = 18 retained days divided out, not a target. */
 	const STREAMS = [
 		{ name: 'footprint', what: 'the trade tape, folded to volume-at-price per minute', rows: '10.1M' },
 		{ name: 'mark', what: 'mark / index price and funding, sampled to the minute', rows: '460k' },
@@ -70,8 +61,7 @@
 		{ name: 'clock / conn / error', what: 'chrony offset, socket lifecycle, every failure', rows: '9k' }
 	];
 
-	/* The three claims an engineer would want evidence for before believing any
-	   of the numbers above. */
+	/* What an engineer would want proof of before trusting any of this. */
 	const ENGINEERING = [
 		{
 			icon: 'shield',
@@ -99,7 +89,7 @@
 		}
 	];
 
-	/* The book that came out of it, against the one it started as. */
+	/* The book now, against the book it started as. */
 	const RESULTS = [
 		{ label: 'Net annual', base: '32.6%', now: '43.5%' },
 		{ label: 'Net Sharpe', base: '1.93', now: '2.39' },
@@ -109,8 +99,7 @@
 		{ label: 'Equity, 6.5y', base: '7.59×', now: '15.16×' }
 	];
 
-	/* The tests that would have caught a fake result. Every one was run on the
-	   final configuration, not on the version that happened to pass. */
+	/* Tests that would've caught a faked result, run on the final config. */
 	const FALSIFICATION = [
 		{ test: 'Shuffle the signal across names', value: '−0.39', reading: 'the edge is the signal, not the weighting' },
 		{ test: 'Deliberate lookahead', value: '8.73', reading: 'time alignment is correct' },
@@ -120,8 +109,7 @@
 		{ test: 'Out-of-sample, 2024+', value: '4.22', reading: 'Calmar, against 2.32 in-sample' }
 	];
 
-	/* The negative results. They are here because they are the part of the work
-	   that decides whether the positive one is believable. */
+	/* Negative results — the part that makes the positive one believable. */
 	const REJECTED = [
 		{
 			term: 'Funding-dispersion carry',
@@ -153,9 +141,7 @@
 		{ term: 'No live track record', text: 'a paper-trading harness exists, with five books from $1k to $1m and no API keys anywhere, but it has not run long enough to mean anything. Impact is modelled with a square-root law rather than measured, so capacity beyond about $50m is an estimate.' }
 	];
 
-	/* Measured over 149,059 samples taken every 10 seconds by `archive.cli
-	   watch` — 23 days of the running box, not a benchmark run for the
-	   occasion. p99 is the number that decides whether a machine copes. */
+	/* 149,059 real samples over 23 days, not a benchmark for the occasion. p99 is what matters. */
 	const MEASURED = [
 		{ metric: 'Ingest rate', p50: '635 rows/s', p95: '1,664', p99: '2,801', note: 'across 583 venue-symbol streams' },
 		{ metric: 'Wire delay', p50: '142 ms', p95: '166', p99: '237', note: 'venue timestamp to local receipt, clock-corrected' },
@@ -164,9 +150,7 @@
 		{ metric: 'Collector RSS', p50: '343 MB', p95: '472', p99: '477', note: 'both shards, against a 512 MB limit each' }
 	];
 
-	/* What one day of one stream looks like on disk, and what the file is made
-	   of. Both read off the running store. */
-	/* The rules an adapter has to satisfy before its rows are allowed in. */
+	/* What an adapter must satisfy before its rows are let in. */
 	const CONTRACT = [
 		{ term: 'One time axis', text: '`ts_exchange` in UTC milliseconds is canonical, taken from the venue’s own event time rather than the receipt time. `recv_delay_ms` carries the difference, which delta-encodes to about two bytes.' },
 		{ term: 'Never floats', text: 'price is an integer count of 1e-8 units on a fixed global scale. Quantity is an integer count of the instrument’s own stepSize, resolved from a registry, so a tick-size change is a registry event rather than an archive migration.' },
@@ -174,8 +158,7 @@
 		{ term: 'Keys, and where there are none', text: 'each stream declares the natural key two collectors would agree on, so the blue/green overlap deduplicates exactly. `liq` declares none, because it carries no id and two liquidations can legitimately share every field, so both copies are kept. A duplicate is recoverable and a dropped row is not.' }
 	];
 
-	/* The partition list is the incident report: 08-17 to 08-22 is simply not
-	   there, and no amount of later work can put it back. */
+	/* The partition list is the incident report: 08-17 to 08-22 just isn't there. */
 	const DAYS = [
 		{ day: '08-08', rows: 12.0 }, { day: '09', rows: 13.2 }, { day: '10', rows: 12.4 },
 		{ day: '11', rows: 10.2 }, { day: '12', rows: 9.4 }, { day: '13', rows: 9.4 },
@@ -187,7 +170,7 @@
 		{ day: '29', rows: 7.0 }, { day: '30', rows: 8.2 }, { day: '31', rows: 9.2 }
 	];
 
-	/* What the whole thing costs to run, in the two currencies that matter. */
+	/* What it costs, in the two currencies that matter. */
 	const COST = [
 		{ label: 'Permanent storage', value: '≈ 39 GB/yr', note: '108 MB a day. The unfolded tape would be ~5.8 TB a year' },
 		{ label: 'Same year on S3 Standard', value: '$0.90/mo', note: 'against about $134/mo for the raw tape, at $0.023/GB-month. The fold is the cost decision' },
@@ -197,10 +180,7 @@
 
 	/* --- the live tape ---------------------------------------------------- */
 
-	/* A real public trade feed, read straight from the browser. Not a claim that
-	   this is the archive's own tape: that one is on a box at home and is not
-	   served publicly, and this is the same shape of row arriving at the same
-	   rate. */
+	/* A real public feed, not the archive's own tape — that one lives at home. Same shape, same rate though. */
 	const TICKER_SYMBOLS = [
 		'btc', 'eth', 'bnb', 'sol', 'xrp', 'ada', 'doge', 'trx', 'avax', 'dot',
 		'link', 'matic', 'ton', 'shib', 'ltc', 'bch', 'uni', 'atom', 'xlm', 'etc',
@@ -214,11 +194,7 @@
 
 	let ticks = $state([]);
 
-	/* The connection's own state, read by the tag's dot and the live region
-	   below it — separate from `ticks`, which only says whether a trade has
-	   arrived yet, not why one hasn't. 'failed' is reachable now: Binance is
-	   blocked on a fair number of corporate and institutional networks, and a
-	   box that retries forever looks identical to one that is simply broken. */
+	/* Feeds the status dot + live region. Binance is blocked on plenty of corporate networks, so 'failed' is a real state, not paranoia. */
 	let connection = $state('connecting'); // 'connecting' | 'open' | 'failed'
 	const MAX_ATTEMPTS = 4;
 
@@ -248,11 +224,7 @@
 					...ticks
 				].slice(0, 14);
 			};
-			/* The feed drops a connection now and then; reconnect a few times
-			   rather than leaving a shut-looking box up for the rest of the
-			   visit — but not forever, or a genuinely blocked network never
-			   learns it's blocked and keeps waiting on a box that says
-			   "connecting…" until the visitor leaves the page. */
+			/* Retry a few times, then give up — else a blocked network waits forever on "connecting…". */
 			socket.onclose = () => {
 				if (torndown) return;
 				attempts += 1;
@@ -274,11 +246,9 @@
 	});
 </script>
 
-<!-- The heading of a block: which half of the project it belongs to, and what
-     it is. The part tag is the study's own navigation — there are two tracks
-     here and a reader should always know which one they are on. -->
+<!-- Two tracks run through this study — the tag says which one you're on. -->
 <div class="study">
-	<!-- The thesis, and the four figures that stand behind it. -->
+	<!-- Thesis + the four figures behind it. -->
 	<section class="box banner">
 		<div>
 			<p class="thesis">
@@ -378,10 +348,7 @@
 		<div class="tape">
 			<span class="tag"><i class="dot" class:down={connection !== 'open'} aria-hidden="true"></i>Live trades · public feed</span>
 
-			<!-- Announced once, on a real state change — not per trade, which
-			     arrives several times a second and would spam a screen reader.
-			     The table below carries no aria-live for the same reason: it is
-			     not meant to be read out row by row as it scrolls. -->
+			<!-- Announced on state change only — per-trade would spam a screen reader. -->
 			<p class="sr-only" role="status" aria-live="polite">
 				{connection === 'open'
 					? 'Connected. Live trades below.'
@@ -468,7 +435,7 @@
 		</p>
 	</section>
 
-	<!-- Where the rows go, and what an adapter has to satisfy to write one. -->
+	<!-- Where rows go, and what an adapter must satisfy. -->
 	<section class="box row">
 		<div>
 			<StudyHead label="archive" title="The write contract" lede="Eleven streams, one Parquet file per stream per UTC day in Hive-style date partitions at zstd-19. Before any of its rows are allowed in, a venue adapter has to satisfy four rules." tagClass="track" />
@@ -533,7 +500,7 @@
 		</div>
 	</section>
 
-	<!-- Read back: the archive as a chart, and the pipeline it fed first. -->
+	<!-- Read back: the archive as a chart, plus the pipeline it fed first. -->
 	<section class="box">
 		<div>
 			<StudyHead label="archive" title="Read back" lede="Every pane is built from captured rows and aggregated across whichever venues are ticked. It is the same view a commercial terminal sells, off my own data." tagClass="track" />
@@ -666,28 +633,14 @@
 </div>
 
 <style>
-	/* .study, .box, .lede, .thesis, .prose, .foot-note, .arrow, .row, .intro,
-	   .spec, .limits, .card-item, .scope, .mark, .headline and .figure are
-	   shared across all four studies (app.css) — this file only keeps its
-	   own tracks' colours and each shared part's local delta. */
+	/* Most classes here (.box, .lede, .prose, .foot-note, .row...) live in app.css — this file only keeps track colours + local deltas. */
 	.study {
-		/* Mixed dark enough to be read as text on the white card: the site's
-		   own violet and azure are set for a black page and are a wash on
-		   this one. Clears 4.5:1 on this ground, which plain --violet
-		   (3.44:1) did not. */
+		/* Darkened for 4.5:1 on this white card — plain --violet only hit 3.44:1. */
 		--ink-azure: var(--azure-ink);
 		--ink-violet: var(--violet-ink);
 	}
 
-	/* A column of a split row holds a heading and whatever qualifies it, and
-	   they are not one block: without this the foot-note runs straight on from
-	   the paragraph above it. */
-
-	/* Which half of the project a block belongs to. The study has two tracks
-	   running through it and the tag is how a reader keeps their place — the
-	   collector in one colour, the research it feeds in the other. Global:
-	   the span itself is rendered by StudyHead now, not this component's own
-	   template. */
+	/* Collector vs research colour tag. Global: rendered by StudyHead, not this template. */
 	:global(.track) {
 		justify-self: start;
 		padding: 0.15rem 0.5rem;
@@ -710,8 +663,7 @@
 	}
 
 	.mark.warn {
-		/* -ink: this icon is on the study's light ground and plain --amber
-		   measures 1.75:1 there. */
+		/* -ink: plain --amber is 1.75:1 on this light ground. */
 		color: var(--amber-ink);
 		font-size: var(--fs-base);
 	}
@@ -741,8 +693,7 @@
 
 	/* --- the pipeline ----------------------------------------------------- */
 
-	/* Left to right, never wrapped — an arrow is its own box, so a wrapped row
-	   strands the arrow that led to the stage below it. */
+	/* No wrap — an arrow is its own box and would strand from its stage. */
 	.pipeline {
 		display: flex;
 		flex-wrap: nowrap;
@@ -830,8 +781,7 @@
 
 	/* --- the live tape ---------------------------------------------------- */
 
-	/* A window into a real feed, dark like the instrument it is, rather than a
-	   panel of this card. */
+	/* Dark like the instrument it shows, not just another card panel. */
 	.tape {
 		display: grid;
 		align-content: start;
@@ -861,8 +811,7 @@
 		box-shadow: 0 0 0.5rem var(--mint);
 	}
 
-	/* Connecting or failed both read as "not lit" — the live region above and
-	   the placeholder below already say which. */
+	/* Connecting and failed both read as "not lit" — text elsewhere says which. */
 	.tape .dot.down {
 		background: var(--coral);
 		box-shadow: 0 0 0.5rem var(--coral);
@@ -927,8 +876,7 @@
 	.card-item li::before {
 		position: absolute;
 		left: 0;
-		/* -ink: this bullet is on the study's light ground and plain --mint
-		   measures 1.68:1 there. */
+		/* -ink: plain --mint is 1.68:1 here. */
 		color: var(--mint-ink);
 		content: '—';
 	}
@@ -1024,8 +972,7 @@
 		white-space: nowrap;
 	}
 
-	/* The three percentile columns are read down as one figure, so they are
-	   right-aligned against each other rather than against their headings. */
+	/* Percentiles read as one figure, aligned to each other not the header. */
 	.measured .num {
 		color: var(--color-foreground);
 		text-align: right;
@@ -1044,8 +991,7 @@
 
 	/* --- term lists ------------------------------------------------------- */
 
-	/* A rule and its clause. Used for the partition layout and the contract,
-	   which are the same shape of statement. */
+	/* A rule + its clause — same shape for partitions and the contract. */
 	.terms {
 		display: grid;
 		gap: 0.55rem;
@@ -1072,7 +1018,7 @@
 		line-height: 1.6;
 	}
 
-	/* The contract is the stricter half, so it stands in a box of its own. */
+	/* The stricter half gets its own box. */
 	.contract {
 		padding: 0.85rem 0.95rem;
 		border: 1px solid var(--color-border);
@@ -1082,9 +1028,7 @@
 
 	/* --- the daily partitions --------------------------------------------- */
 
-	/* One bar per daily partition. The six missing days are drawn as the empty
-	   slots they are rather than closed up, because that is what the archive
-	   looks like from the inside. */
+	/* One bar per day. Missing days stay empty gaps, not smoothed over. */
 	.days {
 		display: grid;
 		grid-auto-flow: column;
@@ -1139,8 +1083,7 @@
 		font-size: var(--fs-sm);
 	}
 
-	/* Three columns of one story: what happened, what the software did about
-	   it, and why it still took six days to notice. */
+	/* Three columns, one story: what happened, what the code did, why it took six days. */
 	.incident {
 		display: grid;
 		grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1223,10 +1166,7 @@
 		font-weight: 700;
 	}
 
-	/* The verdict, not the title: struck through the way the hypothesis was.
-	   Both border and text read -ink, not plain --coral: this is the shared
-	   light-ground token (app.css) now, same formula this file already had for
-	   the text alone — the border was still plain coral, at 1.8:1 on white. */
+	/* -ink token: plain --coral border was 1.8:1 on white. */
 	.verdict {
 		padding: 0.1rem 0.45rem;
 		border: 1px solid var(--coral-ink);
@@ -1260,8 +1200,7 @@
 			grid-template-columns: minmax(0, 1fr);
 		}
 
-		/* Twenty-four bars will not divide a phone; the labels go and the
-		   shape stays. */
+		/* 24 bars won't fit a phone — drop labels, keep the shape. */
 		.day-label {
 			display: none;
 		}

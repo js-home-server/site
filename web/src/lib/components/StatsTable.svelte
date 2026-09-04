@@ -3,9 +3,7 @@
 	import { gridArea } from '$lib/grid.js';
 	import { STAT_COLUMNS } from '$lib/stats.js';
 
-	/* One row a metric, `row` being the figures statsRow() worked out for it in
-	   the order STAT_COLUMNS names them. `col`/`row`/`w`/`h` place the box on
-	   the section's own board — see $lib/grid.js. */
+	/* One row per metric, `row` = statsRow()'s figures in STAT_COLUMNS order. col/row/w/h place the box — see $lib/grid.js. */
 	let { rows, col, row, w = 1, h = 1 } = $props();
 </script>
 
@@ -36,11 +34,7 @@
 </div>
 
 <style>
-	/* .fill (Dashboard.svelte) stretches the chain above down to .fleet, whose
-	   flex row would otherwise size the table to its own min-content box on
-	   both axes. Width is what it always stretched to; height is what reaches
-	   for the rest of a taller box — a table's own layout mode is what turns
-	   that into evenly taller rows rather than blank space under the last. */
+	/* .fill (Dashboard.svelte) stretches this chain down to .fleet — height lets a table's own layout mode grow rows evenly instead of leaving blank space. */
 	table {
 		width: 100%;
 		height: 100%;

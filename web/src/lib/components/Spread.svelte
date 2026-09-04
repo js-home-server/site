@@ -1,19 +1,14 @@
 <script>
 	import Placeholder from './Placeholder.svelte';
 
-	/* A set of readings of one quantity, on one signed axis, each with the width it
-	   admits it could be wrong by.
-
-	   `rows` is [{ id, label, note, tone, value, error }]. The axis is centred on
-	   zero rather than on the data: these are readings of how far out something is,
-	   so nought is the thing they are all being compared against and it has to sit
-	   in the middle whatever the numbers do. */
+	/* Readings on one signed axis, each with its own error bound. `rows` is
+	   [{ id, label, note, tone, value, error }]. Axis is centred on zero, not the
+	   data — these are readings of how far out something is, so zero is what they're all compared against. */
 	let { rows = [], format, note = 'no readings yet' } = $props();
 
 	let drawable = $derived(rows.filter((row) => Number.isFinite(row.value)));
 
-	/* The standing of each reading, where the caller gives one. Colour says it too,
-	   but colour on its own is not a label. */
+	/* Colour says it too, but colour alone is never a label. */
 	let noted = $derived(drawable.some((row) => row.note));
 
 	/* Symmetric, and wide enough for the loosest bound on the list with a little
@@ -37,8 +32,7 @@
 {#if bars.length}
 	<div class="spread" class:noted>
 		<div class="rows">
-			<!-- What every reading is measured against, and the only line on the chart
-			     that means a number rather than a division. -->
+			<!-- The only line here that means a number, not a division. -->
 			<i class="zero"></i>
 
 			{#each bars as bar (bar.id)}
@@ -77,32 +71,21 @@
 	}
 
 	.spread {
-		/* The three columns the lanes and the scale under them both keep to, so the
-		   axis and the readings it labels cannot drift apart. The readings are mono
-		   and all the same length, so that column is a fixed width rather than a
-		   guess. */
+		/* Shared columns for lanes and scale, so the axis can't drift from the readings it labels. Fixed --read-w since mono readings are all one length. */
 		--gap: 0.6rem;
 		--read-w: 4rem;
 		--note-w: 0rem;
-		/* Everything to the right of the lane, which the zero line and the scale both
-		   have to stop short of. */
+		/* Everything right of the lane, which the zero line and scale both stop short of. */
 		--tail: calc(var(--read-w) + var(--note-w) + var(--gap));
 
-		/* 1fr for .rows, auto for .scale under it: when something outside stretches
-		   .spread taller than its own content needs (a box .fill has grown past a
-		   single row), the extra space has somewhere defined to go — into .rows,
-		   whose own grid-auto-rows: minmax(1.1rem, 1fr) is what turns a taller .rows
-		   into evenly taller lanes rather than the same lanes with blank space left
-		   under .scale. Content-sized contexts are unaffected: an indefinite height
-		   resolves 1fr the same as auto. */
+		/* 1fr for .rows, auto for .scale — extra height (from .fill) goes into .rows'
+		   own grid-auto-rows: minmax(1.1rem, 1fr), stretching lanes evenly instead of leaving blank space under .scale. */
 		display: grid;
 		grid-template-rows: 1fr auto;
 		gap: 0.5rem;
 	}
 
-	/* Name, the lane it is drawn in, and the reading written out. The lanes divide
-	   the height between them, so the block stands as tall as whatever is beside
-	   it. */
+	/* Lanes divide the height between them, so the block stands as tall as whatever's beside it. */
 	.rows {
 		position: relative;
 		display: grid;
@@ -113,9 +96,7 @@
 		min-height: var(--graph-min, 6rem);
 	}
 
-	/* Wide enough for the longest name these carry ("Cloudflare anycast 4" comes to
-	   113px at this size); anything longer than the column is cut rather than
-	   allowed to eat the lane. */
+	/* Sized for the longest name ("Cloudflare anycast 4" ≈ 113px) — longer gets cut, not left to eat the lane. */
 	.name {
 		overflow: hidden;
 		text-align: right;
@@ -139,8 +120,7 @@
 		height: 100%;
 	}
 
-	/* The bound, drawn as the width it is: a reading whose bar is short is one that
-	   can be believed. */
+	/* Drawn as the width it is — a short bar is a reading you can believe. */
 	.bar {
 		position: absolute;
 		top: 50%;
@@ -179,8 +159,7 @@
 		transform: translate(-50%, -50%);
 	}
 
-	/* Spans the lane column exactly, and carries the line down its middle — which is
-	   where nought is, since the axis is symmetric about it. */
+	/* Spans the lane column exactly — the line down its middle is zero, since the axis is symmetric. */
 	.zero {
 		position: absolute;
 		top: 0;
@@ -217,11 +196,7 @@
 		text-align: right;
 	}
 
-	/* There is no lane worth drawing at this width — eight bounds overlapping in
-	   seventy pixels say nothing, and squeezing one in is what pushed the columns
-	   either side of it off the page. The drawing goes and the readings it was
-	   drawing take the room, which is the same information in the one form that
-	   fits. */
+	/* No lane worth drawing at this width — eight bounds in 70px say nothing and pushed the columns off the page. Readings take the room instead. */
 	@media (max-width: 52rem) {
 		.rows {
 			grid-template-columns: minmax(0, 1fr) var(--read-w) var(--note-w);

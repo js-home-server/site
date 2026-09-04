@@ -17,23 +17,12 @@ import {
 	siSvelte
 } from 'simple-icons';
 
-/* The mark that goes in front of a tool's name. The brand ones come from
-   simple-icons, which ships each as a single 24x24 path meant to be filled in
-   one colour — which is what a monochrome page wants anyway.
-
-   The five below are drawn here because no brand mark exists to use: a stack
-   of bars for SQL, which is a language rather than a product, a flattened
-   silhouette of the folded-ribbon/peak MathWorks logo for MATLAB (whose real
-   mark is a full-colour gradient render no single-colour path can match), a
-   bar-chart pyramid standing in for Slurm's rounded-square skyline, LinkedIn's
-   own badge -- carried here as a literal path rather than a package import
-   because simple-icons dropped the mark after a takedown request; this is
-   simple-icons' own last published 24x24 LinkedIn path (MIT-licensed), not a
-   redrawing -- and a plain envelope for email, Heroicons' 24px solid mark
-   (already a dependency for the experience page's category icons), concatenated
-   from its two subpaths since this component takes a single path -- and a
-   document with a download arrow for the CV, the same Heroicons set's
-   document-arrow-down, also concatenated from its two subpaths. */
+/* The mark in front of a tool's name. Brand ones are simple-icons' single
+   24x24 monochrome paths. Five are hand-drawn because no usable mark exists:
+   SQL (a bar stack, it's a language not a product), MATLAB (flattened
+   silhouette — the real mark is a gradient render), Slurm (a bar-chart
+   pyramid), LinkedIn (simple-icons' own last-published path, kept as a
+   literal since the package dropped it after a takedown), and Email/CV (Heroicons paths, concatenated to one path each). */
 const TABLE = 'M3 4h18v4H3zM3 10h18v4H3zM3 16h18v4H3z';
 const MATLAB = 'M2 17 L7 12 L7 20 Z M8 20 L11 5 L13 10 L16 2 L20 12 L22 8 L19 20 L16 12 L13 20 L10 13 Z';
 const SLURM =
@@ -72,9 +61,7 @@ export const logos = {
 	'scikit-learn': siScikitlearn.path
 };
 
-/* Each mark's real-world colour, for the hover state — grey the rest of the
-   time so the row reads as one system, brand-coloured only under the
-   pointer. The two hand-drawn marks have no brand colour to switch to. */
+/* Real-world colour for hover only — grey the rest of the time so the row reads as one system. Hand-drawn marks with no brand colour are omitted. */
 export const brandColors = {
 	'C++': `#${siCplusplus.hex}`,
 	Cloudflare: `#${siCloudflare.hex}`,

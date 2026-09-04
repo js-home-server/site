@@ -6,8 +6,7 @@
 	import { gridArea } from '$lib/grid.js';
 	import { server } from '$lib/server.svelte.js';
 
-	/* The readings each row is read across, in the order the row below writes
-	   them: name, state, then a used/limit pair per resource, then uptime. */
+	/* Order matches what each row below writes: name, state, used/limit per resource, uptime. */
 	const COLUMNS = [
 		'Container',
 		'Status',
@@ -27,8 +26,7 @@
 </svelte:head>
 
 <div class="grid">
-	<!-- Decorative: the page is named by its heading, and the art is thousands
-	     of digits to a screen reader. -->
+	<!-- Decorative — the page heading names it, this is thousands of digits to a screen reader. -->
 	<div class="box ship-box" aria-hidden="true">
 		<div class="ship"><AsciiShip /></div>
 	</div>
@@ -36,9 +34,7 @@
 	<div class="box" style={gridArea({ col: 1, row: 2, w: 4, h: 3 })}>
 		{#if containers.slots.length}
 			<div class="container-shell">
-				<!-- One row a container, one column a reading: the names of the readings
-				     are the header, so no row has to repeat them. Scrolls sideways rather
-				     than reflowing, because a row read across is the whole point of it. -->
+				<!-- One row per container, scrolls sideways rather than reflowing — a row read across is the point. -->
 				<div class="fleet">
 					<table>
 						<thead>
@@ -58,9 +54,7 @@
 										<i aria-hidden="true"></i>{slot.status}
 									</td>
 
-									<!-- What it is using of what it was given, in that resource's own
-									     colour: the reading with the share it comes to under it, then
-									     the allowance that share is measured against. -->
+									<!-- Usage, then its share as a bar, then the limit it's measured against — each in the resource's own colour. -->
 									{#each slot.resources as resource (resource.id)}
 										<td class="usage" style:color={resource.tone}>
 											{resource.value}
@@ -84,10 +78,7 @@
 </div>
 
 <style>
-	/* Not this ship's own width (166) but the width every other piece on the
-	   site is drawn at, so a digit here is the same size as a digit anywhere
-	   else. The ship is wider than the cell it sits in and is cropped by
-	   .ship-box below rather than shrunk to fit. */
+	/* Site's shared digit width, not the ship's own 166 — cropped by .ship-box rather than shrunk to fit. */
 	.ship {
 		--cols: 166;
 
@@ -95,36 +86,22 @@
 		margin-bottom: 0.75rem;
 	}
 
-	/* Sized to the box it stands in: a character grid has exactly one size, so
-	   the font size is what scales the picture. --cols above is how many
-	   characters wide the art is and JetBrains Mono advances 0.6021em per
-	   character, so dividing the container's width by that span gives the cell
-	   size that fills it exactly.
-
-	   Scoped here rather than shared in app.css on purpose: the generated art
-	   component carries its own `.ascii-art pre { font-size: 6px }`, and only a
-	   rule with this one's specificity beats it.
-
-	   The line height is rounded to whole device pixels because baselines are
-	   painted on them — a fractional pitch comes out as a 7, 7, 7, 6 rhythm and
-	   bands the picture. */
+	/* Font-size is the only knob for a character grid — --cols chars at 0.6021em
+	   each, divided into the container width, fills it exactly. Scoped here (not
+	   app.css) to out-specificity the generated component's own `font-size: 6px`.
+	   Line-height rounded to device pixels, or fractional baselines band the picture. */
 	.ship :global(pre) {
 		font-size: calc(100cqw / (var(--cols) * 0.6021));
 		line-height: round(0.72em, var(--device-px, 1px));
 	}
 
-	/* Black rather than the surface every other box wears: the art is a picture
-	   rather than a chart, and reads as one set against the same black the
-	   overview's title stands on, not the page's own near-black surface. */
+	/* Black, not the usual surface — a picture, not a chart, matching the overview title's black rather than the page surface. */
 	.ship-box {
 		overflow: hidden;
 		background: #000;
 	}
 
-	/* Bleeds the table out to the edges of the box that holds it, cancelling
-	   that box's own padding on three sides — .fleet's overflow-x is what
-	   actually keeps the table's width from pushing the box (or the page
-	   around it) wider than its column, so nothing here has to. */
+	/* Bleeds the table to the box's edges by cancelling padding on three sides. .fleet's overflow-x keeps it from widening the page. */
 	.container-shell {
 		margin-inline: calc(-1 * var(--pad));
 		margin-bottom: calc(-1 * var(--pad));
@@ -134,8 +111,7 @@
 		color: var(--color-foreground);
 	}
 
-	/* A square of the state's own colour, and the word beside it — the colour is
-	   never the only thing saying which way a row reads. */
+	/* Colour square + word — colour is never the only signal. */
 	.state {
 		color: var(--mint);
 		text-transform: capitalize;
@@ -149,8 +125,7 @@
 		background: currentcolor;
 	}
 
-	/* The allowance the reading beside it is drawn against, set back from it: the
-	   number that moves is the one worth reading down the column. */
+	/* Set back — the number that moves is the one worth reading down the column. */
 	.limit {
 		color: var(--text-dim);
 	}

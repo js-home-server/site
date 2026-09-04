@@ -13,12 +13,10 @@
 	let rx = $derived(series?.network.receive_bytes_per_second ?? []);
 	let tx = $derived(series?.network.transmit_bytes_per_second ?? []);
 
-	/* The tail of the probe's own window, which is the reading that says whether
-	   the link is reliable — the headline beside it only says where it is now. */
+	/* Tail of the window — says whether the link is reliable, not just where it is now. */
 	let latencyP95 = $derived(ms(percentile(values(series?.availability.latency_ms), 0.95)));
 
-	/* The two lines Throughput draws, plus the probe latency beside it — rx and
-	   tx keep the same tones they draw in up there. */
+	/* Same tones as the Throughput trace above. */
 	let networkStats = $derived([
 		{ label: 'RX', tone: 'var(--azure)', row: statsRow(rx, rate) },
 		{ label: 'TX', tone: 'var(--violet)', row: statsRow(tx, rate) },
@@ -59,10 +57,7 @@
 </div>
 
 <style>
-	/* The one number this panel is read for, so it takes the same face and size
-	   as every other headline reading on the dashboard (.figure, app.css) —
-	   noticed rather than compared, unlike the axis figures around it. The
-	   azure matches the trace under it and the Latency row beside it. */
+	/* Same face/size as every dashboard headline (.figure, app.css) — azure matches the trace under it. */
 	.latency-reading strong {
 		color: var(--azure);
 		font-size: var(--fs-h2);

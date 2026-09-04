@@ -2,24 +2,18 @@
 	import { chart, VIEW } from '$lib/chart.js';
 	import equity from '$lib/data/xsflow-equity.json';
 
-	/* The strategy's own equity curve — pulled out of OrderflowStudy.svelte's
-	   "The strategy" section so the project card's FIG. 01 can show the actual
-	   result the archive was built for, rather than the collector's own
-	   uptime chart. Same source: the backtest's hourly net P&L, compounded
-	   and sampled weekly (340 points), first book against the re-engineered
-	   one that replaced it. */
+	/* Pulled out of OrderflowStudy.svelte's "The strategy" section so the project
+	   card's FIG. 01 shows the actual result, not the collector's uptime chart.
+	   Same source: hourly net P&L compounded and sampled weekly (340 points). */
 
 	const WEEK = 7 * 86400;
 	const points = (key) => equity[key].map((v, i) => [equity.start + i * WEEK, Math.log10(v)]);
 
-	/* Log, and said so under the chart. A compounding curve on a linear axis is
-	   a picture of the last year and a flat line for the first five. */
+	/* Log scale, noted under the chart — linear would flatten five of six years. */
 	const DOMAIN = [0, Math.log10(20)];
 	const TICKS = [1, 2, 5, 10, 20];
 
-	/* Dashed as well as grey for the first book, solid violet for the one that
-	   replaced it: the two curves sit on top of each other for four of the six
-	   years, and colour alone would not separate them for everyone. */
+	/* Dashed+grey vs solid violet — the curves overlap for four of six years, colour alone won't separate them for everyone. */
 	const curves = [
 		{ id: 'xsflow', label: 'XSFLOW', tone: 'var(--text-faint)', dashed: true, d: chart(points('xsflow'), DOMAIN) },
 		{ id: 'xsflowR', label: 'XSFLOW-R', tone: 'var(--violet-ink)', d: chart(points('xsflowR'), DOMAIN) }
@@ -88,8 +82,7 @@
 		gap: 0.25rem;
 	}
 
-	/* The scale in its own gutter, so no label is ever painted over the curve
-	   it belongs to. */
+	/* Own gutter, so no label is ever painted over its curve. */
 	.ygutter {
 		position: relative;
 		grid-row: 1;

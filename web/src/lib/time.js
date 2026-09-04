@@ -12,24 +12,15 @@ const TONE = {
    actually following, then the ones it could fall back to, then the rest. */
 const RANK = { selected: 3, candidate: 2, unusable: 1 };
 
-/* Chrony reports the correction needed to reach NTP, so a negative reading
-   means this machine is running fast. Both of these flip that, once, so every
-   page reads a positive offset as the machine being ahead — the headline
-   figure and the history behind it can never disagree on which way is which. */
+/* Chrony's sign means "correction needed", so negative = running fast. Flipped once here so every page reads positive as "ahead", consistently. */
 export const clockOffset = (time) =>
 	Number.isFinite(time?.system_offset_seconds) ? -time.system_offset_seconds : null;
 
 export const clockOffsetHistory = (series) =>
 	(series?.time.system_offset_seconds ?? []).map(([at, offset]) => [at, -offset]);
 
-/* Every source as one reading with an uncertainty: where it says the clock is,
-   and how far out it admits that could be.
-
-   The bar is chrony's own error bound, not its jitter. The bound is what says
-   whether a source can be believed — it is the offset plus everything the path
-   to it could be hiding — and it is the reading that actually separates these
-   sources, which agree on the offset to a fraction of a millisecond but differ
-   by a factor of seven on how sure they are of it. */
+/* Each source as a reading + uncertainty. The bar is chrony's own error bound,
+   not jitter — it's what actually separates sources that agree on the offset but differ 7x on confidence. */
 export const spread = (time) =>
 	[...(time?.sources ?? [])]
 		.sort((a, b) => RANK[b.state] - RANK[a.state] || a.error_seconds - b.error_seconds)

@@ -16,11 +16,8 @@
 			: null
 	);
 
-	/* The work worth showing. `tools` are what each is actually built with; `url`
-	   is where the source is, on the ones that are public; `live` is where it
-	   actually runs on this site, on the one that runs here. `route` is its
-	   full case study, on a page of its own. The index stays deliberately light:
-	   enough context to choose a project, then one route to the full work. */
+	/* `url` = public source, `live` = where it actually runs, `route` = its full
+	   case study. The index stays light — enough to choose a project, then one route to the full work. */
 	const PROJECTS = [
 		{
 			name: 'Ancestree',
@@ -127,8 +124,7 @@
 </section>
 
 <style>
-	/* The paper shadow itself is app.css's .projects; this is the one thing only
-	   this copy of it needs — the card grid bleeds into the box's own padding. */
+	/* Paper shadow itself is app.css's .projects — this just bleeds the card grid into the box's own padding. */
 	.projects {
 		overflow: hidden;
 	}
@@ -229,20 +225,15 @@
 		color: var(--mint-ink);
 	}
 
-	/* No arrow, no underline: this is the one solid button among the section's
-	   links, so it wears the same soft-fill hover the contact form's Send
-	   message button does (Contact.svelte) rather than ActionLink's usual
-	   look. overflow:hidden clips that fill to the button's own rounded
-	   corners. */
+	/* The one solid button in the section — soft-fill hover like Contact's Send
+	   button, not ActionLink's usual look. overflow:hidden clips the fill to the rounded corners. */
 	.primary {
 		overflow: hidden;
 		border: 1px solid var(--mint-ink);
 		border-radius: var(--radius-control);
 	}
 
-	/* Block and padded here instead of on .primary: the link's own box is then
-	   the whole button, so hovering or clicking anywhere in it — not just the
-	   words — reaches the link. */
+	/* Block + padded here, not on .primary, so the whole button area is clickable, not just the words. */
 	.case-link {
 		display: block;
 		padding: 0.6rem 0.8rem;

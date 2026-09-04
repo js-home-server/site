@@ -2,30 +2,19 @@
 	import { bucket, spanSeconds } from '$lib/stats.js';
 	import { span } from '$lib/format.js';
 
-	/* One strip, two fits. `barCount` pins the count to fixed equal CSS-grid
-	   columns — a rail this narrow never needs more precision than that.
-	   Leaving it unset measures the box in device pixels instead and hands
-	   each bar an explicit whole-pixel width: the hero card is wide and busy
-	   enough that flex's fractional rounding bands visibly (see
-	   MIN_BAR_DEVICE_PX below), which a fixed low bar count never hits. */
+	/* Two fits. `barCount` pins fixed equal CSS-grid columns — fine for a narrow
+	   rail. Unset measures the box in device pixels and gives each bar a whole-pixel
+	   width instead, since the wide, busy hero card visibly bands under flex's fractional rounding. */
 	let { uptime, barCount, height = '1.6rem', class: extraClass = '' } = $props();
 
-	/* Device pixels a bar needs before it reads as one width rather than a coin
-	   flip between two: a bar under this is thin enough that the ±1 device-pixel
-	   spread every sub-pixel layout leaves somewhere in a long row of bars reads
-	   as one bar doubling in size instead of the rounding noise it actually is.
-	   Counted in device pixels, not CSS ones, so a retina screen earns the extra
-	   bars its sharper grid can actually draw crisply, and a plain one gets fewer,
-	   fatter bars instead of the same count rendered illegibly thin. */
+	/* Below this many device pixels a bar's rounding noise reads as it doubling
+	   in size, not noise. Counted in device px so retina screens get more, crisper bars. */
 	const MIN_BAR_DEVICE_PX = 6;
 	const GAP = 1; /* CSS px between bars */
 	const MAX_SEGMENTS = 96;
 
-	/* One bar per bucket of the strip's own window, at the finest pitch it can
-	   draw: a phone card is narrower than 96 bars and their gaps, and this shrinks
-	   the count rather than every bar. Never more bars than samples either, or the
-	   empty buckets between them read as outages. Only measured when the caller
-	   hasn't pinned a count of its own. */
+	/* Finest pitch the strip can draw — shrinks the bar count on a narrow phone
+	   card rather than each bar. Never more bars than samples. Only used when barCount isn't pinned. */
 	let stripWidth = $state(0);
 	let responsiveCount = $derived.by(() => {
 		if (!stripWidth) return MAX_SEGMENTS;
@@ -38,15 +27,9 @@
 
 	let segmentCount = $derived(barCount ?? responsiveCount);
 
-	/* Every bar's width in whole device pixels, not CSS pixels handed to the
-	   browser to round. With many fractional-width bars in a row, layout accumulates
-	   sub-pixel position error across the strip and has to snap an edge here and
-	   there at paint time — giving every <i> the same width doesn't stop that,
-	   since each edge still gets rounded on its own. Working the boundaries out
-	   ourselves as integers, then dividing back by the pixel ratio, means every
-	   edge already sits on the device grid and there is nothing left to round.
-	   Only needed in the responsive fit — a fixed count's CSS-grid columns divide
-	   the box themselves. */
+	/* Widths worked out as whole device pixels ourselves, not left for the browser
+	   to round per-bar — that accumulates sub-pixel error across the strip. Only
+	   needed for the responsive fit; a fixed count's grid columns divide themselves. */
 	let barWidths = $derived.by(() => {
 		if (barCount || !stripWidth) return [];
 		const n = segmentCount;
@@ -63,10 +46,7 @@
 		return widths;
 	});
 
-	/* Any failed poll in the bucket makes it an outage, not most of them: a bar is
-	   a slice of the window, and asking for the average of one is what let a short
-	   outage come out as a clean bar. A bucket the API had nothing for is unknown,
-	   which is not the same as down and must not be drawn as if it were. */
+	/* Any failed poll marks a bucket down, not most of them — averaging let a short outage look clean. Unknown (nothing collected) ≠ down. */
 	let segments = $derived(
 		bucket(uptime, segmentCount).map((v) => (v === null ? 'unknown' : v < 1 ? 'down' : 'up'))
 	);

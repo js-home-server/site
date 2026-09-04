@@ -1,15 +1,12 @@
 <script>
-	/* An unfilled slot. `lines` is roughly how tall the real thing will be, in
-	   text lines, so a wireframe holds the shape of the page it is standing in
-	   for. Dashed, so nothing here can be mistaken for finished work. */
+	/* `lines` roughly matches the real thing's height, so the wireframe holds shape. Dashed, so nothing reads as finished work. */
 	let { note, lines = 1 } = $props();
 </script>
 
 <div class="placeholder" style="--lines: {lines}"><span>{note}</span></div>
 
 <style>
-	/* Four dotted edges rather than a dotted border, for the same reason the charts
-	   draw their own: a 1px dotted border reads as a line. */
+	/* Four dotted edges, not a dotted border — a 1px dotted border just reads as a line. */
 	.placeholder {
 		display: grid;
 		place-items: center;
@@ -22,8 +19,7 @@
 		background-size: 100% 1px, 100% 1px, 1px 100%, 1px 100%;
 	}
 
-	/* No opacity on top of the grey: --text-faint clears AA on its own, and dimming
-	   it further is what would take it under. */
+	/* No opacity on top — --text-faint already clears AA, dimming further would fail it. */
 	span {
 		color: var(--text-faint);
 		font-family: var(--font-mono);

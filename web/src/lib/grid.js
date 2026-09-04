@@ -1,13 +1,6 @@
-/* Where a box sits on a dashboard section's own 4x4 board.
-
-   `col`/`row` are 1-4, the cell to start at; omit them to let the box flow into
-   the next open slot, which is what most boxes do. `w`/`h` are how many cells
-   to span, 1-4 apiece.
-
-   The result is an inline style rather than a class because these land on boxes
-   that other components render — StatsTable owns its own <div>, so a stylesheet
-   rule written on the page would be scoped to the wrong component and lose to
-   the grid's own default besides. Inline wins outright either way. */
+/* Where a box sits on the 4x4 dashboard board. col/row (1-4) is the start
+   cell — omit to flow into the next open slot. w/h (1-4) is the span.
+   Inline style, not a class — these land on boxes other components render (e.g. StatsTable owns its own div), so a page-scoped class would miss. */
 export function gridArea({ col, row, w = 1, h = 1 } = {}) {
 	return [
 		`grid-column: ${col ? `${col} / span ${w}` : `span ${w}`};`,

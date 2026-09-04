@@ -10,9 +10,7 @@
 	const DESCRIPTION =
 		'Joshua Smith — data engineer building real-time, scientific, and ML systems. Case studies, projects, and a home server lab.';
 
-	/* One canonical/og:url per route, worked out here rather than repeated on
-	   every page — page.url.pathname already carries the trailing slash (or
-	   lack of one) SvelteKit resolved the route to. */
+	/* Worked out once here instead of repeated per page — page.url.pathname already carries the trailing slash SvelteKit resolved. */
 	let canonical = $derived(SITE_URL + page.url.pathname);
 	let ogImage = $derived(SITE_URL + '/og-image.png');
 </script>

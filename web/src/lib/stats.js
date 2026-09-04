@@ -1,31 +1,22 @@
-/* Summaries over a [unixSeconds, value] series. Nothing here knows what any of
-   the numbers mean; the few that hand back finished text take the formatter
-   that does as an argument. */
+/* Summaries over a [unixSeconds, value] series. Nothing here knows what the
+   numbers mean — callers that need finished text pass in a formatter. */
 
-/* A series stripped to its readings, which is what everything below works on.
-   An absent series is an empty one, so nothing has to guard before summarising.
-   The rest of this file takes those readings rather than the series itself, and
-   calls them `readings` so nothing shadows this. */
+/* Strips a series to its readings — an absent series is just empty, no guard needed. */
 export const values = (points) => (points ?? []).map((point) => point[1]);
 
 export const mean = (readings) => readings.reduce((sum, v) => sum + v, 0) / readings.length;
 
-/* The reading at the end of a series: what it says now. Null where there is no
-   series yet, which every formatter in $lib/format.js writes as an em dash. */
+/* What the series says now. Null with no data — format.js writes that as an em dash. */
 export const last = (points) => (points?.length ? points.at(-1)[1] : null);
 
-/* Runs of downtime, not readings of it: an outage lasting four polls is one
-   incident, not four. The status series is 1 for a poll the machine answered and
-   0 for one it did not, so anything under a half is down. */
+/* Runs, not readings — a four-poll outage is one incident, not four. */
 export const outages = (points) =>
 	(points ?? []).reduce(
 		(n, [, v], i, all) => n + (v < 0.5 && !(i && all[i - 1][1] < 0.5) ? 1 : 0),
 		0
 	);
 
-/* How far a series' first reading sits behind its last, in seconds — the
-   window every trace off the same series is actually labelled with, since an
-   API that has not been collecting long only ever returns that much. */
+/* First-to-last span in seconds — the actual window an API that hasn't been collecting long can return. */
 export const spanSeconds = (points) => (points?.length > 1 ? points.at(-1)[0] - points[0][0] : 0);
 
 export const percentile = (readings, p) => {
@@ -33,11 +24,8 @@ export const percentile = (readings, p) => {
 	return sorted[Math.min(sorted.length - 1, Math.ceil(p * sorted.length) - 1)];
 };
 
-/* The series' own window, cut into `count` equal buckets, each the mean of the
-   samples that fall in it. A bucket nothing was collected for comes back null,
-   not zero: unknown is not the same as idle, or down, and the callers draw the
-   difference. Never more buckets than samples, or the empty ones between them
-   read as real. */
+/* `count` equal buckets, each the mean of its samples. Empty bucket = null, not
+   zero — unknown isn't idle or down. Never more buckets than samples. */
 export function bucket(points, count) {
 	if (!Array.isArray(points) || points.length < 2) return [];
 
@@ -53,14 +41,8 @@ export function bucket(points, count) {
 	return buckets.map((b) => (b.length ? mean(b) : null));
 }
 
-/* The columns a 24h statistics table is read across, and the figures under
-   them, in one place: StatsTable renders the first and every page fills the
-   second, so a column can never end up naming a figure from a different slot.
-
-   An empty series needs no guard: min/max of nothing is ±Infinity, mean and
-   percentile of nothing are NaN, and every formatter writes all three as the
-   same em dash the rest of the page uses for "no history yet" — so a card that
-   gains its data later keeps its shape until it does. */
+/* Columns + figures in one place, so a column can never name a figure from the
+   wrong slot. Empty series needs no guard — min/max/percentile of nothing all format to the same em dash. */
 export const STAT_COLUMNS = ['Min', 'Median', 'Avg', 'P95', 'Max'];
 
 export function statsRow(points, format) {
@@ -75,10 +57,7 @@ export function statsRow(points, format) {
 	];
 }
 
-/* The window's floor and ceiling as one line, for a card that shows a live
-   figure and wants the range behind it. Cased by hand: the reading keeps
-   whatever case its own unit takes (°C, ms, µs), and only the two words around
-   it are the page's own small caps. */
+/* Floor and ceiling as one line. Cased by hand — units (°C, ms, µs) keep their own case, only "MIN"/"MAX" are small caps. */
 export const minMax = (points, format) => {
 	const readings = values(points);
 	return readings.length
@@ -86,9 +65,7 @@ export const minMax = (points, format) => {
 		: 'NO HISTORY YET';
 };
 
-/* Least-squares slope over a [unixSeconds, value] series: the rate it is moving,
-   in value units per second. Null when there is not enough of it to say — two
-   points is a line, one is a rumour. */
+/* Least-squares slope, value units per second. Null under two points — one point is a rumour, not a rate. */
 export function slope(points) {
 	if (!Array.isArray(points) || points.length < 2) return null;
 

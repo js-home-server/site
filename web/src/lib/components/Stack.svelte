@@ -4,26 +4,18 @@
 	import Placeholder from './Placeholder.svelte';
 	import TimeAxis from './TimeAxis.svelte';
 
-	/* Shares of one whole over time, stacked from the floor up.
-
-	   `bands` is [{ id, label, tone, nowBytes, points }] where a point is
-	   [unixSeconds, percent] and the bands of a moment add up to 100. They are
-	   stacked in the order given and read against a fixed 0-100 scale, because the
-	   question this chart answers — how the whole is divided — is only a question
-	   about that scale. */
+	/* Shares of one whole over time, stacked from the floor up. `bands` is
+	   [{ id, label, tone, nowBytes, points }], points are [unixSeconds, percent]
+	   summing to 100 at any moment, stacked in order against a fixed 0-100 scale. */
 	let { bands = [], note = 'no history yet' } = $props();
 
-	/* The levels the whole is read against: quarters, which is as fine as a scale
-	   can be labelled at these heights and still be read. */
+	/* Quarters — as fine as a scale can be labelled at these heights and still read. */
 	const GRID = [0, 25, 50, 75, 100];
 
-	/* Everything here is a share of one whole, so the scale is the whole and the
-	   projection onto it is the one every chart uses. */
 	const y = (percent) => markY(Math.min(100, Math.max(0, percent)), [0, 100]);
 
-	/* One filled area per band: along its own top edge, then back along the top of
-	   whatever it sits on. The bands share a clock, so the x of a point is its
-	   index's own timestamp and the running total is by index. */
+	/* One filled area per band, along its top edge then back along whatever it
+	   sits on. Bands share a clock, so x is by index's own timestamp. */
 	let areas = $derived.by(() => {
 		const clock = bands[0]?.points;
 		if (!clock?.length || bands.some((band) => band.points.length !== clock.length)) return [];
@@ -98,8 +90,7 @@
 		vector-effect: non-scaling-stroke;
 	}
 
-	/* One entry a band, along the foot of the chart: what it is, and what it comes
-	   to now. */
+	/* One entry per band: what it is, what it comes to now. */
 	.legend {
 		display: grid;
 		grid-column: 2;

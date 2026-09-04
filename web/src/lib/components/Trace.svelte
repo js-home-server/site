@@ -3,22 +3,14 @@
 	import Placeholder from './Placeholder.svelte';
 	import TimeAxis from './TimeAxis.svelte';
 
-	/* One or more series on one scale.
-
-	   `lines` is [{ id, points, tone, label, dashed }]: the series, the colour it is
-	   drawn in, and a name where the chart carries more than one and has to say
-	   which is which. `domain` is [lo, hi] in the series' own units and never moves
-	   with the data, for a reading that means something against a fixed scale — 0
-	   to 100% of a CPU. Without one the scale is the range the series covered, which
-	   is what a reading that lives in hundredths of a percent needs: a fixed 0-100
-	   axis would draw every one of them flat along the floor. `marks` are the levels
-	   worth seeing a trace cross, drawn as grey rules and labelled in the gutter.
-	   `format` turns a number in those units into its label, so a percentage and a
-	   temperature take the same code path. */
+	/* One or more series on one scale. `lines` is [{ id, points, tone, label,
+	   dashed }]. `domain` is [lo, hi] and never moves with the data — for a fixed
+	   scale like 0-100% CPU; without one it's the series' own range, which a
+	   reading in hundredths of a percent needs (a fixed 0-100 axis would flatline
+	   it). `marks` are levels worth crossing, drawn as grey rules. `format` turns a value into its label. */
 	let { lines = [], domain = null, format, marks = [] } = $props();
 
-	/* Resolved once and used for both the drawing and its labels, so a label cannot
-	   name a height the trace was not drawn at. */
+	/* Resolved once, shared by drawing and labels — a label can't name a height the trace wasn't drawn at. */
 	let scaleTo = $derived.by(() => {
 		if (domain) return domain;
 		const values = lines.flatMap((line) => (line.points ?? []).map((point) => point[1]));
@@ -31,9 +23,7 @@
 			.filter((line) => line.d)
 	);
 
-	/* The scale, top to bottom: the head of the domain, whatever is marked in
-	   between, then its floor. Everything is placed off the same projection the
-	   rules use, so a label cannot drift from the line it names. */
+	/* Top to bottom: domain head, marks, floor — same projection as the rules, so labels can't drift from the lines they name. */
 	let scale = $derived(
 		[scaleTo[1], ...marks, scaleTo[0]].map((value) => ({
 			label: format(value),
@@ -47,8 +37,7 @@
 
 {#if traces.length}
 	<div class="plot">
-		<!-- The scale sits in its own gutter beside the plot, so no label is ever
-		     painted over the trace it belongs to. -->
+		<!-- Own gutter beside the plot, so no label is ever painted over its trace. -->
 		<div class="axis">
 			{#each scale as { label, offset } (label + offset)}
 				<span class="tick" style="top: {offset}%">{label}</span>
@@ -96,10 +85,7 @@
 {/if}
 
 <style>
-	/* The trace is drawn against a fixed scale, so the box has to be a fixed box:
-	   a line on the floor and the head of the domain, nothing in between. Dotted,
-	   like every grey line on the page that measures something rather than dividing
-	   it — the solid ones are the sections and their parts. */
+	/* Fixed box for a fixed scale — floor and domain head, nothing between. Dotted like every measuring line; solid lines divide sections instead. */
 	.canvas {
 		color: var(--color-border);
 		background-image: var(--dot-row), var(--dot-row);
@@ -122,8 +108,7 @@
 		color: currentcolor;
 	}
 
-	/* A length of the line itself rather than a block of its colour: it is the only
-	   swatch that can show the dash. */
+	/* A length of the line, not a colour block — the only swatch that can show the dash. */
 	.key i {
 		width: 0.9rem;
 		border-top: 2px solid currentcolor;

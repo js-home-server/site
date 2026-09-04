@@ -5,21 +5,10 @@
 	import StudyHead from '$lib/components/StudyHead.svelte';
 	import { brandColors } from '$lib/logos.js';
 
-	/* "This server"'s own study, in the same shape as the other three: named
-	   sections, figures read off the thing rather than asserted about it, and
-	   the limits written down.
-
-	   What makes this one different from the usual home-lab write-up is the
-	   angle it is written from. The interesting problem here is not that a
-	   machine runs containers; it is that the machine publishes a live,
-	   unauthenticated feed about itself to the internet, and every number in
-	   that feed is a fact about a box in a house. So the study is about the
-	   boundary — what crosses it, what enforces it, and how it fails.
-
-	   Everything under `mini-dashboard` below is a copy of /server's own
-	   overview grid (routes/server/+page.svelte) scaled down, rather than an
-	   import of it — so trimming or dropping this preview later never touches
-	   the real page. */
+	/* Same shape as the other three studies, but the angle here is the boundary:
+	   a box in a house publishing a live, unauthenticated feed about itself.
+	   `mini-dashboard` is a scaled-down copy of /server's overview grid, not an
+	   import — so this preview can change without touching the real page. */
 
 	/* Read across like a datasheet header, same as the other studies. */
 	const SPEC = [
@@ -38,8 +27,7 @@
 		{ figure: '4', unit: 'states', note: 'live, stale, partial or unavailable, per group, in every response' }
 	];
 
-	/* The public surface as two columns. The right one is what the collectors
-	   refuse to write in the first place, which is the half that matters. */
+	/* Two columns — the right one is what the collectors refuse to write, which is the half that matters. */
 	const SURFACE = [
 		{
 			title: 'Published',
@@ -63,8 +51,7 @@
 		}
 	];
 
-	/* Three paths, rendered by the same snippet. `brand` is a simple-icons mark
-	   (logos.js), `icon` a generic outline one (icons.js). */
+	/* Three paths, one snippet. `brand` = simple-icons (logos.js), `icon` = outline (icons.js). */
 	const INGRESS = {
 		title: 'How a request gets in',
 		stages: [
@@ -101,7 +88,7 @@
 		note: 'Any failure restores the previous commit’s stack and the crontab it replaced.'
 	};
 
-	/* What the API promises about itself, in the numbers that define it. */
+	/* What the API promises about itself, as numbers. */
 	const GUARDS = [
 		{
 			label: 'Routes',
@@ -125,8 +112,7 @@
 		}
 	];
 
-	/* The design showing up in the telemetry: the archive is pinned to cores
-	   0-1 by cpuset, and the seven-day means say so without being asked. */
+	/* The archive is pinned to cores 0-1 by cpuset — the 7-day means show it. */
 	const CORES = [
 		{ id: 0, percent: 27.9, detail: 'archive + compaction, pinned' },
 		{ id: 1, percent: 31.7, detail: 'archive + compaction, pinned' },
@@ -220,15 +206,11 @@
 		}
 	];
 
-	/* Full scale for the per-core bars. Rounded up off the busiest core so the
-	   two pinned ones do not run to the edge of the track. */
+	/* Bar scale, rounded up off the busiest core so the pinned pair don't max out. */
 	const CORE_SCALE = 40;
 </script>
 
-<!-- A section's name, in the rail down the left of the study — the same
-     vocabulary the other three use. -->
-<!-- A stage of a path: a mark over a name, with whatever qualifies it
-     underneath. -->
+<!-- A stage of a path: a mark over a name, with detail underneath. -->
 {#snippet mark(stage)}
 	{#if stage.brand}
 		<span class="mark" style:color={brandColors[stage.brand] ?? 'currentcolor'}>
@@ -239,8 +221,7 @@
 	{/if}
 {/snippet}
 
-<!-- One path through the system, read left to right, with the single thing
-     about it worth saying beside it rather than under it. -->
+<!-- One path, left to right, with the one thing worth saying beside it. -->
 {#snippet path(flow)}
 	<div class="flow">
 		<h3>{flow.title}</h3>
@@ -494,19 +475,13 @@
 </div>
 
 <style>
-	/* .study, .box, .lede, .kicker, .thesis, .prose, .foot-note, .arrow, .intro,
-	   .spec, .limits, .card-item, .scope, .mark, .headline and .figure are
-	   shared across all four studies (app.css) — this file only keeps its own
-	   accent and the things its layout genuinely does differently: a wider
-	   label column, ledes stacked with a bottom margin, and a stage with no
-	   card of its own since it already sits inside .flow. */
+	/* Most classes here live in app.css (shared across all four studies) — this
+	   file just keeps its accent and its own layout quirks. */
 	.study {
 		--ink: var(--amber-ink);
 	}
 
-	/* What the section is on the left, what it is made of on the right. The
-	   label column is fixed rather than fractional so every section lines up
-	   down the study whatever is beside it. */
+	/* Fixed label column so every section lines up regardless of content. */
 	.row {
 		display: grid;
 		grid-template-columns: minmax(0, 21rem) minmax(0, 1fr);
@@ -524,8 +499,7 @@
 		color: var(--color-foreground);
 	}
 
-	/* Every mark in the study, at one size, whether it came from logos.js or
-	   icons.js — so a brand row and a generic row read as the same row. */
+	/* One size for every mark, brand or generic, so rows read the same. */
 	.mark {
 		font-size: var(--fs-h2);
 	}
@@ -535,9 +509,7 @@
 	}
 
 	.mark.warn {
-		/* -ink, not the plain accent: this icon is on the study's light ground
-		   (.projects, Projects.svelte) and plain --amber measures 1.75:1 there —
-		   under both the 3:1 a meaningful icon needs and the 4.5:1 text needs. */
+		/* -ink: plain --amber is 1.75:1 on this light ground, under the 3:1 an icon needs. */
 		color: var(--amber-ink);
 		font-size: var(--fs-base);
 	}
@@ -572,9 +544,7 @@
 
 	/* --- the boundary ----------------------------------------------------- */
 
-	/* Two trays side by side: what is published, and what the collectors
-	   refuse to write. They are the same shape on purpose — the second list is
-	   as deliberate as the first. */
+	/* Same shape on purpose — the "never written" list is as deliberate as the other. */
 	.surface {
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -632,8 +602,7 @@
 		gap: 0.6rem;
 	}
 
-	/* A path in its own tray, one shade off the card it sits on, so it reads as
-	   a diagram rather than as more copy. */
+	/* One shade off the card it sits on, so it reads as a diagram not more copy. */
 	.flow {
 		padding: 0.75rem 0.85rem;
 		border: 1px solid var(--color-border);
@@ -655,9 +624,7 @@
 		align-items: center;
 	}
 
-	/* Left to right, and never wrapped: an arrow is its own box, so a wrapped
-	   row strands the arrow that led to the stage below it. Narrow enough and
-	   the path scrolls sideways instead. */
+	/* No wrap — an arrow is its own box and would strand mid-path. Scrolls instead. */
 	.stages {
 		display: flex;
 		flex-wrap: nowrap;
@@ -667,9 +634,7 @@
 		overflow-x: auto;
 	}
 
-	/* Nested inside .flow, which is already the card — a second border here
-	   would be a box drawn inside a box, so this resets the shared .stage
-	   back to plain, centred text. */
+	/* .flow is already the card — reset the shared .stage so it's not a box in a box. */
 	.stage {
 		flex: initial;
 		justify-items: center;
@@ -691,15 +656,13 @@
 		line-height: 1.35;
 	}
 
-	/* .mark is a span too, so `.stage span` above outsizes it on specificity —
-	   which is what left every mark down these paths at detail-text size. */
+	/* .mark is a span too, so `.stage span` above wins on specificity without this. */
 	.stage .mark {
 		color: inherit;
 		font-size: var(--fs-subhead);
 	}
 
-	/* The one thing about the path worth saying in words, beside it rather than
-	   under it — a caption on a diagram, not a paragraph after one. */
+	/* A caption on the diagram, not a paragraph after it. */
 	.aside {
 		margin: 0;
 		padding: 0.6rem 0.7rem;
@@ -713,8 +676,7 @@
 
 	/* --- the cores -------------------------------------------------------- */
 
-	/* Four bars on one scale. The pinned pair are the point, so they are the
-	   ones that carry colour. */
+	/* Four bars, one scale. The pinned pair are the point, so they get the colour. */
 	.cores {
 		display: grid;
 		gap: 0.4rem;
@@ -762,8 +724,7 @@
 	}
 
 	.core-track i.pinned {
-		/* -ink: this bar is on the study's light ground, where plain --mint
-		   measures 1.68:1 — the same swap every accent on paper gets. */
+		/* -ink: plain --mint is 1.68:1 on this light ground. */
 		background: var(--mint-ink);
 	}
 
@@ -776,8 +737,7 @@
 
 	/* --- readings, ops, limits -------------------------------------------- */
 
-	/* Label, figure, and the sentence that says what the figure is of. Read
-	   across, not down — they are one instrument panel. */
+	/* Label, figure, note — read across, not down. One instrument panel. */
 	.readings {
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -847,8 +807,7 @@
 		font-weight: 600;
 	}
 
-	/* The two closing sections side by side: the wider half is the one with
-	   five boxes in it. */
+	/* Wider half holds the five boxes. */
 	.pair {
 		display: grid;
 		grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
@@ -858,8 +817,7 @@
 
 	/* --- narrow ---------------------------------------------------------- */
 
-	/* The label column is the first thing to go: a section's title reads over
-	   its content as happily as beside it. */
+	/* Label column goes first — a title reads fine over its content too. */
 	@media (max-width: 60rem) {
 		.row,
 		.banner,

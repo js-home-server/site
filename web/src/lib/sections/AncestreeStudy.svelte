@@ -2,19 +2,12 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import StudyHead from '$lib/components/StudyHead.svelte';
 
-	/* Ancestree's own study. This one is a published library rather than a
-	   system or a piece of research, so it is written as a datasheet: what it
-	   is, what it costs, what it was measured at, and what it is not for. Every
-	   figure comes from `docs/benchmarks/RESULTS.md` in the repo, which is the
-	   output of two notebooks that run end to end in a temp directory — so any
-	   number here can be re-run rather than taken on trust.
-
-	   Measured on ancestree 0.2.0, Python 3.12.12, macOS arm64. Absolute times
-	   are machine-specific; the ratios are what transfer. */
+	/* A published library, written as a datasheet not a case study. Every figure
+	   comes from `docs/benchmarks/RESULTS.md`, re-runnable, not just claimed.
+	   Measured on ancestree 0.2.0, Python 3.12.12, macOS arm64 — ratios travel, absolute times don't. */
 
 	const DEMO = 'https://js195.github.io/ancestree/assets/demo/interactive_pipeline.html';
 
-	/* The line at the top of the page that says what this is in one command. */
 	const SPEC = [
 		{ label: 'version', value: '0.2.0' },
 		{ label: 'python', value: '3.9 – 3.14' },
@@ -30,8 +23,7 @@
 		{ figure: '975', unit: 'tests', note: '169 unit and 806 adversarial, written against the docs as a spec' }
 	];
 
-	/* What happens between your `with` block ending and the transaction
-	   committing. The ms are per 4 MB of CSV, from the timing notebook. */
+	/* What happens at block exit, before the commit. ms per 4 MB of CSV. */
 	const STAGES = [
 		{ name: 'chunk', detail: 'Gear rolling hash finds content-defined boundaries', ms: 148.965 },
 		{ name: 'compress', detail: 'zlib-6 on every chunk; a chunk that does not shrink is kept verbatim', ms: 147.81 },
@@ -65,8 +57,7 @@
 		}
 	];
 
-	/* The same 1% of bytes edited, in four different places. This is the spread
-	   that a single headline ratio hides. */
+	/* Same 1% of bytes edited four ways — the spread a single ratio hides. */
 	const PATTERNS = [
 		{ name: 'insert', ratio: 23.19 },
 		{ name: 'delete', ratio: 26.27 },
@@ -74,8 +65,7 @@
 		{ name: 'scattered overwrite', ratio: 3.94 }
 	];
 
-	/* Three orders of magnitude apart, which is the only thing a caller has to
-	   know to place a call correctly. */
+	/* Three orders of magnitude apart — all a caller needs to know to place a call. */
 	const COSTS = [
 		{
 			tier: 'Microseconds',
@@ -106,9 +96,7 @@
 		}
 	];
 
-	/* The parts a data engineer would ask about before putting a store in a
-	   pipeline: what is guaranteed, what is checked, and what runs on every
-	   push. Coverage and the matrix are from the repo's own CI. */
+	/* What's guaranteed, what's checked, what runs on every push. From the repo's own CI. */
 	const SHIPPING = [
 		{
 			icon: 'shield',
@@ -136,8 +124,7 @@
 		}
 	];
 
-	/* The defects an independent suite found by reading the documentation as a
-	   specification. Two of them could lose data. */
+	/* What an independent suite found by treating the docs as spec. Two could lose data. */
 	const DEFECTS = [
 		{
 			severity: 'High',
@@ -179,14 +166,11 @@
 		{ term: 'Above 64 MiB', text: 'the chunker cuts at fixed offsets to keep huge ingests at C speed. Exact dedup survives, shift-resilience does not.' }
 	];
 
-	/* The bar chart's own scale: the widest stage is the full width, and every
-	   other bar is read against it. */
+	/* Widest stage = full width, everything else scales against it. */
 	const slowest = Math.max(...STAGES.map((stage) => stage.ms));
 	const widest = Math.max(...PATTERNS.map((pattern) => pattern.ratio));
 </script>
 
-<!-- A section's name, in the rail down the left of the study. A word rather
-     than a number: this is a datasheet, and the sections are its headings. -->
 <div class="study">
 	<!-- What it is, in one command and four numbers. -->
 	<section class="box banner">
@@ -336,8 +320,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		<StudyHead label="explorer" title="Every node, and everything recorded about it" lede="A real exported store, laid out by generation and coloured by step type. Click a node for what was recorded when it ran." />
 
 		<div class="demo">
-			<!-- The snapshot is a fully self-contained static page (no
-			     X-Frame-Options, no external assets), so it embeds directly. -->
+			<!-- Self-contained static page, no X-Frame-Options — embeds directly. -->
 			<iframe
 				class="embed"
 				src={DEMO}
@@ -474,24 +457,16 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 </div>
 
 <style>
-	/* A datasheet rather than a case study: a spec strip, then sections named
-	   in a rail down the left, then the measurements. .study, .box, .lede,
-	   .kicker, .thesis, .prose, .foot-note, .row, .intro, .spec, .limits,
-	   .card-item, .mark's base, .headline and .figure are shared across all
-	   four studies (app.css) — this file only keeps its own accent. */
+	/* Most classes here live in app.css (shared across all four studies) — this
+	   file only keeps its own accent. */
 	.study {
-		/* Dark enough to read on the white card — the site's amber is set for
-		   a black page. Clears 4.5:1 on this ground, which plain --amber
-		   (3.17:1) did not. */
+		/* Darkened for 4.5:1 on this white card — plain --amber only hit 3.17:1. */
 		--ink: var(--amber-ink);
 	}
 
-
-
 	.mark {
 		flex: none;
-		/* -ink: this icon is on the study's light ground and plain --amber
-		   measures 1.75:1 there. */
+		/* -ink: plain --amber is 1.75:1 on this light ground. */
 		color: var(--amber-ink);
 		font-size: var(--fs-base);
 	}
@@ -536,8 +511,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 
 	/* --- the code sample -------------------------------------------------- */
 
-	/* The API is the design, so it is quoted rather than described — dark, like
-	   the terminal it would be typed into. */
+	/* Quoted not described — dark, like the terminal it'd be typed into. */
 	.code {
 		margin: 0;
 		padding: 0.9rem 1rem;
@@ -566,8 +540,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		text-transform: uppercase;
 	}
 
-	/* Name and figure on one line, the bar between them, the sentence under —
-	   so the five stages are read as one scale rather than five boxes. */
+	/* Name, bar, figure, detail — five stages read as one scale, not five boxes. */
 	.bar {
 		display: grid;
 		grid-template-columns: 5.5rem minmax(0, 1fr) 4rem;
@@ -618,8 +591,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		gap: 0.5rem;
 	}
 
-	/* Read as a stack: each row is a layer, and the number says how far down
-	   the bytes had to fall before something caught them. */
+	/* Each row is a layer — the number is how far the bytes fell before something caught them. */
 	.layer {
 		display: grid;
 		grid-template-columns: auto minmax(0, 1fr) minmax(0, 12.5rem);
@@ -714,8 +686,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 
 	/* --- the demo --------------------------------------------------------- */
 
-	/* The explorer is a graph with a legend and a detail panel: it takes the
-	   card's whole width, and the note about the live version sits under it. */
+	/* Graph + legend + detail panel — takes the card's full width. */
 	.demo {
 		display: grid;
 		gap: 0.6rem;
@@ -838,9 +809,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		line-height: 1.4;
 	}
 
-	/* `closed`, not `fixed`: Tailwind ships a bare `.fixed` utility
-	   (position: fixed), and a component class of the same name loses to it —
-	   which stacked both chips into one box. */
+	/* `closed`, not `fixed`: Tailwind's bare `.fixed` utility wins the name clash. */
 	.severity,
 	.closed {
 		flex: none;

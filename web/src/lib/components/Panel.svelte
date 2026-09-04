@@ -1,19 +1,8 @@
 <script>
-	/* A labelled block. Every titled part of a dashboard section is one of these:
-	   the title is written once, what goes under it is the caller's business, and
-	   `tone` is the colour that reading is drawn in throughout — set here rather
-	   than on each mark inside, so a panel has one colour and nothing in it has to
-	   be told twice.
-
-	   `level` is the heading this panel's own label renders as, in document
-	   terms rather than visual ones — every /server route sits it directly under
-	   the route's own h2, which is what h3 (the default) is right for. A study's
-	   own sections are h2 as well (StudyPage.svelte renders the project name as
-	   the h1 above them), so a panel nested in one lands on the same h3. A panel
-	   sitting a document level deeper than that passes the level down instead, so
-	   the outline stays unbroken however deep the panel sits. The visual size is
-	   unaffected either way: --title-size/--title-color already carry that, set
-	   by whichever ancestor turns a nested panel down. */
+	/* A labelled block. `tone` sets the colour once here, not on each mark inside.
+	   `level` is the heading tag in document terms, not visual ones — h3 default
+	   fits directly under a route/study's h2; a deeper panel passes a higher
+	   level down to keep the outline unbroken. Visual size is unaffected either way (--title-size/--title-color). */
 	let { label, tone, level = 3, children } = $props();
 </script>
 
@@ -29,12 +18,8 @@
 		gap: 0.5rem;
 	}
 
-	/* What this box is, set to be read at a glance: a step under the section
-	   heading above it and a step over the labels on the readings inside it.
-	   A panel nested in another is a part of it rather than a peer, so the panel
-	   around it turns this down with --title-size and --title-color. Three
-	   selectors, not one: `level` (script) picks which heading tag actually
-	   renders, and the visual size stays the same whichever it is. */
+	/* A step under the section heading, a step over the reading labels inside.
+	   Three selectors since `level` (script) picks which heading tag renders — visual size stays the same regardless. */
 	h3,
 	h4,
 	h5 {

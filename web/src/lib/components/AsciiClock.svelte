@@ -1,14 +1,9 @@
 <script>
 	import { ticking } from '$lib/clock.svelte.js';
 
-	/* A live clock drawn the way the rest of this project's art is drawn: JetBrains
-	   Mono, one ink colour, digits doing the work. The other pieces are sampled
-	   off a photograph; this one has no photograph behind it, so its digits are
-	   generated straight from a seven-segment font instead -- each segment a
-	   block of the same '8' the photo-derived art treats as full ink.
-
-	   a..g name the segments the standard way: top, top-right, bottom-right,
-	   bottom, bottom-left, top-left, middle. */
+	/* Same look as the rest of the site's art (JetBrains Mono, one ink colour),
+	   but no photograph behind it — digits are generated from a seven-segment
+	   font instead. a..g name segments the standard way: top, top-right, bottom-right, bottom, bottom-left, top-left, middle. */
 	let { timeZone = 'UTC', seconds = true } = $props();
 
 	const DIGITS = {
@@ -28,12 +23,8 @@
 	const ROWS = 5;
 	const COLS = 3;
 
-	/* Where each segment's ink falls on a 3-wide x 5-tall grid, as [row, col]
-	   cells rather than a row of its own: a corner is one cell, not two, so the
-	   top bar's end cell IS the top-left vertical's first cell, not a separate
-	   row above it. Three cells down a side (rows 0-2 or 2-4) reads as the same
-	   weight of stroke as three along a bar -- which is what 1, 4 and 7 collapsed
-	   out of when the sides were one cell tall instead of sharing the corner. */
+	/* 3x5 grid, [row, col] cells. Corners are shared, not duplicated — a bar's end
+	   cell IS the vertical's first cell, so a 3-cell side reads as the same stroke weight as a 3-cell bar. */
 	const SEGMENTS = {
 		a: [[0, 0], [0, 1], [0, 2]],
 		f: [[0, 0], [1, 0], [2, 0]],
@@ -73,16 +64,12 @@
 	);
 
 	let chars = $derived(timeFormat.format(clock.now).split(''));
-	/* One text row per glyph row, every character's row of its own glyph joined
-	   side by side with a one-space gutter. */
+	/* One text row per glyph row, each character's row joined side by side with a one-space gutter. */
 	let lines = $derived(
 		Array.from({ length: ROWS }, (_, row) => chars.map((c) => glyph(c)[row]).join(' ')).join('\n')
 	);
 
-	/* Three columns a glyph, one gutter between them, no trailing gutter: the
-	   same "how wide is one cell" sum every other piece of art on the site
-	   works from, just counted from the character string here instead of
-	   measured off a generated grid. */
+	/* Same "cell width" sum every other art piece uses, counted from the character string instead of a generated grid. */
 	let cols = $derived(chars.length * 4 - 1);
 </script>
 
@@ -91,9 +78,7 @@
 </div>
 
 <style>
-	/* Sized off the box it sits in exactly like the photo-derived pieces: a
-	   character grid has one size, and that size is this container's own width
-	   divided by how many of the 0.6021em JetBrains Mono advances span it. */
+	/* Sized like the photo-derived pieces — container width divided by how many 0.6021em advances span it. */
 	.ascii-clock-frame {
 		container-type: inline-size;
 	}

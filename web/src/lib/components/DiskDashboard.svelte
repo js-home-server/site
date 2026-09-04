@@ -11,18 +11,14 @@
 	import { bucket, last, statsRow } from '$lib/stats.js';
 	import { volume } from '$lib/storage.js';
 
-	/* One drive's whole page. nvme and ssd are the same shape twice over, so
-	   they pass their entry from $lib/storage.js's DISKS in rather than each
-	   writing this out: `id` is the prefix the drive's own series are named
-	   with, `tone` the colour it is drawn in. */
+	/* One drive's page. nvme and ssd both pass their DISKS entry in rather than duplicating this. */
 	let { id, label, tone } = $props();
 
 	let snapshot = $derived(server.snapshot);
 	let series = $derived(server.series);
 	let month = $derived(server.month);
 
-	/* Where the drive stands, which way it is going, and when that runs out.
-	   The capacity box and the horizon are the same object seen two ways. */
+	/* Capacity box and horizon are the same object, seen two ways. */
 	let vol = $derived(
 		volume({
 			id,
@@ -34,9 +30,7 @@
 		})
 	);
 
-	/* Read and write, a lane apiece. The two sit orders of magnitude apart, so
-	   the map normalises per row: a lane says when that stream was busy, not how
-	   it compares to the one under it. */
+	/* Read/write sit orders of magnitude apart, so the map normalises per row — busy vs. idle, not read vs. write. */
 	let io = $derived(
 		['Read', 'Write']
 			.map((direction) => ({
@@ -66,15 +60,12 @@
 	</div>
 
 	<div class="box" style={gridArea({ col: 3, row: 1, w: 2, h: 2 })}>
-		<!-- Bounded to this drive's own floor and year-out projection rather than
-		     a fixed 0-100%, so the chart reads its own slope rather than fighting
-		     the whole drive for room. Fills its box on its own. -->
+		<!-- Bounded to this drive's own floor/projection, not a fixed 0-100% — reads its own slope instead of fighting for room. -->
 		<Horizon volume={vol} label="Used Space History &amp; Projection" />
 	</div>
 
 	<div class="box fill" style={gridArea({ col: 1, row: 2, w: 2, h: 2 })}>
-		<!-- Same fixed floor as the CPU's temperature trace: nothing here runs
-		     near ambient either. -->
+		<!-- Same fixed floor as the CPU's trace — nothing here runs near ambient either. -->
 		<Panel label="Temperature (°C)">
 			<Trace
 				lines={[{ id: 'temperature', points: series?.storage[id].temperature_c, tone }]}
@@ -89,8 +80,7 @@
 
 	<div class="box" style={gridArea({ col: 1, row: 4, w: 2 })}>
 		<Panel label="I/O Pulse">
-			<!-- Stretched to this drive's own busiest quarter-hour, so the key
-			     quotes that lane's own floor and ceiling in bytes a second. -->
+			<!-- Stretched to this drive's busiest quarter-hour — the key quotes that lane's own floor/ceiling. -->
 			<Heatmap rows={io} normalise="row" format={rate} note="no io history yet" />
 		</Panel>
 	</div>

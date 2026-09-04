@@ -1,24 +1,17 @@
-/* Geometry for the traces. Everything here is drawn into one 100 x 30 viewBox,
-   stretched to whatever box it is given, so a caller only ever deals in the
-   series' own units. */
+/* Geometry for the traces. Everything draws into one 100x30 viewBox, stretched
+   to whatever box it's given, so a caller only ever deals in the series' own units. */
 
 /* The viewBox the paths below are written in. */
 export const VIEW = { width: 100, height: 30 };
 
-/* Where a value sits vertically, in viewBox units. Used for the reference rules
-   and for the scale labels beside them, so a label and its line cannot drift. */
+/* Value's vertical position, in viewBox units. Shared by rules and their labels so the two can't drift. */
 export const markY = (value, [lo, hi]) =>
 	VIEW.height - ((value - lo) / (hi - lo || 1)) * VIEW.height;
 
-/* A trace closed down to the floor and back, which is the shading under it. Both
-   charts that draw one take it from here, so the fill cannot part company with
-   the line it belongs to. */
+/* Closes a trace down to the floor and back — the shading under it, sharing the same path so fill can't drift from the line. */
 export const area = (d) => (d ? `${d} L${VIEW.width},${VIEW.height} L0,${VIEW.height} Z` : '');
 
-/* The series' own range with a little air above and below it, for a chart with no
-   scale of its own to be drawn against. The floor holds at zero for a series that
-   never goes under it: a negative percentage is not a reading anything can take,
-   and an axis that offers one is an axis nobody can read. */
+/* Series' own range plus a little air, for a chart with no fixed scale. Floor holds at zero if the series never goes negative — a negative percentage means nothing. */
 export function headroom(values) {
 	const min = Math.min(...values);
 	const max = Math.max(...values);
@@ -28,15 +21,10 @@ export function headroom(values) {
 	return [min >= 0 && lo < 0 ? 0 : lo, max + pad];
 }
 
-/* An SVG path over a [unixSeconds, value] series, x by timestamp so a gap in
-   collection reads as a gap rather than being closed up. Empty string for
-   anything too short to draw, which the callers use as "nothing to show".
-
-   `domain` is [lo, hi] in the series' own units — pass it wherever the reading
-   means something against a fixed scale (0-100% of a CPU) so the trace's height
-   is that reading rather than a shape normalised out of it. Without one, y is
-   scaled by headroom() above, which is what a thumbnail sparkline wants: a flat
-   trace still shows its shape and spikes still have somewhere to go. */
+/* SVG path over a [unixSeconds, value] series, x by timestamp so a collection
+   gap reads as a gap. Empty string ("nothing to show") if too short to draw.
+   `domain` is [lo, hi] for a fixed scale (0-100% CPU); without one, y scales via
+   headroom() — what a sparkline wants, so a flat trace still shows shape. */
 export function chart(points, domain) {
 	if (!Array.isArray(points) || points.length < 2) return '';
 

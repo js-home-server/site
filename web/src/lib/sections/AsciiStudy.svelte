@@ -5,15 +5,10 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import StudyHead from '$lib/components/StudyHead.svelte';
 
-	/* ascii-art's own study. The other three projects are shown through
-	   screenshots and figures; this one can be shown as itself — the renders
-	   below are the tool's actual HTML output, text in the page rather than a
-	   picture of text, which is the whole argument for the format existing.
-
-	   So the study is written the way the program is used: sections named as
-	   flags, and the output doing the talking. Everything else on this site —
-	   the bull on the landing page, the astronaut, the ship, the radio dish —
-	   came out of the same binary. */
+	/* Unlike the other three studies, this one can be shown as itself: the
+	   renders below are the tool's real HTML output, text not a picture of
+	   text. Sections are named as flags. Everything on this site — the bull,
+	   the astronaut, the ship, the radio dish — came out of the same binary. */
 
 	const SPEC = [
 		{ label: 'language', value: 'C11' },
@@ -23,8 +18,7 @@
 		{ label: 'warnings', value: 'clean at -Wall -Wextra -Wpedantic' }
 	];
 
-	/* The three modes, on one source, at the same width. The flags are the
-	   caption: a reader should be able to reproduce any panel. */
+	/* Same source, same width. Flags double as the caption — reproducible by design. */
 	const MODES = [
 		{
 			id: 'mono',
@@ -70,8 +64,7 @@
 		{ file: 'config.c', role: 'defaults, arguments, validation' }
 	];
 
-	/* What quantisation buys in the HTML encoder. Adjacent cells sharing a
-	   foreground become one span, so coarser levels mean fewer nodes. */
+	/* Adjacent same-foreground cells merge into one span — coarser levels, fewer nodes. */
 	const QUANT = [
 		{ knob: '--gray-levels 4', spans: '3,056', size: '95 K' },
 		{ knob: '--gray-levels 8', spans: '5,313', size: '149 K' },
@@ -81,8 +74,7 @@
 		{ knob: '--color-step 64', spans: '6,283', size: '256 K' }
 	];
 
-	/* The properties that make the art a build artifact rather than a file
-	   someone once made and now cannot reproduce. */
+	/* What makes the art a build artifact, not a file nobody can reproduce. */
 	const BUILD = [
 		{ term: 'Deterministic', text: 'the same inputs produce byte-identical output. No timestamps, no ordering by hash iteration, no seed, so a regenerated component is a no-op in git unless the source or the flags changed.' },
 		{ term: 'One command', text: '`make site` re-renders all five components straight into the paths the pages import. The flags for each live in the Makefile beside the reason for them.' },
@@ -97,7 +89,6 @@
 	];
 </script>
 
-<!-- A section's name, written the way it is passed. -->
 <div class="study">
 	<!-- What it is, and the command that does it. -->
 	<section class="box banner">
@@ -333,7 +324,7 @@ test_html_proportions();`}</code></pre>
 		</div>
 	</section>
 
-	<!-- Why the art on this site is a build output rather than a keepsake. -->
+	<!-- The art is a build output, not a keepsake. -->
 	<section class="box row">
 		<div>
 			<StudyHead label="make site" title="The art is a build artifact" tagClass="flag" />
@@ -374,16 +365,10 @@ test_html_proportions();`}</code></pre>
 </div>
 
 <style>
-	/* The study wears the program's own clothes: sections named as flags, the
-	   page kept grey, and the renders the only colour in it. .study, .box,
-	   .lede, .thesis, .prose, .foot-note, .arrow, .stage's card, .row, .intro,
-	   .spec, .limits, .scope and .mark's base are shared across all four
-	   studies (app.css) — nothing here needs its own accent, so .study
-	   carries no local rule at all. */
+	/* Most classes here live in app.css (shared across all four studies) —
+	   nothing here needs its own accent, so .study carries no local rule. */
 
-
-	/* The section's name, written as the flag it is. Global: the span itself
-	   is rendered by StudyHead now, not this component's own template. */
+	/* Global: rendered by StudyHead, not this component's own template. */
 	:global(.flag) {
 		justify-self: start;
 		color: var(--color-foreground);
@@ -394,8 +379,7 @@ test_html_proportions();`}</code></pre>
 	}
 
 
-	/* Same treatment as the shared .prose/.foot-note code (app.css), extended
-	   to the other places this study sets code inline. */
+	/* Same treatment as the shared code style (app.css), just extended here. */
 	figcaption code,
 	.module code,
 	.quant code {
@@ -407,8 +391,7 @@ test_html_proportions();`}</code></pre>
 
 	.mark {
 		flex: none;
-		/* -ink: this icon is on the study's light ground and plain --amber
-		   measures 1.75:1 there. */
+		/* -ink: plain --amber is 1.75:1 on this light ground. */
 		color: var(--amber-ink);
 		font-size: var(--fs-base);
 	}
@@ -438,8 +421,7 @@ test_html_proportions();`}</code></pre>
 
 
 
-	/* The photograph, small and beside the claim — it is the input, not the
-	   work. Everything below it is what the program made of it. */
+	/* Small, beside the claim — it's the input, not the work. */
 	.source {
 		margin: 0;
 	}
@@ -475,9 +457,7 @@ test_html_proportions();`}</code></pre>
 		margin: 0;
 	}
 
-	/* The render's own box. It carries no background of its own: these are
-	   inverted renders, dark glyphs on a light field, and the card is that
-	   field — a panel behind them would be a second one. */
+	/* No background of its own — the card already is the light field these dark glyphs sit on. */
 	.art {
 		display: grid;
 		place-items: center;
@@ -695,8 +675,7 @@ test_html_proportions();`}</code></pre>
 			grid-template-columns: minmax(0, 1fr);
 		}
 
-		/* The photograph is the input, not the exhibit: it does not get the
-		   whole column just because the columns collapsed. */
+		/* Input, not the exhibit — no full column just because it collapsed. */
 		.source {
 			max-width: 14rem;
 		}

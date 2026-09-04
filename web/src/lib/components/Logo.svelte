@@ -1,9 +1,7 @@
 <script>
 	import { logos } from '$lib/logos.js';
 
-	/* A tool's mark, set at the size of the type it stands in front of. Decorative
-	   — the name is written beside it — and nothing is drawn for a tool with no
-	   mark to draw. */
+	/* Decorative — the name is written beside it. Nothing drawn if there's no mark. */
 	let { name } = $props();
 </script>
 

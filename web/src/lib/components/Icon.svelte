@@ -1,9 +1,7 @@
 <script>
 	import { icons } from '$lib/icons.js';
 
-	/* A generic outline mark, set at the size of whatever it stands in — 1em,
-	   the same contract Logo.svelte has for brand marks. Decorative: everything
-	   one of these sits beside is also written out in words. */
+	/* 1em, same contract as Logo.svelte. Decorative — always paired with words. */
 	let { name } = $props();
 </script>
 

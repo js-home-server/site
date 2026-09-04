@@ -1,11 +1,7 @@
 <script>
 	import { RANGE } from '$lib/server.svelte.js';
 
-	/* The x axis every graph on the dashboard shares: the far end of the window on
-	   the left, the present on the right, which is the direction they are read in,
-	   and the halfway mark between them. The span comes from the same constant the
-	   request uses, and the mark is counted off it, so no chart can label a window
-	   the request did not make or spell one two ways. */
+	/* Shared x axis: window start, midpoint, now. Span comes from the same constant the request uses, so no chart can label a window it didn't get. */
 	let { range = RANGE } = $props();
 
 	let stops = $derived.by(() => {
@@ -33,11 +29,8 @@
 		text-transform: uppercase;
 	}
 
-	/* The three stops measure 91px of text; under a box that can hold them with air
-	   between, they run together into one word and the axis stops being readable at
-	   all. It falls back to its two ends, which is what it has to say. No chart on
-	   the dashboard is currently this narrow — this is here because the axis is
-	   shared and a caller can put it in a box of any width. */
+	/* The three stops need ~91px of air; below that they run together into one
+	   word. Falls back to the two ends. Nothing on the dashboard is this narrow yet, but the axis is shared and any caller could be. */
 	@container (max-width: 7rem) {
 		.window span:not(:first-child):not(:last-child) {
 			display: none;

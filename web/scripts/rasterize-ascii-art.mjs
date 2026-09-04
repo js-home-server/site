@@ -1,26 +1,16 @@
 #!/usr/bin/env node
 /* Flattens the three landing-page ASCII art components (bull, astronaut,
-   radio dish) from a few thousand colour spans each into one <img> apiece --
-   see the F11 defect log entry. Not part of `npm run build`: this is a dev
-   tool you run by hand, same footing as ../asciiArt's own Makefile, and it
-   only has anything to do when one of those three files still holds the
-   span-per-run markup `make site` (in ../asciiArt) regenerates it back to.
+   radio dish) from thousands of colour spans each into one <img> apiece (F11).
+   Dev tool, not part of `npm run build` — run by hand whenever `make site` (in
+   ../asciiArt) regenerates one of these back to span markup.
 
    Usage:  npx --yes -p playwright node scripts/rasterize-ascii-art.mjs
-   Needs:  Chromium via Playwright (the npx line above fetches it into a
-           temp cache, not a project dependency) and `cwebp` on PATH
-           (brew install webp) -- falls back to PNG if cwebp is missing.
+   Needs:  Chromium via Playwright (fetched by the npx line, not a project
+           dependency) and `cwebp` on PATH (brew install webp; falls back to PNG).
 
-   What it does, per component:
-     1. Skip if the file has already been rasterised (no <pre> left in it).
-     2. Otherwise pull its <style> and <div class="ascii-art"><pre>...</pre>
-        markup out, load them in a headless page at a fixed font-size with
-        the exact production font (so glyph metrics match), and screenshot
-        just the <pre> -- that's the "render it once" the fix calls for.
-     3. Re-encode to WebP (falls back to PNG) and drop the asset in
-        lib/assets/ascii/, then overwrite the component with the tiny
-        img-based version, carrying forward its natural width/height so
-        the aspect ratio survives without another render pass. */
+   Per component: skip if already rasterised, else screenshot the <pre> at a
+   fixed font-size with the production font, re-encode to WebP, and overwrite
+   the component with the tiny img-based version at its natural width/height. */
 
 import { chromium } from 'playwright';
 import { execFileSync } from 'node:child_process';
@@ -99,8 +89,7 @@ ${style}
 	await pre.screenshot({ path: pngPath, omitBackground: true });
 	await page.close();
 
-	// PNG width/height live at fixed offsets in the IHDR chunk (bytes 16-23),
-	// read directly rather than shelling out to a platform-specific tool.
+	// PNG width/height live at fixed offsets in the IHDR chunk — read directly instead of shelling out.
 	const head = readFileSync(pngPath).subarray(16, 24);
 	const width = head.readUInt32BE(0);
 	const height = head.readUInt32BE(4);
@@ -122,14 +111,9 @@ ${style}
 	}
 
 	const component = `<script>
-	/* Rasterised by scripts/rasterize-ascii-art.mjs -- see F11 in the defect
-	   log. Was a few thousand one-character <span>s; this file's job now is
-	   just to hand the page a single image and its natural size, so whatever
-	   sizing formula the page already has (font-size/cqw tricks replaced by
-	   plain width/height or aspect-ratio) keeps working unchanged.
-	   Regenerate if ../asciiArt's \`make site\` (or the matching single
-	   target) overwrites this file back to span markup: rerun the script
-	   above, which detects that and redoes the raster automatically. */
+	/* Rasterised by scripts/rasterize-ascii-art.mjs (F11) — was a few thousand
+	   one-character spans. If asciiArt's \`make site\` overwrites this back to
+	   span markup, rerun the script above; it detects that and re-rasterises. */
 	import art from '$lib/assets/ascii/${assetFile}';
 </script>
 

@@ -15,14 +15,10 @@
 	let series = $derived(server.series);
 	let month = $derived(server.month ?? server.series);
 
-	/* The one band of the three Memory History stacks that reads as "RAM usage"
-	   on its own — the other two, cache and free, are how the rest of it is
-	   spent rather than how much of it is. */
+	/* Of the three memory bands, only "used" reads as RAM usage on its own — cache/free describe how it's spent, not how much. */
 	let ramUsed = $derived(memoryBands(series).find((band) => band.id === 'used')?.points ?? []);
 
-	/* Both drives at their current share and size. The pages under nvme and ssd
-	   read the same volumes for their own history; only the headline is wanted
-	   here. */
+	/* Current share and size only — /nvme and /ssd read the same volumes for their own history. */
 	let volumes = $derived(
 		DISKS.map((disk) =>
 			volume({
@@ -95,8 +91,7 @@
 		</Panel>
 	</div>
 
-	<!-- Both drives at a glance; the pages under nvme and ssd carry the history
-	     each of these is a single reading from. -->
+	<!-- Both drives at a glance — /nvme and /ssd carry the history behind each reading. -->
 	<div class="box fill" style={gridArea({ col: 1, row: 4, w: 2 })}>
 		<Panel label="Storage Overview">
 			<div class="volumes">
@@ -135,8 +130,7 @@
 </div>
 
 <style>
-	/* Whatever a headline box holds, centred in the room the panel's title
-	   leaves it. More than one reading spreads across that room instead. */
+	/* Centred in the room the panel title leaves — multiple readings spread across it instead. */
 	.center {
 		display: flex;
 		flex: 1;
@@ -154,8 +148,7 @@
 		gap: 0.4rem;
 	}
 
-	/* Set in the reading's own case rather than the page's small caps: °C, ms
-	   and µs are unit symbols and are wrong in any other. */
+	/* Own case, not the page's small caps — °C, ms, µs are wrong in any other. */
 	.range {
 		color: var(--text-dim);
 		font-family: var(--font-mono);
@@ -164,9 +157,7 @@
 		letter-spacing: 0.08em;
 	}
 
-	/* .box.fill (Dashboard.svelte) stretches the panel to the box; this is the
-	   next link in that chain, so the drives space out down the room they are
-	   given rather than stacking at a fixed gap that only fits a tall box. */
+	/* Next link in .box.fill's chain (Dashboard.svelte) — drives space out to fill the room instead of stacking at a fixed gap. */
 	.volumes {
 		display: flex;
 		flex: 1;

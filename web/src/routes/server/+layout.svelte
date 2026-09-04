@@ -23,20 +23,16 @@
 		{ label: 'Containers', href: '/server/containers/' }
 	];
 
-	/* Bars in the rail's uptime strip: a much narrower box than any dashboard
-	   heatmap, so fewer of them read clean. */
+	/* Fewer bars than a dashboard heatmap — the rail is a much narrower box. */
 	const UPTIME_BARS = 48;
 
-	/* Polled here rather than in any one route, so paging between them doesn't
-	   restart the fetch cycle — the layout outlives every child page under it. */
+	/* Polled here, not per-route, so paging between routes doesn't restart the fetch cycle. */
 	$effect(watch);
 
 	let snapshot = $derived(server.snapshot);
 	let online = $derived(snapshot?.availability.server_status === 'online');
 
-	/* The status series is 1 for a poll the machine answered and 0 for one it did
-	   not: UptimeStrip buckets it into bars, and this counts it outright for the
-	   incident line above the strip. */
+	/* 1 = answered, 0 = didn't. UptimeStrip buckets it into bars; this counts it outright for the incident line. */
 	let uptime = $derived(server.series?.availability.status ?? []);
 	let incidents = $derived(outages(uptime));
 	let hours = $derived(online ? uptimeHours(snapshot?.availability.uptime_seconds) : null);
@@ -47,15 +43,9 @@
 
 	{#snippet rail()}
 		<div class="rail-box status">
-			<!-- Not a heading: this rail renders inside <aside>, ahead of the
-			     page's own <h1> (Dashboard.svelte) in source order, so an <h2>
-			     here put a heading before the document's first one. A caption on
-			     a readout, same as .rail-box .note below it and every other
-			     .eyebrow label on the site that isn't titling a section. -->
+			<!-- Not a heading — this renders ahead of the page's own <h1> in source order, so an <h2> here would jump the doc outline. -->
 			<p class="eyebrow">Status</p>
-			<!-- role="status"/aria-live: a state flip is worth announcing, and it
-			     only fires on a real flip — online and incidents both come off a
-			     5-minute-stepped series, not the 30s snapshot poll. -->
+			<!-- aria-live fires only on a real flip — online/incidents come off a 5-min-stepped series, not the 30s poll. -->
 			<p class="figure verdict" class:down={!online} role="status" aria-live="polite">
 				<i class="dot" aria-hidden="true"></i>{online ? 'Healthy' : 'Unreachable'}
 			</p>
@@ -83,10 +73,9 @@
 
 	{#snippet foot()}
 		<span class="eyebrow">Last updated</span>
-		<!-- The stamp the snapshot came with, not the clock: this says how fresh
-		     the numbers above are, which is not the same as what time it is. -->
+		<!-- The snapshot's own stamp, not the clock — how fresh the numbers are, not what time it is. -->
 		<span class="mono">{stamp(snapshot?.generated_at)}</span>
-		<!-- Off the site's nav, so this is the only way back to it. -->
+		<!-- Off the site nav — the only way back. -->
 		<ActionLink direction="back" href="/">joshuasmith</ActionLink>
 	{/snippet}
 </Dashboard>
@@ -104,9 +93,7 @@
 		margin-top: 0.5rem;
 	}
 
-	/* The two readings stood above the rail's nav: the same card vocabulary
-	   every route's own boxes wear, sized for the rail's own width rather
-	   than the page's. */
+	/* Same card vocabulary as every route's boxes, sized for the rail's width instead. */
 	.rail-box {
 		padding: 0.9rem 1rem;
 		border: 1px solid var(--color-border);

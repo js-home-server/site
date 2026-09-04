@@ -1,9 +1,5 @@
 export const prerender = true;
 
-/* Every prerendered route emits <route>/index.html rather than <route>.html —
-   the shape every static host serves for a clean URL with no rewrite rule of
-   its own, which is not something to depend on since this site's own host
-   (see the "This server" case study) is plain Caddy with no such rule. Every
-   internal link has its own trailing slash to match, so there is no redirect
-   hop either. */
+/* Emits <route>/index.html, not <route>.html — the shape a clean URL needs
+   with no rewrite rule (this site's Caddy host has none). Internal links carry the trailing slash too, so no redirect hop. */
 export const trailingSlash = 'always';

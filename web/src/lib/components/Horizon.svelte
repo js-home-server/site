@@ -5,43 +5,30 @@
 	import Panel from './Panel.svelte';
 	import Placeholder from './Placeholder.svelte';
 
-	/* Where one volume has been and where that puts it. `volume` is shaped by
-	   $lib/storage.js: it carries its own percent series, its current size, and the
-	   rate it is filling.
-
-	   One volume and not a list of them, because both axes are narrowed to its own
-	   range: a second trace drawn against a scale fitted to the first would be
-	   somewhere it does not belong. Two drives compared is the pair of these the
-	   storage section stands side by side. `label` names which one, since a box
-	   standing apart from the other has to say that itself. */
+	/* One volume, not a list: both axes fit its own range, so a second trace on
+	   the same scale would sit somewhere it doesn't belong. Compare two drives
+	   by standing two of these side by side instead. `volume` is shaped by $lib/storage.js. */
 	let { volume = null, label = `${MONTH_RANGE} used space history & projection` } = $props();
 
 	const DAY = 86_400;
 	const MONTH = 30.44 * DAY;
 
-	/* Each half of the axis, back and forward alike: the divider sits in the
-	   middle and a slope reads the same either side of it. */
+	/* Same span back and forward — divider sits in the middle, a slope reads the same either side. */
 	const SPAN = 12 * MONTH;
 
-	/* One dot per bucket rather than per sample: the series steps every two hours,
-	   which is more marks than a line this wide can show apart. */
+	/* One dot per bucket, not per sample — the series steps every two hours, too many marks for this width. */
 	const HISTORY_POINTS = 24;
 
-	/* The projection is straight in time but the axis is not: sampled rather than
-	   drawn end to end, or a line that should curve upward toward the ceiling
-	   would cut the corner as a chord instead. */
+	/* Sampled, not drawn end to end — the axis isn't linear, so a straight projection needs points to curve through. */
 	const PROJECTION_POINTS = 24;
 
-	/* Nothing is drawn from a single reading: one point is a position, not a
-	   history, and it has no slope to carry forward. */
+	/* One point is a position, not a history — no slope to carry forward. */
 	let disk = $derived(volume?.points?.length > 1 ? volume : null);
 
-	/* Everything is measured from the last reading the API returned, not from the
-	   clock: that is where the history ends and the projection starts. */
+	/* Measured from the API's last reading, not the clock — that's where history ends and projection starts. */
 	let now = $derived(disk ? disk.points.at(-1)[0] : 0);
 
-	/* The chart is drawn at the size it is rendered, so a dot is round and a dash
-	   is the same length wherever it falls. */
+	/* Drawn at render size, so a dot stays round and a dash stays constant length. */
 	let width = $state(0);
 	let height = $state(0);
 
@@ -51,19 +38,13 @@
 		height: Math.max(0, height - PAD.top - PAD.bottom)
 	});
 
-	/* Where the axis stops reading as a ruler and starts reading as a horizon: inside
-	   this many seconds of now, a day costs roughly its own width; beyond it, a day
-	   costs less the further out it falls. The history is a month, so a knee of a
-	   few days leaves that month legible without giving the distant projection the
-	   same width a mostly-empty year would otherwise get. */
+	/* Inside this many seconds of now a day costs its own width; beyond it, less
+	   the further out — keeps the month of real history legible without wasting
+	   width on a mostly-empty year. */
 	const LOG_KNEE = 4 * DAY;
 	const LOG_SPAN = Math.log1p(SPAN / LOG_KNEE);
 
-	/* Seconds either side of now, to a fraction of the axis and then to pixels. Now
-	   is the middle; anything past the ends of the window sits on them. Symmetric
-	   log rather than linear, so the run of history and the near end of a
-	   projection sit where the resolution is, and a slow drive's ceiling years out
-	   still lands on the chart instead of running off the scale needed to show it. */
+	/* Symmetric log, not linear — near-now stays legible and a slow drive's distant ceiling still fits on the chart. */
 	const along = (seconds) => {
 		const clamped = Math.max(-SPAN, Math.min(SPAN, seconds));
 		const reach = Math.log1p(Math.abs(clamped) / LOG_KNEE) / LOG_SPAN;
@@ -72,24 +53,14 @@
 
 	let x = $derived((seconds) => PAD.left + along(seconds) * plot.width);
 
-	/* Where the volume is headed, as a share of itself, so many seconds out. The
-	   ceiling of the y axis and the dotted line that reaches it are the same
-	   extrapolation and are worked out once. Null for a volume that is not filling,
-	   or does not yet know how big it is: there is no line to draw, and flat dots
-	   to the horizon would claim it stays exactly as it is, which is not what the
-	   numbers say. */
+	/* Null when a volume isn't filling or doesn't know its size yet — better no line than a flat one implying it stays put. */
 	let project = $derived(
 		disk?.growthPerDay > 0 && disk.totalNow
 			? (seconds) => ((disk.usedNow + (disk.growthPerDay * seconds) / DAY) / disk.totalNow) * 100
 			: null
 	);
 
-	/* The low and high the axis is drawn against: the floor the data has actually
-	   touched, and where a year of the current rate puts it — both with a tenth of
-	   headroom so a trace never sits flush on the frame. A volume with nothing to
-	   project has no year-out point to reach for, so the ceiling falls back to the
-	   highest the history itself has touched — still the volume's own range rather
-	   than a single repeated reading. */
+	/* Floor = lowest touched, ceiling = a year out at the current rate (or the history's own high if there's nothing to project). 10% headroom either way. */
 	let yDomain = $derived.by(() => {
 		if (!disk) return [0, 100];
 
@@ -107,10 +78,7 @@
 		return PAD.top + (1 - (level - lo) / (hi - lo || 1)) * plot.height;
 	});
 
-	/* The past, thinned to a readable number of marks, the line that joins them,
-	   and the projection carrying on from the last of them. The projection stops at
-	   the ceiling rather than running along it: where it meets 100% is when the
-	   volume is full. */
+	/* Projection stops at 100%, not the axis ceiling — that's the moment the volume is actually full. */
 	let trace = $derived.by(() => {
 		if (!disk) return null;
 
@@ -136,24 +104,18 @@
 		};
 	});
 
-	/* The same marks either side of now, so the two halves can be read against
-	   each other. Years once a count of months stops being a length anyone
-	   pictures. */
+	/* Same marks either side of now, so the two halves compare directly. Switches to years once months stop being picturable. */
 	const TICK_MONTHS = 3;
 
 	const monthLabel = (months) => (months >= 12 ? `${months / 12}y` : `${months}m`);
 
-	/* Counted out from the divider, so the two halves are each other's mirror
-	   whatever the span is set to. */
+	/* Counted out from the divider, so the halves mirror each other whatever SPAN is. */
 	const steps = Array.from(
 		{ length: Math.floor(SPAN / MONTH / TICK_MONTHS) },
 		(_, i) => (i + 1) * TICK_MONTHS
 	);
 
-	/* A fixed interval in time bunches up under a log axis the further it runs from
-	   now, so past a point two labels land closer than either is wide. Dropped
-	   rather than shrunk or rotated: a tick with nothing to say is better than one
-	   nobody can read. */
+	/* Fixed intervals bunch up on a log axis — dropped rather than shrunk, since an unreadable tick says nothing anyway. */
 	const MIN_TICK_GAP = 34;
 
 	let kept = $derived.by(() => {
@@ -174,9 +136,7 @@
 		...kept.map((m) => ({ at: m * MONTH, label: `+${monthLabel(m)}` }))
 	]);
 
-	/* The gutter's own rules: an even five-way split of `yDomain`, the same way the
-	   fixed 0-100% scale every other percent chart on the page draws was always
-	   just an even split of its own (fixed) domain. */
+	/* Even five-way split of `yDomain`, same idea as every fixed 0-100% chart's gridlines, just against a domain that moves. */
 	let yTicks = $derived.by(() => {
 		const [lo, hi] = yDomain;
 		return Array.from({ length: 5 }, (_, i) => lo + ((hi - lo) * i) / 4);
@@ -185,12 +145,10 @@
 
 {#if trace}
 	<div class="horizon">
-		<!-- The window the series was asked for, read from the request itself, so
-		     the title cannot claim a history that was never fetched. -->
+		<!-- Read from the request itself, so the title can't claim history that was never fetched. -->
 		<Panel {label}>
 			{#if disk.daysToFull}
-				<!-- The rate behind this date is the one on the legend row below, so it
-				     is not quoted twice. -->
+				<!-- The rate is on the legend row below — not quoted twice. -->
 				<strong class="figure" style:color={disk.tone}>{untilFull(disk.daysToFull)} to full</strong>
 			{:else}
 				<strong class="figure steady">No growth to project</strong>
@@ -198,8 +156,7 @@
 		</Panel>
 
 		<div class="plot">
-			<!-- Placed rather than spread: `yDomain` moves with the volume, so a label
-			     has to sit level with the rule it names. -->
+			<!-- Placed, not spread — `yDomain` moves, so a label must sit level with the rule it names. -->
 			<div class="axis">
 				{#each yTicks as level (level)}
 					<span class="tick" style="top: {y(level)}px">{pct(level)}</span>
@@ -218,8 +175,7 @@
 					{#if trace.projection}
 						<path class="trace projection" d={trace.projection} />
 					{/if}
-					<!-- Unkeyed: two buckets can land on the same pixel at the far end of
-					     a log axis, so a mark's position is not an identity. -->
+					<!-- Unkeyed — two buckets can share a pixel at the far end of a log axis. -->
 					{#each trace.marks as mark}
 						<circle cx={mark.x} cy={mark.y} r="1.8" />
 					{/each}
@@ -253,8 +209,7 @@
 		height: 100%;
 	}
 
-	/* The one place a figure is a sentence rather than a number, so it is the one
-	   that takes the small caps the section headings are set in. */
+	/* The one figure that's a sentence, not a number — gets the heading's small caps. */
 	.horizon strong {
 		text-transform: uppercase;
 	}
@@ -263,15 +218,12 @@
 		color: var(--text-dim);
 	}
 
-	/* The same gutter and floor every other graph keeps, with a row under the
-	   drawing for the time axis. */
+	/* Same gutter/floor as every other graph, plus a row for the time axis. */
 	.plot {
 		grid-template-rows: minmax(4rem, 1fr) auto;
 	}
 
-	/* Where the measured part ends and the guess begins. Brighter than the grid it
-	   crosses rather than a heavier dash, so every dotted line keeps the one
-	   rhythm. */
+	/* Where measured ends and guessed begins. Brighter than the grid, not a heavier dash, so dotted lines keep one rhythm. */
 	.divider {
 		position: absolute;
 		width: 1px;
@@ -279,15 +231,12 @@
 		background-image: var(--dot-column);
 	}
 
-	/* Heavier than the traces on the graphs above: this one is a month of history
-	   read at a glance rather than a line in a stack of them. */
+	/* Heavier than other graphs' traces — a month of history read at a glance, not a line in a stack. */
 	.trace {
 		stroke-width: 1.5;
 	}
 
-	/* Dotted, because it has not happened. Its own rhythm rather than the shared
-	   dash, which is there to tell two lines apart — this is one line saying that
-	   half of it is a guess. */
+	/* Dotted because it hasn't happened yet — one line saying half of it is a guess. */
 	.projection {
 		stroke-dasharray: 1 4;
 		stroke-linecap: round;
