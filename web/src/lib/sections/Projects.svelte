@@ -21,10 +21,9 @@
 	const PROJECTS = [
 		{
 			name: 'Ancestree',
-			year: 2026,
 			blurb:
 				'Ten variations in, you are looking at final_v2_REAL.csv with no record of what produced it. Ancestree puts a pipeline’s DAG, metadata and artifact bytes in one SQLite file, no server needed. It stores 3.93× less and reruns 136× faster, across 975 tests. It ships on PyPI as a zero-dependency MIT library supporting Python 3.9–3.14. Every push runs Ruff, strict mypy and pytest across six Python releases, with 92.97% line coverage.',
-			tools: ['Python', 'SQL', 'Git'],
+			tools: ['Python', 'SQL'],
 			url: 'https://github.com/JS195/ancestree',
 			pypi: 'https://pypi.org/project/ancestree-track/',
 			docs: 'https://js195.github.io/ancestree/',
@@ -35,7 +34,6 @@
 		},
 		{
 			name: 'This server',
-			year: 2026,
 			blurb:
 				'A machine publishing a live feed about itself is publishing facts about a house. This one runs Debian behind an outbound tunnel, where what reaches the public API is a checked-in list rather than whatever the exporters expose. It draws 3.0 W and opens no ports. Eight containers run on a four-core, 8 GB Debian 13 host, and the public API exposes three GET-only routes. Commit-tagged deploys health-check for 30 seconds and roll back both the stack and crontab on failure.',
 			tools: ['Svelte', 'JavaScript', 'Docker', 'Linux', 'Python'],
@@ -48,7 +46,6 @@
 		},
 		{
 			name: 'Crypto orderflow',
-			year: 2026,
 			blurb:
 				'A cross-sectional strategy needs order flow aggregated across many assets at once, and the vendors that sell it retain days rather than years of something that cannot be backfilled after the fact. That need for a longer, wider archive is what led me to build the collector myself: 11.5M rows a day off ten venue feeds, folded to 108 MB of Parquet. Its 583 streams cover 100 base assets across six exchanges with 1.0 ms median writer lag. The archive now backs a market-neutral strategy with 2.39 net Sharpe over 6.5 years and 1.08 walk-forward; shuffled-signal and lookahead checks test the result.',
 			tools: ['Python', 'Docker', 'Polars', 'NumPy'],
@@ -60,10 +57,9 @@
 		},
 		{
 			name: 'ascii-art',
-			year: 2025,
 			blurb:
 				'A photograph is a grid of pixels and a terminal is a grid of characters. A C renderer converts one to the other, with sampling, tone curve, glyph selection and encoding as separately tested stages. It runs in 13 ms and draws every image on this site. Its seven modules comprise 1,300 lines of C, with one vendored dependency and clean builds under -Wall, -Wextra and -Wpedantic. Seventeen tests and 168 assertions cover the pipeline and output geometry; one Make target regenerates five site components byte-identically.',
-			tools: ['C', 'Git'],
+			tools: ['C'],
 			url: 'https://github.com/JS195/asciiArt',
 			proofLabel: 'In use',
 			proof: '13 ms to generate every image on this site',
@@ -79,14 +75,13 @@
 		<h2 class="section-title">Projects</h2>
 
 		<div class="cards">
-			{#each PROJECTS as { name, year, blurb, tools, url, live, pypi, docs, demo, proofLabel, proof, route, brief } (name)}
+			{#each PROJECTS as { name, blurb, tools, url, live, pypi, docs, demo, proofLabel, proof, route, brief } (name)}
 				<article id={brief} class="card">
 					<div class="identity">
 						<h3>{name}</h3>
-						<p class="meta"><span>{year}</span><span aria-hidden="true">·</span> Solo developer</p>
 						<div class="proof">
 							<p class="proof-label">{proofLabel}</p>
-							<p aria-live={live || brief === 'orderflow' ? 'polite' : undefined}>
+							<p>
 								{#if brief === 'ancestree'}
 									Interactive demo in the <ActionLink direction="external" href="https://js195.github.io/ancestree/demo/">docs</ActionLink>
 								{:else if brief === 'orderflow'}
@@ -169,10 +164,6 @@
 		content: '';
 	}
 
-	.card:first-child {
-		padding-top: calc(var(--pad) * 0.5);
-	}
-
 	.identity h3 {
 		margin: 0;
 		font-size: var(--fs-subhead);
@@ -181,20 +172,8 @@
 		line-height: 1;
 	}
 
-	.meta,
 	.proof {
 		font-family: var(--font-mono);
-	}
-
-	.meta {
-		display: flex;
-		gap: 0.35rem;
-		margin: 0.75rem 0 0;
-		color: var(--text-faint);
-		font-size: var(--fs-sm);
-	}
-
-	.proof {
 		margin-top: 0.75rem;
 		padding-left: 0.75rem;
 		border-left: 2px solid var(--text-faint);
