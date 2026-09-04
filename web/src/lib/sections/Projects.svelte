@@ -62,8 +62,8 @@
 			name: 'ascii-art',
 			year: 2025,
 			blurb:
-				'A photograph is a grid of pixels and a terminal is a grid of characters. A C11 renderer converts one to the other, with sampling, tone curve, glyph selection and encoding as separately tested stages. It runs in 13 ms and draws every image on this site. Its seven modules comprise 1,300 lines of C11, with one vendored dependency and clean builds under -Wall, -Wextra and -Wpedantic. Seventeen tests and 168 assertions cover the pipeline and output geometry; one Make target regenerates five site components byte-identically.',
-			tools: ['C++', 'Git'],
+				'A photograph is a grid of pixels and a terminal is a grid of characters. A C renderer converts one to the other, with sampling, tone curve, glyph selection and encoding as separately tested stages. It runs in 13 ms and draws every image on this site. Its seven modules comprise 1,300 lines of C, with one vendored dependency and clean builds under -Wall, -Wextra and -Wpedantic. Seventeen tests and 168 assertions cover the pipeline and output geometry; one Make target regenerates five site components byte-identically.',
+			tools: ['C', 'Git'],
 			url: 'https://github.com/JS195/asciiArt',
 			proofLabel: 'In use',
 			proof: '13 ms to generate every image on this site',

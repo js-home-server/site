@@ -1,6 +1,6 @@
 import {
+	siC,
 	siCloudflare,
-	siCplusplus,
 	siDocker,
 	siGit,
 	siGithub,
@@ -37,7 +37,7 @@ const CV =
 	'M14.25 5.25a5.23 5.23 0 0 0-1.279-3.434 9.768 9.768 0 0 1 6.963 6.963A5.23 5.23 0 0 0 16.5 7.5h-1.875a.375.375 0 0 1-.375-.375V5.25Z';
 
 export const logos = {
-	'C++': siCplusplus.path,
+	C: siC.path,
 	Cloudflare: siCloudflare.path,
 	CUDA: siNvidia.path,
 	CV,
@@ -63,7 +63,7 @@ export const logos = {
 
 /* Real-world colour for hover only — grey the rest of the time so the row reads as one system. Hand-drawn marks with no brand colour are omitted. */
 export const brandColors = {
-	'C++': `#${siCplusplus.hex}`,
+	C: `#${siC.hex}`,
 	Cloudflare: `#${siCloudflare.hex}`,
 	CUDA: `#${siNvidia.hex}`,
 	Docker: `#${siDocker.hex}`,

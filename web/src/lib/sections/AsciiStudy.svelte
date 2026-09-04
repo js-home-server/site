@@ -11,7 +11,7 @@
 	   the astronaut, the ship, the radio dish — came out of the same binary. */
 
 	const SPEC = [
-		{ label: 'language', value: 'C11' },
+		{ label: 'language', value: 'C' },
 		{ label: 'dependencies', value: 'stb_image, vendored' },
 		{ label: 'source', value: '1,300 lines' },
 		{ label: 'tests', value: '17 · 168 assertions' },
@@ -99,7 +99,7 @@
 				rectangle of the image weigh, and which character weighs the same?
 			</p>
 			<p class="prose">
-				A C11 command-line renderer that answers it. Block-averaged sampling, a tone
+				A C command-line renderer that answers it. Block-averaged sampling, a tone
 				curve, glyph selection and encoding are separable stages, each tested on its own.
 				It generates every piece of art on this site, including the bull you scrolled past
 				to get here.
