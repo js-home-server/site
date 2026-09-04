@@ -147,9 +147,9 @@
 		transform: translateX(3%);
 
 		/* The art is a few thousand one-character spans, and inline layout over
-		   that many boxes is not cheap. Anything that changes the height of a
-		   section above this one — the projects accordion opening a fold — makes
-		   the page below it reflow, and this was most of what got reflowed. Off
+		   that many boxes is not cheap. Anything above this that changes height
+		   makes the page below it reflow, and this was most of what got
+		   reflowed. Off
 		   screen it is skipped entirely instead. Safe to contain: the <pre> is
 		   sized by this container (100cqw below), so nothing outside measures
 		   the art to size itself. `auto` remembers the last rendered height, so

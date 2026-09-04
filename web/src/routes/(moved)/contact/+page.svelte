@@ -1,5 +1,7 @@
-<!-- A redirect stop for the old /contact URL — see +layout.js for why all three
-     are meta refreshes rather than load-time redirects. -->
+<!-- A redirect stop for /contact, which used to be a page of its own before the
+     site became one scroll. A meta refresh rather than a load-time redirect:
+     the site prerenders to static files, and this is the only redirect a
+     static host serves without a rewrite rule of its own. -->
 <svelte:head>
 	<title>Contact — Joshua Smith</title>
 	<meta http-equiv="refresh" content="0; url=/#contact" />

@@ -77,7 +77,7 @@
 
 /* --- site ----------------------------------------------------------------
    The theme above covers surfaces and body text. These are the few values the
-   hand-written pages add: two steps of quiet text below --muted-foreground for
+   hand-written pages add: two steps of quiet text below --color-foreground for
    the small-caps labels, and the three accents the hero and the status bar
    share. On the background they measure 5.7:1 and 7.5:1, so both clear AA at the
    sizes the labels are set in — which is also why nothing dims them further with

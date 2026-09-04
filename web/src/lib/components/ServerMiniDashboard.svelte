@@ -18,7 +18,7 @@
 	   read about it", pulled out so the project card's FIG. 01 can show the
 	   real thing instead of a static chart. `server` is a module-level
 	   singleton, so wherever this mounts it reads whatever is already polling
-	   (StatusBar's, on the homepage accordion) or starts its own — the store's
+	   (StatusBar's, on the homepage) or starts its own — the store's
 	   in-flight guard collapses two watchers into one fetch either way. */
 	$effect(watch);
 

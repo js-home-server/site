@@ -331,8 +331,8 @@
 
 		/* The dish is ~5.7k one-character spans, the largest block of inline
 		   layout on the page after the hero. Contact is the last section, so
-		   anything above it changing height — the projects accordion opening a
-		   fold — reflows all of it. Off screen it is skipped instead. Safe to
+		   anything above it changing height reflows all of it. Off screen it is
+		   skipped instead. Safe to
 		   contain: the <pre> is sized by this container (100cqw below), so
 		   nothing outside measures the art to size itself. */
 		content-visibility: auto;

@@ -1,7 +1,7 @@
 <script>
 	/* The frame every case-study route shares: the light "datasheet" ground
-	   the studies were built against (Projects.svelte shadows the same tokens
-	   for the accordion this content used to live in), and the one way back. */
+	   the studies were built against (app.css's .projects, the same shadow the
+	   projects box wears), and the one way back. */
 	import ActionLink from './ActionLink.svelte';
 
 	let { title, children } = $props();

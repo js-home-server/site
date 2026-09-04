@@ -7,11 +7,10 @@
 	import { server, watch } from '$lib/server.svelte.js';
 	import { mean, minMax, outages, percentile, spanSeconds, values } from '$lib/stats.js';
 
-	/* StatusBar only ever renders on the homepage, alongside the card this
-	   points at, so there is no page to navigate to — just the accordion to
-	   scroll to. Centred rather than jumped to the top the way an anchor
-	   normally lands, and not opened: this is a look, not a click the reader
-	   asked for. */
+	/* StatusBar only ever renders on the homepage, alongside the project card
+	   this points at, so there is nowhere to navigate to — the card is already
+	   on the page. Centred rather than jumped to the top the way an anchor
+	   normally lands: this is a look, not a click the reader asked for. */
 	function scrollToServerCard(event) {
 		const card = document.getElementById('server');
 		if (!card) return;
