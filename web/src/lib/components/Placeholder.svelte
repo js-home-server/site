@@ -1,9 +1,13 @@
 <script>
-	/* `lines` roughly matches the real thing's height, so the wireframe holds shape. Dashed, so nothing reads as finished work. */
-	let { note, lines = 1 } = $props();
+	import LoadingDots from './LoadingDots.svelte';
+
+	/* `lines` roughly matches the real thing's height, so the wireframe holds shape. Dashed, so nothing reads as finished work. `pending` is for a request actually in flight, not just "no data yet". */
+	let { note, lines = 1, pending = false } = $props();
 </script>
 
-<div class="placeholder" style="--lines: {lines}"><span>{note}</span></div>
+<div class="placeholder" style="--lines: {lines}">
+	<span>{note}{#if pending} <LoadingDots />{/if}</span>
+</div>
 
 <style>
 	/* Four dotted edges, not a dotted border — a 1px dotted border just reads as a line. */

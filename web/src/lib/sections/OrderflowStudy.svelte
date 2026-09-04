@@ -377,7 +377,7 @@
 			{:else if connection === 'failed'}
 				<Placeholder note="feed unreachable from this network" lines={6} />
 			{:else}
-				<Placeholder note="connecting…" lines={6} />
+				<Placeholder note="connecting" pending lines={6} />
 			{/if}
 			<p class="note">
 				A public Binance feed, read straight from your browser. The archive’s own tape is

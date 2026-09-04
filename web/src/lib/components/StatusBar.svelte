@@ -3,6 +3,7 @@
 	import TimeAxis from './TimeAxis.svelte';
 	import ActionLink from './ActionLink.svelte';
 	import UptimeStrip from './UptimeStrip.svelte';
+	import LoadingDots from './LoadingDots.svelte';
 	import { degrees, ms, span, stamp, uptimeHours } from '$lib/format.js';
 	import { server, watch } from '$lib/server.svelte.js';
 	import { mean, minMax, outages, percentile, spanSeconds, values } from '$lib/stats.js';
@@ -108,13 +109,15 @@
 		<!-- Live-region attributes withheld until the first request settles (see announceStatus) — a screen reader shouldn't hear ordinary hydration as a status alert. -->
 		<p class="claim" role={announceStatus ? 'status' : undefined} aria-live={announceStatus ? 'polite' : undefined}>
 			Site served from a box under my stairs.
-			{statusState === 'loading'
-				? 'Checking live status…'
-				: statusState === 'error'
-					? 'Live status unavailable.'
-					: online
-						? 'It seems to be working.'
-						: "It isn't answering right now."}
+			{#if statusState === 'loading'}
+				Checking live status <LoadingDots />
+			{:else if statusState === 'error'}
+				Live status unavailable.
+			{:else if online}
+				It seems to be working.
+			{:else}
+				It isn't answering right now.
+			{/if}
 		</p>
 
 		<!-- Same reading as the dashboard's rail-foot, stamp() and all — never a different age for the same snapshot. -->

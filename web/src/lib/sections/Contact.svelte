@@ -3,6 +3,7 @@
 	import AsciiRadioDish from '$lib/components/AsciiRadioDish.svelte';
 	import Logo from '$lib/components/Logo.svelte';
 	import ActionLink from '$lib/components/ActionLink.svelte';
+	import LoadingDots from '$lib/components/LoadingDots.svelte';
 	import { PUBLIC_WEB3FORMS_KEY } from '$env/static/public';
 	import { ticking } from '$lib/clock.svelte.js';
 
@@ -169,7 +170,11 @@
 
 				<div class="actions">
 					<button type="submit" disabled={status === 'sending'}>
-						{status === 'sending' ? 'Sending…' : 'Send message'}
+						{#if status === 'sending'}
+							Sending <LoadingDots />
+						{:else}
+							Send message
+						{/if}
 					</button>
 					<!-- role="status"/aria-live so a screen reader announces the result unprompted, the way a sighted user just sees it appear. Polite, not assertive. -->
 					<div role="status" aria-live="polite">

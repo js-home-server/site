@@ -3,6 +3,7 @@
 	import ActionLink from '$lib/components/ActionLink.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import Logo from '$lib/components/Logo.svelte';
+	import LoadingDots from '$lib/components/LoadingDots.svelte';
 	import { fleet } from '$lib/containers.js';
 	import { server } from '$lib/server.svelte.js';
 	import { spanSeconds } from '$lib/stats.js';
@@ -85,17 +86,21 @@
 								{#if brief === 'ancestree'}
 									Interactive demo in the <ActionLink direction="external" href="https://js195.github.io/ancestree/demo/">docs</ActionLink>
 								{:else if brief === 'orderflow'}
-									{retainedDays !== null
-										? `${retainedDays} retained days with no dropped rows`
-										: server.status.month === 'error'
-										? 'Live data unavailable'
-										: 'Checking retained history…'}
+									{#if retainedDays !== null}
+										{retainedDays} retained days with no dropped rows
+									{:else if server.status.month === 'error'}
+										Live data unavailable
+									{:else}
+										Checking retained history <LoadingDots />
+									{/if}
 								{:else if live}
-									{runningContainers !== null
-										? `${runningContainers} containers currently running`
-										: server.status.snapshot === 'error'
-										? 'Live data unavailable'
-										: 'Checking the running containers…'}
+									{#if runningContainers !== null}
+										{runningContainers} containers currently running
+									{:else if server.status.snapshot === 'error'}
+										Live data unavailable
+									{:else}
+										Checking the running containers <LoadingDots />
+									{/if}
 								{:else}
 									{proof}
 								{/if}
