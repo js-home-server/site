@@ -35,9 +35,9 @@ const DEVICE_SCALE = 2;
 const WEBP_QUALITY = 85;
 
 const TARGETS = [
-	{ name: 'AsciiBull', asset: 'bull' },
-	{ name: 'AsciiAstronaut', asset: 'astronaut' },
-	{ name: 'AsciiRadioDish', asset: 'radio-dish' }
+	{ name: 'AsciiBull', asset: 'bull', imgAttrs: 'fetchpriority="high"' },
+	{ name: 'AsciiAstronaut', asset: 'astronaut', imgAttrs: 'loading="lazy" decoding="async"' },
+	{ name: 'AsciiRadioDish', asset: 'radio-dish', imgAttrs: 'loading="lazy" decoding="async"' }
 ];
 
 function hasCwebp() {
@@ -110,6 +110,7 @@ ${style}
 		console.warn(`${name}: cwebp not found on PATH -- keeping ${asset}.png (brew install webp for smaller output)`);
 	}
 
+	const { imgAttrs } = TARGETS.find((t) => t.name === name);
 	const component = `<script>
 	/* Rasterised by scripts/rasterize-ascii-art.mjs (F11) — was a few thousand
 	   one-character spans. If asciiArt's \`make site\` overwrites this back to
@@ -117,7 +118,7 @@ ${style}
 	import art from '$lib/assets/ascii/${assetFile}';
 </script>
 
-<div class="ascii-art"><img src={art} width="${width}" height="${height}" alt="" /></div>
+<div class="ascii-art"><img src={art} width="${width}" height="${height}" alt="" ${imgAttrs} /></div>
 `;
 	writeFileSync(srcPath, component);
 	console.log(`${name}: -> ${assetFile} (${width}x${height})`);

@@ -5,4 +5,4 @@
 	import art from '$lib/assets/ascii/astronaut.webp';
 </script>
 
-<div class="ascii-art"><img src={art} width="880" height="1984" alt="" /></div>
+<div class="ascii-art"><img src={art} width="880" height="1984" alt="" loading="lazy" decoding="async" /></div>

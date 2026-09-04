@@ -5,4 +5,4 @@
 	import art from '$lib/assets/ascii/bull.webp';
 </script>
 
-<div class="ascii-art"><img src={art} width="2306" height="1932" alt="" /></div>
+<div class="ascii-art"><img src={art} width="2306" height="1932" alt="" fetchpriority="high" /></div>

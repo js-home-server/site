@@ -5,4 +5,4 @@
 	import art from '$lib/assets/ascii/radio-dish.webp';
 </script>
 
-<div class="ascii-art"><img src={art} width="1974" height="1794" alt="" /></div>
+<div class="ascii-art"><img src={art} width="1974" height="1794" alt="" loading="lazy" decoding="async" /></div>
