@@ -83,6 +83,32 @@
 		box-shadow: 0 1px currentcolor;
 	}
 
+	/* Button: the one solid CTA style — bordered box, soft-fill on hover/focus,
+	   like Contact's Send button. currentcolor throughout so a caller sets the
+	   accent once (ambient `color`) and border/fill/text all follow it. */
+	.action-link.button {
+		display: block;
+		overflow: hidden;
+		color: inherit;
+		border: 1px solid currentcolor;
+		border-radius: var(--radius-control);
+		transition: background-color 160ms ease;
+	}
+
+	.action-link.button .content {
+		display: flex;
+		justify-content: center;
+		padding: 0.6rem 0.8rem;
+		font-family: var(--font-mono);
+		font-size: var(--fs-base);
+		font-weight: 500;
+	}
+
+	.action-link.button:hover,
+	.action-link.button:focus-visible {
+		background: color-mix(in srgb, currentcolor 12%, transparent);
+	}
+
 	/* Cta: mint, mono, small caps — every standalone action on the site. Arrow carries the hover since the label is already mint. */
 	.action-link.cta {
 		color: var(--mint);

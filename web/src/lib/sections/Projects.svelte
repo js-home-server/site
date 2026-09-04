@@ -107,9 +107,7 @@
 					<p class="blurb">{blurb}</p>
 
 					<div class="actions">
-						<div class="primary">
-							<a class="case-link" href={route}>Read case study</a>
-						</div>
+						<ActionLink variant="button" direction="site" href={route}>Read case study</ActionLink>
 						{#if demo || url || pypi || docs || live}
 							<nav class="links" aria-label={`${name} links`}>
 								{#if demo}<ActionLink direction="external" href={demo}><span class="link-label"><Icon name="external" />Interactive demo</span></ActionLink>{/if}
@@ -215,32 +213,6 @@
 		display: grid;
 		gap: 0.5rem;
 		color: var(--mint-ink);
-	}
-
-	/* The one solid button in the section — soft-fill hover like Contact's Send
-	   button, not ActionLink's usual look. overflow:hidden clips the fill to the rounded corners. */
-	.primary {
-		overflow: hidden;
-		border: 1px solid var(--mint-ink);
-		border-radius: var(--radius-control);
-	}
-
-	/* Block + padded here, not on .primary, so the whole button area is clickable, not just the words. */
-	.case-link {
-		display: block;
-		padding: 0.6rem 0.8rem;
-		color: var(--mint-ink);
-		font-family: var(--font-mono);
-		font-size: var(--fs-base);
-		font-weight: 500;
-		text-align: center;
-		text-decoration: none;
-		transition: background-color 160ms ease;
-	}
-
-	.case-link:hover,
-	.case-link:focus-visible {
-		background: color-mix(in srgb, var(--mint-ink) 12%, transparent);
 	}
 
 	.links {
