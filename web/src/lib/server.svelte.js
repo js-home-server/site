@@ -20,7 +20,10 @@ const MONTH_DELAY_MS = 10_000;
 export const server = $state({
 	snapshot: null,
 	series: null,
-	month: null
+	month: null,
+	/* Per-key 'pending' | 'ok' | 'error', so a card can tell "still loading" from
+	   "tried and failed" instead of reading null forever as "Checking…". */
+	status: { snapshot: 'pending', series: 'pending', month: 'pending' }
 });
 
 const inFlight = new Set();
@@ -33,9 +36,11 @@ async function load(key, url) {
 		const response = await fetch(url);
 		if (!response.ok) throw new Error(`${key} request failed: ${response.status}`);
 		server[key] = await response.json();
+		server.status[key] = 'ok';
 	} catch {
 		/* Keep the last good data on the wire dropping out; the next poll picks it
-		   back up. */
+		   back up. Only flip to 'error' if we never got any — stale data beats no data. */
+		server.status[key] = server[key] === null ? 'error' : 'ok';
 	} finally {
 		inFlight.delete(key);
 	}

@@ -90,13 +90,17 @@
 								{#if brief === 'ancestree'}
 									Interactive demo in the <ActionLink direction="external" href="https://js195.github.io/ancestree/demo/">docs</ActionLink>
 								{:else if brief === 'orderflow'}
-									{retainedDays === null
-										? 'Checking retained history…'
-										: `${retainedDays} retained days with no dropped rows`}
+									{retainedDays !== null
+										? `${retainedDays} retained days with no dropped rows`
+										: server.status.month === 'error'
+										? 'Live data unavailable'
+										: 'Checking retained history…'}
 								{:else if live}
-									{runningContainers === null
-										? 'Checking the running containers…'
-										: `${runningContainers} containers currently running`}
+									{runningContainers !== null
+										? `${runningContainers} containers currently running`
+										: server.status.snapshot === 'error'
+										? 'Live data unavailable'
+										: 'Checking the running containers…'}
 								{:else}
 									{proof}
 								{/if}

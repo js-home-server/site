@@ -14,6 +14,11 @@
 	let series = $derived(server.series);
 
 	let online = $derived(snapshot?.availability.server_status === 'online');
+	/* A null snapshot means "haven't checked yet", not "down" — only a completed
+	   request gets to claim online or offline. */
+	let statusState = $derived(
+		snapshot ? (online ? 'online' : 'offline') : server.status.snapshot === 'error' ? 'error' : 'loading'
+	);
 
 	let temps = $derived(series?.cpu.temperature_c ?? []);
 	let latencies = $derived(series?.availability.latency_ms ?? []);
