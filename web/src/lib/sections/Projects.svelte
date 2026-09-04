@@ -29,7 +29,7 @@
 			pypi: 'https://pypi.org/project/ancestree-track/',
 			docs: 'https://js195.github.io/ancestree/',
 			proofLabel: 'Try it',
-			proof: 'Interactive demo in the docs',
+			proof: null,
 			route: '/projects/ancestree/',
 			brief: 'ancestree'
 		},
@@ -87,15 +87,19 @@
 						<div class="proof">
 							<p class="proof-label">{proofLabel}</p>
 							<p aria-live={live || brief === 'orderflow' ? 'polite' : undefined}>
-								{brief === 'orderflow'
-									? retainedDays === null
+								{#if brief === 'ancestree'}
+									Interactive demo in the <ActionLink direction="external" href="https://js195.github.io/ancestree/demo/">docs</ActionLink>
+								{:else if brief === 'orderflow'}
+									{retainedDays === null
 										? 'Checking retained history…'
-										: `${retainedDays} retained days with no dropped rows`
-									: live
-									? runningContainers === null
+										: `${retainedDays} retained days with no dropped rows`}
+								{:else if live}
+									{runningContainers === null
 										? 'Checking the running containers…'
-										: `${runningContainers} containers currently running`
-									: proof}
+										: `${runningContainers} containers currently running`}
+								{:else}
+									{proof}
+								{/if}
 							</p>
 						</div>
 						<div class="tools-row"><ToolPills {tools} /></div>
@@ -197,6 +201,11 @@
 
 	.proof p {
 		margin: 0;
+	}
+
+	/* Demo link reads as an action, not faint prose like the rest of the line. */
+	.proof :global(.action-link) {
+		color: var(--mint-ink);
 	}
 
 	.proof-label {
