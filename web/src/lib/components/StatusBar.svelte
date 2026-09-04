@@ -7,17 +7,6 @@
 	import { server, watch } from '$lib/server.svelte.js';
 	import { mean, minMax, outages, percentile, spanSeconds, values } from '$lib/stats.js';
 
-	/* Always renders alongside the card it points at, so this just centres it in view rather than jumping like a normal anchor. */
-	function scrollToServerCard(event) {
-		const card = document.getElementById('server');
-		if (!card) return;
-		event.preventDefault();
-		card.scrollIntoView({
-			behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-			block: 'center'
-		});
-	}
-
 	$effect(watch);
 
 	let snapshot = $derived(server.snapshot);
@@ -115,8 +104,8 @@
 			<span class="mono">{stamp(snapshot?.generated_at)}</span>
 		</p>
 
-		<ActionLink variant="cta" direction="site" href="#server" onclick={scrollToServerCard} class="lede-link">
-			View project
+		<ActionLink variant="cta" direction="site" href="/server/" class="lede-link">
+			About this server
 		</ActionLink>
 	</div>
 

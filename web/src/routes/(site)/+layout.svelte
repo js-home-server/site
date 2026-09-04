@@ -53,18 +53,25 @@
 		offset = jumping || y <= height ? 0 : Math.min(height + REVEAL, Math.max(0, offset + delta));
 	}
 
-	/* IntersectionObserver on a zero-height band at the upper third — "crossing
+	/* IntersectionObserver on a thin band at the upper third — "crossing
 	   it" reports the active section directly. Used to be a getBoundingClientRect
-	   per section per frame, forcing sync layout on a page of ~16k ascii spans. */
+	   per section per frame, forcing sync layout on a page of ~16k ascii spans.
+	   Margins must leave the band real height — sum to exactly -100% and the
+	   intersection rect has zero area, so isIntersecting never fires. */
 	$effect(() => {
 		/* Read so this reruns on client-side nav — the layout never remounts, so without this the observer keeps watching stale nodes forever. */
 		page.url.pathname;
 
 		const spy = new IntersectionObserver(
 			(entries) => {
-				for (const entry of entries) if (entry.isIntersecting) active = `/#${entry.target.id}`;
+				for (const entry of entries) {
+					if (!entry.isIntersecting) continue;
+					active = `/#${entry.target.id}`;
+					/* replaceState not pushState — a history entry per section crossed would make Back a scroll-by-scroll rewind. Only fires here, which only runs with real sections observed, i.e. the landing page. */
+					history.replaceState(history.state, '', active);
+				}
 			},
-			{ rootMargin: '-33.33% 0px -66.67% 0px' }
+			{ rootMargin: '-30% 0px -60% 0px' }
 		);
 
 		/* Only present on the landing page — on a case study none exist, so the spy just observes nothing. */
