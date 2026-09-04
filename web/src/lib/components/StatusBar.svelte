@@ -238,6 +238,8 @@
 		gap: 0.3rem;
 		/* Room for the graphic and its caption. */
 		min-height: 5.4rem;
+		/* So TimeAxis's own narrow-width query can see this box's width, not the viewport's. */
+		container-type: inline-size;
 	}
 
 	/* Pinned to the foot via auto margin, so cards stay level even when one's stats line wraps and another's doesn't. */
