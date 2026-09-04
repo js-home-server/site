@@ -13,8 +13,8 @@ export const pct = (v) => {
 
 export const degrees = (v) => (Number.isFinite(v) ? `${Math.round(v)}°C` : '—');
 
-/* Whole ms — the probe isn't accurate to fractions anyway. */
-export const ms = (v) => (Number.isFinite(v) ? `${Math.round(v)} ms` : '—');
+/* Whole ms — the probe isn't accurate to fractions anyway. Narrow no-break space so "161 ms" can't wrap between the two. */
+export const ms = (v) => (Number.isFinite(v) ? `${Math.round(v)} ms` : '—');
 
 /* Signed — which side of the reference it's on is half the reading. */
 export const microseconds = (v) =>

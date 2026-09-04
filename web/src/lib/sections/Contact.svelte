@@ -48,7 +48,7 @@
 		{
 			key: 'linkedin',
 			icon: 'LinkedIn',
-			label: 'linkedin.com/in/joshua-smith-487846181',
+			label: 'LinkedIn',
 			href: 'https://www.linkedin.com/in/joshua-smith-487846181/'
 		},
 		{
