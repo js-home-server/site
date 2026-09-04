@@ -92,15 +92,21 @@
 <aside class="status-bar" aria-label="Live server status">
 	<div class="lede">
 		<h2 class="eyebrow">
-			<!-- Same live dot as the contact page — mint when answering, coral when not. -->
-			<span class="dot" class:down={!online} aria-hidden="true"></span>
+			<!-- Same live dot as the contact page — mint when answering, coral when proven down, dim while unknown. -->
+			<span class="dot" class:down={statusState === 'offline'} class:pending={statusState !== 'online' && statusState !== 'offline'} aria-hidden="true"></span>
 			Home server
 		</h2>
 
-		<!-- aria-live announces a real state flip, not every 30s poll — text only changes when `online` actually does. -->
+		<!-- aria-live announces a real state flip, not every 30s poll — text only changes when `statusState` actually does. -->
 		<p class="claim" role="status" aria-live="polite">
 			Site served from a box under my stairs.
-			{online ? "It seems to be working." : "It isn't answering right now."}
+			{statusState === 'loading'
+				? 'Checking live status…'
+				: statusState === 'error'
+					? 'Live status unavailable.'
+					: online
+						? 'It seems to be working.'
+						: "It isn't answering right now."}
 		</p>
 
 		<!-- Same reading as the dashboard's rail-foot, stamp() and all — never a different age for the same snapshot. -->
@@ -172,6 +178,12 @@
 	.lede .dot.down {
 		background: var(--coral);
 		box-shadow: 0 0 0.5rem var(--coral);
+	}
+
+	/* Unproven either way — no glow, so it can't be mistaken for a verdict. */
+	.lede .dot.pending {
+		background: var(--text-faint);
+		box-shadow: none;
 	}
 
 	/* A claim, not a reading — the box's usual mono would file it as one. */
