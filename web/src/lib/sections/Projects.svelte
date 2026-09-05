@@ -23,7 +23,7 @@
 		{
 			name: 'Ancestree',
 			blurb:
-				"Ten variations in, you are looking at final_v2_REAL.csv with no record of what produced it. Ancestree tracks a pipeline's DAG, metadata and artifact bytes in one SQLite file, with no server required. It stores 3.93× less and reruns 136× faster than starting over.",
+				"Ten variations in, you are looking at final_v2_REAL.csv with no record of what produced it. Writen in pure python with no dependancies, Ancestree offers a lightweight and simple way to keep track of every result and its lineage, natively on your machine. Deduplication means it stores 3.93× less data and identical reruns execute 136× faster.",
 			tools: ['Python', 'SQL'],
 			url: 'https://github.com/JS195/ancestree',
 			pypi: 'https://pypi.org/project/ancestree-track/',
@@ -36,7 +36,7 @@
 		{
 			name: 'This server',
 			blurb:
-				'I run my own home server, and it publishes a live feed about itself. Debian runs behind an outbound tunnel, sharing only what it chooses to expose. The whole thing draws 3.0 W and opens no ports. Every deploy health-checks itself and rolls back on failure.',
+				"I run my own home server: it's currently hosting this webiste! In addition to supporting other personal projects, it also runs an API publishing live data about itself. The box is designed around security, it sits behind a cloudflare tunnel and opens no ports.",
 			tools: ['Svelte', 'JavaScript', 'Docker', 'Linux', 'Python'],
 			url: 'https://github.com/js-home-server',
 			live: '/server/',
@@ -48,7 +48,7 @@
 		{
 			name: 'Crypto orderflow',
 			blurb:
-				"Vendors selling cross-sectional order flow retain days of it, not years, and it can't be backfilled after the fact. So I built my own collector, storing 11.5M rows a day across ten venues in Parquet. The archive now backs a market-neutral strategy with a 2.39 net Sharpe over 6.5 years.",
+				"Vendors selling granular multi-platform, mulit-asset cryptocurrency data charge a lot of money. So I built my own collector, it stores 11.5M rows a day across ten venues in Parquet. The archive backs a market-neutral strategy with a 2.39 net Sharpe over 6.5 years.",
 			tools: ['Python', 'Docker', 'Polars', 'NumPy'],
 			url: 'https://github.com/JS195/orderflow-alpha',
 			proofLabel: 'Live',
@@ -59,7 +59,7 @@
 		{
 			name: 'ascii-art',
 			blurb:
-				'A photograph is a grid of pixels, and a terminal is a grid of characters. A C renderer converts one to the other, sampling, mapping tone, choosing glyphs and encoding. It runs in 13 ms and draws every image on this site. One Make target regenerates all of them byte-identically.',
+				"Ascii art is cool, so I built a beefed up generator for myself. Written in C, it turns an image into your selection of ascii characters with black and white, greyscale, or full colour modes. It renders images in 13 ms, and drew every image on this site.",
 			tools: ['C', 'Make'],
 			url: 'https://github.com/JS195/asciiArt',
 			proofLabel: 'In use',
