@@ -75,6 +75,18 @@
 	let honeypot = $state('');
 	let status = $state('idle'); // idle | sending | sent | timeout | error
 
+	/* A real edit, not our own post-send reset — bind:value assignments don't
+	   dispatch input events, only the user typing does. Stale sent/error/timeout
+	   feedback from a previous message shouldn't linger over a new draft. */
+	function onDraftEdit() {
+		if (status === 'sent' || status === 'error' || status === 'timeout') status = 'idle';
+	}
+
+	/* Web3Forms' zero-config hCaptcha (script in svelte:head) renders into the .h-captcha
+	   div and drops a same-named hidden field for a plain HTML form to pick up on its own —
+	   we post JSON ourselves, so it has to be read and forwarded by hand instead. */
+	const captchaResponse = () => document.querySelector('[name="h-captcha-response"]')?.value ?? '';
+
 	async function sendMessage(event) {
 		event.preventDefault();
 		status = 'sending';
@@ -90,7 +102,8 @@
 						name,
 						email,
 						message,
-						botcheck: honeypot
+						botcheck: honeypot,
+						'h-captcha-response': captchaResponse()
 					})
 				},
 				SUBMIT_TIMEOUT_MS
@@ -106,9 +119,17 @@
 			   still have received it, so this can't promise the send failed. Values stay
 			   put either way: only a confirmed 'sent' clears the form. */
 			status = err.name === 'AbortError' ? 'timeout' : 'error';
+		} finally {
+			/* A solved challenge is single-use — Web3Forms' script exposes the same
+			   window.hcaptcha global the real widget does, so a retry needs a fresh one. */
+			window.hcaptcha?.reset();
 		}
 	}
 </script>
+
+<svelte:head>
+	<script src="https://web3forms.com/client/script.js" async defer></script>
+</svelte:head>
 
 <section id="contact" class="page contact">
 	<section class="surface-box panel">
@@ -152,7 +173,7 @@
 
 			<div class="rule"></div>
 
-			<form onsubmit={sendMessage}>
+			<form onsubmit={sendMessage} oninput={onDraftEdit}>
 				<h3 class="eyebrow">Or send a message</h3>
 
 				<!-- Off-screen not display:none — some bots skip fields known to be inert. aria-hidden too, since tabindex="-1" alone still lets browse mode land on it. -->
@@ -168,18 +189,40 @@
 
 				<div class="field">
 					<label for="name">Name</label>
-					<input id="name" type="text" required autocomplete="name" bind:value={name} />
+					<input
+						id="name"
+						type="text"
+						required
+						autocomplete="name"
+						readonly={status === 'sending'}
+						bind:value={name}
+					/>
 				</div>
 
 				<div class="field">
 					<label for="email">Email</label>
-					<input id="email" type="email" required autocomplete="email" bind:value={email} />
+					<input
+						id="email"
+						type="email"
+						required
+						autocomplete="email"
+						readonly={status === 'sending'}
+						bind:value={email}
+					/>
 				</div>
 
 				<div class="field">
 					<label for="message">Message</label>
-					<textarea id="message" rows="4" required bind:value={message}></textarea>
+					<!-- Read-only, not disabled, while sending — a value in flight can still be seen and
+					     selected, it just can't be edited out from under the request that's carrying it. -->
+					<textarea id="message" rows="4" required readonly={status === 'sending'} bind:value={message}
+					></textarea>
 				</div>
+
+				<!-- Zero-config Web3Forms hCaptcha — their own site key, nothing to sign up for or hold a secret for.
+				     Normal, not compact: compact is the squarer, taller layout — this is the wide, short one,
+				     and it already carries its own dark card, so it isn't boxed again on top. -->
+				<div class="h-captcha" data-captcha="true" data-theme="dark"></div>
 
 				<div class="actions">
 					<button type="submit" disabled={status === 'sending'}>
@@ -377,6 +420,13 @@
 	input:focus-visible,
 	textarea:focus-visible {
 		border-color: var(--mint);
+	}
+
+	/* Locked for the length of the request, not merely disabled-looking — still legible, just not editable. */
+	input:read-only,
+	textarea:read-only {
+		color: var(--text-dim);
+		cursor: default;
 	}
 
 	/* Off-screen, not display:none/visibility:hidden — some bots skip those but still find this. */
