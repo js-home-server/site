@@ -27,6 +27,9 @@
 			<span class="arrow" aria-hidden="true">{ARROWS[direction]}</span>
 		{/if}
 		{@render children()}
+		{#if direction === 'external'}
+			<span class="sr-only">(opens in a new tab)</span>
+		{/if}
 		{#if direction !== 'back'}
 			<span class="arrow" aria-hidden="true">{ARROWS[direction]}</span>
 		{/if}
