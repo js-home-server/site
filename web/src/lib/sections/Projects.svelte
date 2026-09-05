@@ -153,7 +153,7 @@
 	.card {
 		position: relative;
 		display: grid;
-		grid-template-columns: minmax(11rem, 0.9fr) minmax(18rem, 1.2fr) minmax(11rem, 0.7fr);
+		grid-template-columns: minmax(11rem, 0.7fr) minmax(18rem, 1.4fr) minmax(11rem, 0.7fr);
 		gap: var(--pad);
 		align-items: start;
 		padding: var(--pad);

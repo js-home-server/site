@@ -294,7 +294,7 @@
 		margin: 0;
 		max-width: 62ch;
 		color: var(--text-dim);
-		font-size: var(--fs-sm);
+		font-size: var(--fs-base);
 		line-height: 1.6;
 	}
 
