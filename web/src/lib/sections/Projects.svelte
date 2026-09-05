@@ -23,7 +23,7 @@
 		{
 			name: 'Ancestree',
 			blurb:
-				"Ten variations in, you are looking at final_v2_REAL.csv with no record of what produced it. Writen in pure python with no dependancies, Ancestree offers a lightweight and simple way to keep track of every result and its lineage, natively on your machine. Deduplication means it stores 3.93× less data and identical reruns execute 136× faster.",
+				"Ten variations in, you are looking at final_v2_REAL.csv with no record of what produced it. Writen in pure python with no dependancies, Ancestree offers a lightweight and simple way to keep track of every result and its lineage, natively on your machine. Deduplication means it stores 3.93× less on a mixed corpus. Identical reruns bypass execution to fetch the data in milliseconds instead.",
 			tools: ['Python', 'SQL'],
 			url: 'https://github.com/JS195/ancestree',
 			pypi: 'https://pypi.org/project/ancestree-track/',
@@ -48,7 +48,7 @@
 		{
 			name: 'Crypto orderflow',
 			blurb:
-				"Vendors selling granular multi-platform, mulit-asset cryptocurrency data charge a lot of money. So I built my own collector, it stores 11.5M rows a day across ten venues in Parquet. The archive backs a market-neutral strategy with a 2.39 net Sharpe over 6.5 years.",
+				"Vendors selling granular multi-platform, mulit-asset cryptocurrency data charge a lot of money. So I built my own collector, it stores ~11.5M rows a day across ten venues in Parquet. The archive backs a market-neutral strategy with a 2.39 net Sharpe over 6.5 years.",
 			tools: ['Python', 'Docker', 'Polars', 'NumPy'],
 			url: 'https://github.com/JS195/orderflow-alpha',
 			proofLabel: 'Live',
@@ -59,11 +59,11 @@
 		{
 			name: 'ascii-art',
 			blurb:
-				"Ascii art is cool, so I built a beefed up generator for myself. Written in C, it turns an image into your selection of ascii characters with black and white, greyscale, or full colour modes. It renders images in 13 ms, and drew every image on this site.",
+				"Ascii art is cool, so I built a beefed up generator for myself. Written in C, it turns an image into your selection of ascii characters with black and white, greyscale, or full colour modes. It renders images in ~13 ms, and drew every image on this site.",
 			tools: ['C', 'Make'],
 			url: 'https://github.com/JS195/asciiArt',
 			proofLabel: 'In use',
-			proof: '13 ms to generate every image on this site',
+			proof: 'Generated every image on this site',
 			route: '/projects/ascii-art/',
 			brief: 'ascii'
 		}
@@ -185,7 +185,7 @@
 		padding-left: 0.75rem;
 		border-left: 2px solid var(--text-faint);
 		color: var(--text-faint);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		line-height: 1.5;
 	}
 
@@ -201,7 +201,7 @@
 	.proof-label {
 		color: var(--text-faint);
 		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 	}
