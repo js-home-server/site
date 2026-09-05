@@ -29,11 +29,20 @@
 	/* A nav jump is a scroll like any other, so the bar would recede mid-jump. Held still until scrollend; the timer covers a click to the stop already showing, which fires no scroll at all. */
 	let jumping = $state(false);
 	let backstop;
+	/* A link inside the bar holding keyboard focus — while true the bar can't be
+	   let to recede, or focus scrolls off-screen with it and the indicator vanishes. */
+	let focused = $state(false);
 
 	function jump() {
 		jumping = true;
 		clearTimeout(backstop);
 		backstop = setTimeout(() => (jumping = false), 1500);
+	}
+
+	/* focusout fires on every hop between links too, not just on leaving the bar
+	   — only actually left once the new target (if any) is outside it. */
+	function onFocusOut(event) {
+		if (!event.currentTarget.contains(event.relatedTarget)) focused = false;
 	}
 
 	function onScroll() {
@@ -48,6 +57,11 @@
 		const y = Math.max(0, window.scrollY);
 		const delta = y - last;
 		last = y;
+
+		/* Position still tracked so there's no jump resuming once focus leaves,
+		   but the hidden amount itself is frozen — CSS pins the bar visually
+		   (see header:focus-within), this just stops it drifting underneath. */
+		if (focused) return;
 
 		/* Over the hero the bar stays fully down — nothing to recede from yet. */
 		offset = jumping || y <= height ? 0 : Math.min(height + REVEAL, Math.max(0, offset + delta));
@@ -91,6 +105,8 @@
 	<header
 		bind:clientHeight={height}
 		style="--shift: {Math.round(Math.min(offset, height))}px"
+		onfocusin={() => (focused = true)}
+		onfocusout={onFocusOut}
 	>
 		<nav aria-label="Primary navigation">
 			{#each links as { href, label } (href)}
@@ -137,6 +153,12 @@
 		/* Driven by scroll, its own compositor layer, never a repaint of the page behind it. */
 		transform: translate3d(0, calc(-1 * var(--shift, 0px)), 0);
 		will-change: transform;
+	}
+
+	/* Keyboard focus inside the bar pins it, whatever --shift has drifted to —
+	   a focused link can't be allowed to scroll off-screen with it. */
+	header:focus-within {
+		transform: none;
 	}
 
 	nav {
