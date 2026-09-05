@@ -8,18 +8,19 @@
 		{
 			period: '2024 — Present',
 			title: 'Graduate Engineer, AWE',
+			tools: ['Linux', 'Slurm', 'Git', 'Python', 'scikit-learn', 'Plotly', 'NumPy', 'MATLAB', 'CUDA', 'Pandas'],
 			points: [
 				{
-					text: 'Implemented a signal-processing pipeline synchronising 9 geographically distributed RF sensors to microsecond precision resolving discrepancies between internal crystal clock and GPS time. I performed data cleaning, denoising, and unsupervised anomaly detection. I then performed time-difference-of-arrival (TDOA) localisation using multi-objective optimisation and cross-correlation on the waveforms to obtain a 3 km median error globally.',
-					tools: ['Linux', 'Slurm', 'Git', 'Python', 'scikit-learn', 'Plotly', 'NumPy']
+					heading: '3 km global localisation accuracy',
+					text: 'Synchronised 9 geographically distributed RF sensors to microsecond precision, correcting drift between their internal clocks and GPS time. Cleaned and denoised the data, then used TDOA cross-correlation and multi-objective optimisation to localise signals to a 3 km median error worldwide.'
 				},
 				{
-					text: 'Designed an onboard navigation system using radar-based terrain imaging. With the Sentinel-1 satellite constellation as a case study, I obtained a 325 m median location accuracy, at 700 km range, at a velocity of 7.5 km/s. I built the preprocessing pipeline for the incoming radar data, and designed an optimisation-based solver to determine location, with a machine-learning-based optimal candidate selection. Achieved on a tight hardware budget of 8 GB RAM, a consumer CPU with a 4-second end-to-end latency.',
-					tools: ['MATLAB']
+					heading: '325 m accuracy at 700 km range',
+					text: 'Designed a radar-based terrain-imaging navigation system, tested against the Sentinel-1 satellite constellation travelling at 7.5 km/s. Built the preprocessing pipeline and an ML-assisted optimisation solver, hitting 325 m median accuracy with 4-second end-to-end latency on just 8 GB of RAM.'
 				},
 				{
-					text: 'Worked on a novel multi-objective optimisation for computationally expensive black-box simulators using surrogate modelling. Working closely with a professor of statistics, I collaborated with the method design, and translated their ideas into code. I designed and implemented the stopping conditions. Leveraging CUDA, I cut wall time on my original implementation by 26×. The project overall was a success cutting 150,000 function evaluations down to 20,000, deployed company-wide as a multi-purpose tool.',
-					tools: ['Python', 'Git', 'Slurm', 'CUDA', 'Pandas', 'Linux']
+					heading: '26× faster optimisation',
+					text: 'Built a surrogate-modelling optimiser for expensive black-box simulators with a professor of statistics, designing the stopping conditions myself. Ported it to CUDA for a 26× speedup, cutting the simulations needed from 150,000 to 20,000 and shipping it company-wide.'
 				}
 			]
 		},
@@ -29,31 +30,53 @@
 			detail: 'University of Bristol, 2:1. Modelling, statistics and scientific computing.'
 		}
 	];
+
+	/* The astronaut's own aspect-ratio'd height is a genuine, definite size once
+	   the column's width is known, so left unchecked it sets a floor under
+	   .experience's row that CSS auto-sizing can't shrink below — trimming the
+	   timeline would stop shrinking the box well before he's actually cropped.
+	   Measuring the timeline directly and pinning .visual to that height gives
+	   .visual an explicit (not content-derived) size instead, so it stops
+	   fighting the row for space: the box is exactly as tall as the timeline,
+	   and .bracket-frame's overflow: hidden crops him from the feet up
+	   whenever that's shorter than he needs. (Reset to auto below 60rem,
+	   where the two stack instead of sitting side by side.) */
+	let timelineHeight = $state(0);
 </script>
 
 <span id="about" aria-hidden="true"></span>
 <section id="experience" class="page experience-page">
 	<section class="surface-box experience">
 		<!-- Decorative — the stops beside it carry the meaning, this is thousands of digits to a screen reader. -->
-		<div class="visual" aria-hidden="true">
+		<!-- + 2 * var(--pad): .visual's negative top/bottom margin (below) bleeds
+		     its background to the card edge, and align-self: stretch normally
+		     grows the box to absorb that automatically — but an explicit height
+		     here overrides stretch, so the compensation has to be added back by
+		     hand or the box (and so the crop) lands two pads short. -->
+		<div
+			class="visual"
+			aria-hidden="true"
+			style:height={timelineHeight ? `calc(${timelineHeight}px + 2 * var(--pad))` : 'auto'}
+		>
 			<div class="bracket-frame"><div class="portrait"><AsciiAstronaut /></div></div>
 		</div>
 
-		<div class="timeline">
+		<div class="timeline" bind:clientHeight={timelineHeight}>
 			<div class="timeline-head">
 				<h2 class="section-title">Experience</h2>
 			</div>
-			{#each MILESTONES as { period, title, detail, points } (title)}
+			{#each MILESTONES as { period, title, detail, tools, points } (title)}
 				<div class="milestone">
 					<p class="period">{period}</p>
 					<h3 class="title">{title}</h3>
 					{#if detail}<p class="detail">{detail}</p>{/if}
+					{#if tools}<ToolPills {tools} />{/if}
 					{#if points}
 						<ul>
-							{#each points as { text, tools } (text)}
+							{#each points as { heading, text } (heading)}
 								<li>
+									<p class="outcome">{heading}</p>
 									{text}
-									<ToolPills {tools} />
 								</li>
 							{/each}
 						</ul>
@@ -88,30 +111,47 @@
 		border-right: var(--rule);
 	}
 
-	/* Pinned tracks, not default auto — an auto track sizes to the portrait's own intrinsic width, blowing past the frame instead of letting it crop evenly. */
+	/* Pinned tracks, not default auto — an auto track sizes to the portrait's own intrinsic width, blowing past the frame instead of letting it crop evenly.
+	   Top-anchored, not centred — the timeline sets this box's height, and the
+	   portrait should lose ground at his feet as that shrinks, not have his
+	   head and feet clipped evenly. */
 	.visual :global(.bracket-frame) {
-		place-items: center;
+		align-items: start;
+		justify-items: center;
 		grid-template-columns: minmax(0, 1fr);
 		grid-template-rows: minmax(0, 1fr);
 		min-height: 0;
 		overflow: hidden;
 	}
 
-	/* Rasterised now (F11), no cell grid left to size by — height-driven since
-	   the box is tall enough that height is fixed and .bracket-frame clips the
-	   overflowing width evenly. 61:115 is the astronaut's own column/row count. */
+	/* Rasterised now (F11), no cell grid left to size by. Fills the frame
+	   exactly in both axes — object-fit below is what keeps him from
+	   distorting to match whatever shape that turns out to be. */
 	.portrait {
-		width: auto;
+		width: 100%;
 		height: 100%;
-		aspect-ratio: calc((61 * 0.6021) / (115 * 0.72));
-		/* Crop is centred, but the suit's brighter left side reads as off-centre — nudged right to compensate. */
-		transform: translateX(3%);
 	}
 
+	/* AsciiAstronaut wraps the <img> in its own div, which has no height of
+	   its own — the img's height: 100% below would otherwise resolve against
+	   that (indefinite, auto) box rather than .portrait, and fall back to its
+	   intrinsic aspect ratio instead of actually filling the frame. */
+	.portrait :global(.ascii-art) {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+
+	/* cover + top, not stretch: when the box is shorter than his full height
+	   calls for, this crops him from the feet up instead of leaving a gap
+	   under a height-only-driven image; when it's narrower than tall, it
+	   crops the sides instead of distorting him. */
 	.portrait :global(img) {
 		display: block;
 		width: 100%;
 		height: 100%;
+		object-fit: cover;
+		object-position: top;
 	}
 
 	/* The rail, in the same dots every measuring line on the site uses. */
@@ -119,6 +159,14 @@
 		display: grid;
 		gap: 1rem;
 		align-content: start;
+		/* align-self: start, not the grid-item default of stretch — stretch
+		   would make .timeline's own box fill the row (whatever .visual's
+		   height set that to), and bind:clientHeight measures the BOX, not
+		   the content inside it. Left stretched, the "measurement" is really
+		   just reading back .visual's height, a closed loop that can grow but
+		   never shrink again once set. This keeps clientHeight honest: always
+		   this column's own natural content height, nothing else. */
+		align-self: start;
 		padding-left: var(--pad);
 	}
 
@@ -165,6 +213,21 @@
 
 	.detail {
 		margin: 0.3rem 0 0;
+	}
+
+	/* One shared row for the role, not one per bullet — the same tools kept
+	   coming up across all three points, so repeating the pills three times
+	   was just noise pushing the actual outcomes further down the page. */
+	.milestone > :global(.pills) {
+		margin: 0.6rem 0 0;
+	}
+
+	/* The scannable part: a result up front, in the site's accent colour so it
+	   reads before the two sentences under it do. */
+	.outcome {
+		margin: 0;
+		color: var(--mint);
+		font-weight: 700;
 	}
 
 	.milestone ul {
@@ -215,6 +278,9 @@
 		.visual {
 			order: 1;
 			align-content: center;
+			/* Stacked now, not side by side — matching the timeline's height no
+			   longer means anything, so the inline height from the script goes. */
+			height: auto !important;
 			margin: 0 calc(-1 * var(--pad)) calc(-1 * var(--pad));
 			border-top: var(--rule);
 			border-right: 0;
@@ -235,6 +301,16 @@
 	/* Portrait needs real width to read — drop it rather than crop it further on a phone. */
 	@media (max-width: 40rem) {
 		.visual {
+			display: none;
+		}
+
+		/* One indentation level, not two — the rail dot column stays, but the
+		   bullet dash's own indent goes, giving narrow-screen text back the room. */
+		.milestone li {
+			padding-left: 0;
+		}
+
+		.milestone li::before {
 			display: none;
 		}
 	}
