@@ -79,10 +79,12 @@
 		const spy = new IntersectionObserver(
 			(entries) => {
 				for (const entry of entries) {
-					if (!entry.isIntersecting) continue;
-					active = `/#${entry.target.id}`;
-					/* replaceState not pushState — a history entry per section crossed would make Back a scroll-by-scroll rewind. Only fires here, which only runs with real sections observed, i.e. the landing page. */
-					history.replaceState(history.state, '', active);
+					/* Styling only. This used to also history.replaceState() the URL to
+					   match, which clobbered whatever the visitor actually opened (a
+					   query string, a deep project fragment like #ancestree) with just
+					   the enclosing nav stop. The address bar now only changes on an
+					   explicit anchor activation (jump()'s native hash navigation). */
+					if (entry.isIntersecting) active = `/#${entry.target.id}`;
 				}
 			},
 			{ rootMargin: '-30% 0px -60% 0px' }
