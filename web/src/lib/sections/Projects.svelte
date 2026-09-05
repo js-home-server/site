@@ -23,7 +23,7 @@
 		{
 			name: 'Ancestree',
 			blurb:
-				'Ten variations in, you are looking at final_v2_REAL.csv with no record of what produced it. Ancestree puts a pipeline’s DAG, metadata and artifact bytes in one SQLite file, no server needed. It stores 3.93× less and reruns 136× faster, across 975 tests. It ships on PyPI as a zero-dependency MIT library supporting Python 3.9–3.14. Every push runs Ruff, strict mypy and pytest across six Python releases, with 92.97% line coverage.',
+				"Ten variations in, you are looking at final_v2_REAL.csv with no record of what produced it. Ancestree tracks a pipeline's DAG, metadata and artifact bytes in one SQLite file, with no server required. It stores 3.93× less and reruns 136× faster than starting over.",
 			tools: ['Python', 'SQL'],
 			url: 'https://github.com/JS195/ancestree',
 			pypi: 'https://pypi.org/project/ancestree-track/',
@@ -36,7 +36,7 @@
 		{
 			name: 'This server',
 			blurb:
-				'A machine publishing a live feed about itself is publishing facts about a house. This one runs Debian behind an outbound tunnel, where what reaches the public API is a checked-in list rather than whatever the exporters expose. It draws 3.0 W and opens no ports. Eight containers run on a four-core, 8 GB Debian 13 host, and the public API exposes three GET-only routes. Commit-tagged deploys health-check for 30 seconds and roll back both the stack and crontab on failure.',
+				'I run my own home server, and it publishes a live feed about itself. Debian runs behind an outbound tunnel, sharing only what it chooses to expose. The whole thing draws 3.0 W and opens no ports. Every deploy health-checks itself and rolls back on failure.',
 			tools: ['Svelte', 'JavaScript', 'Docker', 'Linux', 'Python'],
 			url: 'https://github.com/js-home-server',
 			live: '/server/',
@@ -48,7 +48,7 @@
 		{
 			name: 'Crypto orderflow',
 			blurb:
-				'A cross-sectional strategy needs order flow aggregated across many assets at once, and the vendors that sell it retain days rather than years of something that cannot be backfilled after the fact. That need for a longer, wider archive is what led me to build the collector myself: 11.5M rows a day off ten venue feeds, folded to 108 MB of Parquet. Its 583 streams cover 100 base assets across six exchanges with 1.0 ms median writer lag. The archive now backs a market-neutral strategy with 2.39 net Sharpe over 6.5 years and 1.08 walk-forward; shuffled-signal and lookahead checks test the result.',
+				"Vendors selling cross-sectional order flow retain days of it, not years, and it can't be backfilled after the fact. So I built my own collector, storing 11.5M rows a day across ten venues in Parquet. The archive now backs a market-neutral strategy with a 2.39 net Sharpe over 6.5 years.",
 			tools: ['Python', 'Docker', 'Polars', 'NumPy'],
 			url: 'https://github.com/JS195/orderflow-alpha',
 			proofLabel: 'Live',
@@ -59,8 +59,8 @@
 		{
 			name: 'ascii-art',
 			blurb:
-				'A photograph is a grid of pixels and a terminal is a grid of characters. A C renderer converts one to the other, with sampling, tone curve, glyph selection and encoding as separately tested stages. It runs in 13 ms and draws every image on this site. Its seven modules comprise 1,300 lines of C, with one vendored dependency and clean builds under -Wall, -Wextra and -Wpedantic. Seventeen tests and 168 assertions cover the pipeline and output geometry; one Make target regenerates five site components byte-identically.',
-			tools: ['C'],
+				'A photograph is a grid of pixels, and a terminal is a grid of characters. A C renderer converts one to the other, sampling, mapping tone, choosing glyphs and encoding. It runs in 13 ms and draws every image on this site. One Make target regenerates all of them byte-identically.',
+			tools: ['C', 'Make'],
 			url: 'https://github.com/JS195/asciiArt',
 			proofLabel: 'In use',
 			proof: '13 ms to generate every image on this site',
