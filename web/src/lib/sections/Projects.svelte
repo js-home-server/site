@@ -123,7 +123,7 @@
 								{#if url}<ActionLink direction="external" href={url}><span class="link-label"><Logo name="GitHub" />GitHub</span></ActionLink>{/if}
 								{#if pypi}<ActionLink direction="external" href={pypi}><span class="link-label"><Icon name="cube" />PyPI</span></ActionLink>{/if}
 								{#if docs}<ActionLink direction="external" href={docs}><span class="link-label"><Icon name="book" />Docs</span></ActionLink>{/if}
-								{#if live}<ActionLink direction="site" href={live}><span class="link-label"><Icon name="external" />Open dashboard</span></ActionLink>{/if}
+								{#if live}<ActionLink direction="site" href={live}><span class="link-label"><Icon name="chart" />Open dashboard</span></ActionLink>{/if}
 							</nav>
 						{/if}
 					</div>

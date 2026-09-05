@@ -155,7 +155,10 @@
 			</p>
 		{/if}
 
-		<ActionLink variant="cta" direction="site" href="/server/" class="lede-link">
+		<!-- The project card further down this page, not the live dashboard —
+		     Projects' own "Open dashboard" link already owns /server/, so this
+		     can't claim the same destination under a different name. -->
+		<ActionLink variant="cta" direction="site" href="/#server" class="lede-link">
 			About this server
 		</ActionLink>
 	</div>

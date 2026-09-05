@@ -35,8 +35,25 @@
 
 <style>
 	.action-link {
+		position: relative;
 		display: inline-block;
 		text-decoration: none;
+	}
+
+	/* cta/back are always standalone actions (hero CTA, "About this server",
+	   nav-style back links) — an invisible hit area gets them to a ~44px
+	   touch target without inflating the visible label. plain isn't included
+	   here: Projects.svelte also uses it inline inside a sentence, where a
+	   bigger hit box would steal taps meant for neighbouring words. */
+	.action-link.cta::before,
+	.action-link.back::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 0;
+		right: 0;
+		height: max(100%, 2.75rem);
+		transform: translateY(-50%);
 	}
 
 	/* One flex row so the hover underline below has one box to paint under — separate text/arrow decorations left a gap between them. */

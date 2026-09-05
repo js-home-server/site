@@ -153,9 +153,11 @@
 			<ul class="channels">
 				{#each CHANNELS as channel (channel.key)}
 					<li>
-						<div class="icon"><Logo name={channel.icon} /></div>
 						{#if channel.href.startsWith('mailto:')}
-							<a class="value" href={channel.href}>{channel.label}</a>
+							<a class="value" href={channel.href}>
+								<span class="icon"><Logo name={channel.icon} /></span>
+								{channel.label}
+							</a>
 						{:else}
 							<ActionLink
 								variant="plain"
@@ -164,6 +166,7 @@
 								download={channel.download}
 								class="value"
 							>
+								<span class="icon"><Logo name={channel.icon} /></span>
 								{channel.label}
 							</ActionLink>
 						{/if}
@@ -332,27 +335,28 @@
 		list-style: none;
 	}
 
-	.channels li {
-		display: grid;
-		grid-template-columns: 2rem minmax(0, 1fr);
-		gap: 0.75rem;
+	/* Icon lives inside the anchor now (not a sibling) so the whole row —
+	   icon included — is one tap target, not just the label text. */
+	a.value,
+	.channels :global(.value) {
+		display: flex;
 		align-items: center;
+		gap: 0.75rem;
+		/* ~44px touch target: 1.35rem icon + this padding clears it either way. */
+		min-height: 2.75rem;
+		color: var(--color-foreground);
+		font-family: var(--font-mono);
+		font-size: var(--fs-base);
+		text-decoration: none;
 	}
 
 	.channels .icon {
 		display: grid;
 		place-items: center;
-		justify-self: center;
+		flex: none;
 		width: 1.35rem;
 		height: 1.35rem;
 		color: var(--text-dim);
-	}
-
-	a.value {
-		color: var(--color-foreground);
-		font-family: var(--font-mono);
-		font-size: var(--fs-base);
-		text-decoration: none;
 	}
 
 	/* GitHub/LinkedIn/CV rows are ActionLink, not <a> — a.value's font-size can't reach them, so --link-size does the job instead. */

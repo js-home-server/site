@@ -138,7 +138,8 @@
 	:global(#home),
 	:global(#projects),
 	:global(#experience),
-	:global(#contact) {
+	:global(#contact),
+	:global(#server) {
 		scroll-margin-top: var(--header-height);
 	}
 
@@ -178,6 +179,20 @@
 		text-decoration: none;
 		text-transform: uppercase;
 		transition: color 160ms ease;
+	}
+
+	/* Invisible hit area, not real padding — real padding would grow the row
+	   past --header-height's math (scroll-margin, sticky offset). Height only:
+	   width is already comfortable, and widening it risks overlapping the
+	   next link across the mobile-tier's tighter gap. */
+	a::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 0;
+		right: 0;
+		height: max(100%, 2.75rem);
+		transform: translateY(-50%);
 	}
 
 	a:hover,
