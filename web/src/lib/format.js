@@ -47,7 +47,7 @@ export function duration(seconds) {
 }
 
 /* Split from its unit so a caller can size them differently. */
-export const uptimeHours = (seconds) => (Number.isFinite(seconds) ? Math.floor(seconds / 3600) : null);
+export const uptimeDays = (seconds) => (Number.isFinite(seconds) ? Math.floor(seconds / 86_400) : null);
 
 /* Short form for a value ("24H"), long for a screen reader ("24 hours"). No
    history reads as an em dash short, or null long (the caller has its own fallback sentence). */

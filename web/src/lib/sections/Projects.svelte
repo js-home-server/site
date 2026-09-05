@@ -59,7 +59,7 @@
 		{
 			name: 'ascii-art',
 			blurb:
-				"Ascii art is cool, so I built a beefed up generator for myself. Written in C, it turns an image into your selection of ascii characters with black and white, greyscale, or full colour modes. It renders images in ~13 ms, and drew every image on this site.",
+				"Ascii art is cool, so I built a beefed up generator for myself. Written in C, it turns an image into ascii characters with black and white, greyscale, or full colour modes. It turns a 667×667 photo into 132800 characters in ~13 ms, and drew every image on this site.",
 			tools: ['C', 'Make'],
 			url: 'https://github.com/JS195/asciiArt',
 			proofLabel: 'In use',

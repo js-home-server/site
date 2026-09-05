@@ -4,7 +4,7 @@
 	import ActionLink from './ActionLink.svelte';
 	import UptimeStrip from './UptimeStrip.svelte';
 	import LoadingDots from './LoadingDots.svelte';
-	import { degrees, ms, span, stamp, uptimeHours } from '$lib/format.js';
+	import { degrees, ms, span, stamp, uptimeDays } from '$lib/format.js';
 	import { server, watch } from '$lib/server.svelte.js';
 	import { mean, minMax, outages, percentile, spanSeconds, values } from '$lib/stats.js';
 
@@ -58,13 +58,13 @@
 	let incidents = $derived(outages(uptime));
 
 	/* Everything settled here so the template stays a list of readings, not a pile of ternaries. */
-	let hours = $derived(online ? uptimeHours(snapshot?.availability.uptime_seconds) : null);
+	let days = $derived(online ? uptimeDays(snapshot?.availability.uptime_seconds) : null);
 
 	let cards = $derived([
 		{
 			label: 'Uptime',
-			value: hours ?? '—',
-			unit: hours !== null ? 'h' : '',
+			value: days ?? '—',
+			unit: days !== null ? 'd' : '',
 			tone: 'mint',
 			/* Silence ≠ a clean record — no series means the strip can't say either way. */
 			stats: uptime.length > 1

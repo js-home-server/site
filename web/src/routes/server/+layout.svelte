@@ -4,7 +4,7 @@
 	import Dashboard from '$lib/components/Dashboard.svelte';
 	import TimeAxis from '$lib/components/TimeAxis.svelte';
 	import UptimeStrip from '$lib/components/UptimeStrip.svelte';
-	import { span, stamp, uptimeHours } from '$lib/format.js';
+	import { span, stamp, uptimeDays } from '$lib/format.js';
 	import { server, watch } from '$lib/server.svelte.js';
 	import { outages } from '$lib/stats.js';
 
@@ -43,7 +43,7 @@
 	   an aggregate, not a guarantee that a run maps one-to-one onto a real-world outage. */
 	let uptime = $derived(server.series?.availability.status ?? []);
 	let incidents = $derived(outages(uptime));
-	let hours = $derived(online ? uptimeHours(snapshot?.availability.uptime_seconds) : null);
+	let days = $derived(online ? uptimeDays(snapshot?.availability.uptime_seconds) : null);
 </script>
 
 <Dashboard title="Server" sections={SECTIONS} current={page.url.pathname} max="88rem">
@@ -65,7 +65,7 @@
 		<div class="rail-box uptime">
 			<p class="eyebrow">Uptime</p>
 			<p class="figure">
-				{hours ?? '—'}<span class="unit">{hours !== null ? 'h' : ''}</span>
+				{days ?? '—'}<span class="unit">{days !== null ? 'd' : ''}</span>
 			</p>
 			<p class="stats">
 				{uptime.length
