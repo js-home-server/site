@@ -20,6 +20,14 @@
 	$effect(watch);
 
 	let snapshot = $derived(server.snapshot);
+	/* The tag downgrades only once a poll has actually failed — 'pending' (initial,
+	   pre-fetch) keeps the optimistic label so the prerender doesn't flash "not live". */
+	let lost = $derived(server.status.snapshot === 'stale' || server.status.snapshot === 'error');
+	let feedLabel = $derived(
+		server.status.snapshot === 'stale' ? 'Last known — not live'
+			: server.status.snapshot === 'error' ? 'Status unavailable'
+				: 'Live from the host'
+	);
 	let series = $derived(server.series);
 	let month = $derived(server.month ?? server.series);
 
@@ -50,7 +58,7 @@
 </script>
 
 <div class="proof">
-	<span class="tag"><i class="dot" aria-hidden="true"></i>Live from the host</span>
+	<span class="tag" class:stale={lost}><i class="dot" aria-hidden="true"></i>{feedLabel}</span>
 	<div class="mini-dashboard">
 		<div class="mgrid">
 			<div class="obox" style={gridArea({ col: 1, row: 1 })}>
@@ -204,6 +212,16 @@
 		border-radius: 50%;
 		background: var(--mint);
 		box-shadow: 0 0 0.5rem var(--mint);
+	}
+
+	/* Snapshot poll stale/errored: the tag stops claiming a live feed and the dot drops its glow. */
+	.proof .tag.stale {
+		color: #8a8a84;
+	}
+
+	.proof .tag.stale .dot {
+		background: #8a8a84;
+		box-shadow: none;
 	}
 
 	/* Not a box of its own — just the frame the .obox tiles read their dark tokens from. */
