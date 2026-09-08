@@ -1,0 +1,45 @@
+# Production compose for the site container. The image is built and published by
+# CI on a git tag; this file is the declarative desired state on the server.
+#
+# Deploy a release:   SITE_TAG=v1.0.0 written to .env, then:
+#   docker compose -f compose.yml pull && docker compose -f compose.yml up -d
+# Roll back:          set SITE_TAG to an earlier tag and repeat.
+name: site
+
+services:
+  web:
+    image: ghcr.io/js-home-server/site:${SITE_TAG:-latest}
+    container_name: js195_web
+    restart: unless-stopped
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    # caddy binary is setcap net_bind_service; add it back so exec is not blocked
+    # by no-new-privileges (we bind 8081, so it grants nothing usable).
+    cap_add: [NET_BIND_SERVICE]
+    read_only: true
+    user: "10002:10002"
+    environment:
+      # Image sets XDG to /config,/data which are read-only here; point at tmpfs.
+      XDG_CONFIG_HOME: /tmp
+      XDG_DATA_HOME: /tmp
+    mem_limit: 64m
+    cpus: 0.25
+    pids_limit: 64
+    # Loopback-only on the host; the Cloudflare tunnel targets this.
+    ports: ["127.0.0.1:8081:8081"]
+    tmpfs:
+      - /tmp:mode=1777,size=16m,noexec,nosuid
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: "3"}
+    networks: [site]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8081/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+networks:
+  site:
+    driver: bridge

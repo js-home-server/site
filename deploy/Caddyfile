@@ -1,0 +1,30 @@
+# Static file server for js195.co.uk, reached only via the Cloudflare tunnel
+# (127.0.0.1:8081). Cloudflare terminates TLS, so this speaks plain HTTP on the
+# container's port -- auto_https off stops Caddy trying to grab :443 / a cert.
+{
+	admin off
+	auto_https off
+}
+
+:8081 {
+	root * /srv/js195/build
+	encode gzip zstd
+
+	route {
+		# Defense-in-depth: never serve dotfiles (the build has none today).
+		@dotfiles path_regexp /\.[^/]
+		respond @dotfiles 404
+		file_server
+	}
+
+	# Response headers the <meta> CSP cannot carry. HSTS stays OFF here --
+	# enable it at Cloudflare once go-live is confirmed.
+	header {
+		Content-Security-Policy "frame-ancestors 'none'"
+		X-Frame-Options "DENY"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()"
+		-Server
+	}
+}

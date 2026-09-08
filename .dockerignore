@@ -1,0 +1,8 @@
+**/node_modules
+web/build
+web/.svelte-kit
+.git
+.github
+deploy/compose.yml
+**/.DS_Store
+security-audit-*
