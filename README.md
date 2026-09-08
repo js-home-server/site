@@ -40,3 +40,8 @@ web/         SvelteKit app
 deploy/      Caddyfile and production compose
 Dockerfile   builds the site, serves it from caddy:2-alpine
 ```
+
+## Licence
+
+All rights reserved — see [LICENSE](LICENSE). The source is here to be read,
+not reused.
