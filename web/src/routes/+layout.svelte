@@ -16,6 +16,9 @@
 </script>
 
 <svelte:head>
+	<!-- Safari ignores the PNG <link> tags below and fetches /favicon.ico directly —
+	     without this it 404s and Safari falls back to a plain grey initial. -->
+	<link rel="icon" href="/favicon.ico" sizes="any" />
 	<link rel="icon" href="/favicon.png" type="image/png" />
 	<link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
 	<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
