@@ -101,9 +101,21 @@
 	let captchaState = $state('loading'); // loading | ready | failed
 
 	function reloadCaptchaScript() {
-		document.querySelectorAll('script[data-w3f-captcha]').forEach((el) => el.remove());
+		/* A stale, failed hCaptcha <script> tag left in the DOM makes Web3Forms' own
+		   script think it already injected one and skip doing it again — reloading
+		   just the wrapper isn't enough, this has to go too. Same for window.hcaptcha:
+		   a half-initialised global from the failed attempt can't be trusted either. */
+		document.querySelectorAll('script[data-w3f-captcha], script[src*="hcaptcha.com"]').forEach((el) =>
+			el.remove()
+		);
+		delete window.hcaptcha;
+
 		const script = document.createElement('script');
-		script.src = 'https://web3forms.com/client/script.js';
+		/* A cache-busting query string, not just a fresh <script> element — a second
+		   tag with the exact same src the browser already has silently does nothing:
+		   no new request, no re-execution. Confirmed directly (outside Svelte, outside
+		   this retry logic) before landing on this fix. */
+		script.src = `https://web3forms.com/client/script.js?retry=${Date.now()}`;
 		script.async = true;
 		script.dataset.w3fCaptcha = 'true';
 		document.head.appendChild(script);
@@ -297,6 +309,8 @@
 							Sending <LoadingDots />
 						{:else if captchaState === 'loading'}
 							Verifying…
+						{:else if captchaState === 'failed'}
+							Captcha unavailable
 						{:else}
 							Send message
 						{/if}
