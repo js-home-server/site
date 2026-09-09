@@ -185,9 +185,9 @@
 	}
 
 	/* Phone tier (app.css) — page chrome reacts at device width, not a dashboard component's container.
-	   Identity moves into flow below the art here too (see the max-height query below for why), so the
-	   bull, name and intro can own the whole first screen — the status strip scrolls in below the fold,
-	   and doesn't need art shrunk to leave room for it up front. */
+	   Identity moves into flow below the art here too (see the max-height query below for why). Natural
+	   (bull + identity) height, not forced to fill the screen — the status strip follows immediately
+	   after the intro instead of waiting below a full screen's worth of empty space. */
 	@media (max-width: 48rem) {
 		.identity::before {
 			inset-inline: -1rem;
@@ -197,24 +197,39 @@
 			--bar-reserve: 0px;
 			--tuck: 0rem;
 			height: auto;
-			min-height: calc(100svh - var(--header-height));
 		}
 
-		/* Forced to a full screen's height and centred, not left at its natural (bull + identity)
-		   size — that's how the status strip actually lands below the fold instead of just peeking in. */
 		.wrap {
 			display: flex;
 			flex-direction: column;
-			justify-content: center;
-			min-height: calc(100svh - var(--header-height));
+			/* --sky is the same "clear band under the nav" token the desktop --cell formula
+			   keeps off the horn tips — reused here since that's exactly what this gap is. */
+			margin-top: var(--sky);
+		}
+
+		/* Wrap now holds the identity text too (flow, not overlay), so the base
+		   ::after — tuned to fade only the last 28% of the art alone — would wash
+		   out the name and tagline as well. */
+		.wrap::after {
+			display: none;
 		}
 
 		.identity {
 			position: relative;
 			top: auto;
 			left: auto;
-			margin-top: 1rem;
+			/* The art already tapers to nothing over its last few rows (no hard edge
+			   to fade), so the name just needs pulling up into that dead space —
+			   in cells, like every other hero measurement, so it scales with --cell
+			   instead of drifting off at some other width. */
+			margin-top: calc(-6 * var(--cell));
 			transform: none;
+		}
+
+		/* Section gap (.page, app.css) quadrupled — a single or double gap still
+		   read as the card crowding the CTA above it. */
+		.bar-measure {
+			margin-top: calc(4 * clamp(0.75rem, 1.5vh, 1.25rem));
 		}
 	}
 
