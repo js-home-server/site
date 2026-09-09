@@ -76,13 +76,13 @@
 	let email = $state('');
 	let message = $state('');
 	let honeypot = $state('');
-	let status = $state('idle'); // idle | sending | sent | timeout | error
+	let status = $state('idle'); // idle | sending | sent | timeout | error | no-captcha
 
 	/* A real edit, not our own post-send reset — bind:value assignments don't
 	   dispatch input events, only the user typing does. Stale sent/error/timeout
 	   feedback from a previous message shouldn't linger over a new draft. */
 	function onDraftEdit() {
-		if (status === 'sent' || status === 'error' || status === 'timeout') status = 'idle';
+		if (status !== 'idle' && status !== 'sending') status = 'idle';
 	}
 
 	/* Web3Forms' zero-config hCaptcha (script in svelte:head) renders into the .h-captcha
@@ -90,8 +90,66 @@
 	   we post JSON ourselves, so it has to be read and forwarded by hand instead. */
 	const captchaResponse = () => document.querySelector('[name="h-captcha-response"]')?.value ?? '';
 
+	/* Web3Forms' own script fetches the sitekey over the network, then hCaptcha's script
+	   auto-scans the page for a `.h-captcha` div to render into — two independent scripts
+	   racing, with no guarantee the sitekey lands before the scan runs. When hCaptcha loses
+	   that race it logs "Missing sitekey" and never renders, silently leaving the form with
+	   no working captcha. Polled and retried here instead of trusted blindly: the Send button
+	   stays disabled until a real widget (an iframe) shows up, and a stalled attempt gets a
+	   couple of fresh reloads of Web3Forms' script — each one an independent roll of the same
+	   race — before giving up and saying so. */
+	let captchaState = $state('loading'); // loading | ready | failed
+
+	function reloadCaptchaScript() {
+		document.querySelectorAll('script[data-w3f-captcha]').forEach((el) => el.remove());
+		const script = document.createElement('script');
+		script.src = 'https://web3forms.com/client/script.js';
+		script.async = true;
+		script.dataset.w3fCaptcha = 'true';
+		document.head.appendChild(script);
+	}
+
+	$effect(() => {
+		const box = document.querySelector('.h-captcha');
+		if (!box) return;
+
+		const POLL_MS = 500;
+		const ATTEMPT_MS = 6000;
+		const MAX_RETRIES = 2;
+		let waited = 0;
+		let retries = 0;
+
+		const poll = setInterval(() => {
+			if (box.querySelector('iframe')) {
+				captchaState = 'ready';
+				clearInterval(poll);
+				return;
+			}
+			waited += POLL_MS;
+			if (waited < ATTEMPT_MS) return;
+			if (retries >= MAX_RETRIES) {
+				captchaState = 'failed';
+				clearInterval(poll);
+				return;
+			}
+			retries++;
+			waited = 0;
+			box.removeAttribute('data-sitekey');
+			box.replaceChildren();
+			reloadCaptchaScript();
+		}, POLL_MS);
+
+		return () => clearInterval(poll);
+	});
+
 	async function sendMessage(event) {
 		event.preventDefault();
+		/* The only real guarantee against spam: never let a submission reach Web3Forms
+		   without a solved captcha, whatever state the widget is in. */
+		if (!captchaResponse()) {
+			status = 'no-captcha';
+			return;
+		}
 		status = 'sending';
 		try {
 			const response = await fetchWithTimeout(
@@ -131,7 +189,7 @@
 </script>
 
 <svelte:head>
-	<script src="https://web3forms.com/client/script.js" async defer></script>
+	<script src="https://web3forms.com/client/script.js" async defer data-w3f-captcha></script>
 </svelte:head>
 
 <section id="contact" class="page contact">
@@ -224,11 +282,21 @@
 				     Normal, not compact: compact is the squarer, taller layout — this is the wide, short one,
 				     and it already carries its own dark card, so it isn't boxed again on top. -->
 				<div class="h-captcha" data-captcha="true" data-theme="dark"></div>
+				{#if captchaState === 'failed'}
+					<!-- The retries in the $effect above are exhausted — a stuck Send button with no
+					     explanation reads as broken, not as "protecting you from spam". -->
+					<p class="feedback err">
+						Captcha didn't load — reload the page and try again, or
+						<a href="mailto:{EMAIL}">email me directly</a>.
+					</p>
+				{/if}
 
 				<div class="actions">
-					<button type="submit" disabled={status === 'sending'}>
+					<button type="submit" disabled={status === 'sending' || captchaState !== 'ready'}>
 						{#if status === 'sending'}
 							Sending <LoadingDots />
+						{:else if captchaState === 'loading'}
+							Verifying…
 						{:else}
 							Send message
 						{/if}
@@ -247,6 +315,8 @@
 							<p class="feedback err">
 								Something went wrong — try again, or <a href="mailto:{EMAIL}">email me directly</a>.
 							</p>
+						{:else if status === 'no-captcha'}
+							<p class="feedback err">Please complete the captcha above before sending.</p>
 						{/if}
 					</div>
 				</div>
