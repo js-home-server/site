@@ -65,9 +65,8 @@
 		{
 			key: 'cv',
 			icon: 'CV',
-			label: 'Download CV',
-			href: '/cv.pdf',
-			download: 'joshua-smith-cv.pdf'
+			label: 'View CV',
+			href: '/cv.pdf'
 		}
 	];
 
@@ -163,13 +162,7 @@
 								{channel.label}
 							</a>
 						{:else}
-							<ActionLink
-								variant="plain"
-								direction={channel.download ? 'download' : 'external'}
-								href={channel.href}
-								download={channel.download}
-								class="value"
-							>
+							<ActionLink variant="plain" direction="external" href={channel.href} class="value">
 								<span class="icon"><Logo name={channel.icon} /></span>
 								{channel.label}
 							</ActionLink>

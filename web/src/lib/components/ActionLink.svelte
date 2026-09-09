@@ -1,13 +1,12 @@
 <script>
 	/* The one place the arrow convention lives: site (still on the page),
-	   external (off it), download (a file, not a page), back (no nav of its own). */
-	const ARROWS = { site: '→', external: '↗', download: '↓', back: '←' };
+	   external (off it), back (no nav of its own). */
+	const ARROWS = { site: '→', external: '↗', back: '←' };
 
 	let {
 		direction,
 		variant = 'plain',
 		href,
-		download,
 		class: extraClass = '',
 		children,
 		...rest
@@ -19,7 +18,6 @@
 	class="action-link {direction === 'back' ? '' : variant} {direction} {extraClass}"
 	target={direction === 'external' ? '_blank' : undefined}
 	rel={direction === 'external' ? 'noopener noreferrer' : undefined}
-	download={direction === 'download' ? (download ?? true) : undefined}
 	{...rest}
 >
 	<span class="content">
@@ -142,11 +140,6 @@
 	}
 
 	/* Keyed on direction, not variant — plain/cta/back links all get the same arrow nudge for free. */
-	.action-link.download:hover .arrow,
-	.action-link.download:focus-visible .arrow {
-		transform: translateY(2px);
-	}
-
 	.action-link.site:hover .arrow,
 	.action-link.site:focus-visible .arrow {
 		transform: translateX(2px);
