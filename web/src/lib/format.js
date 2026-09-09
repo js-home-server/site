@@ -20,20 +20,6 @@ export const ms = (v) => (Number.isFinite(v) ? `${Math.round(v)} ms` : '—');
 export const microseconds = (v) =>
 	Number.isFinite(v) ? `${v < 0 ? '−' : '+'}${Math.round(Math.abs(v) * 1e6)} µs` : '—';
 
-/* Unsigned — a dispersion or delay is a width, not a direction. Same unit as microseconds() so the two compare directly. */
-export const microspan = (v) =>
-	Number.isFinite(v) ? `${Math.round(Math.abs(v) * 1e6)} µs` : '—';
-
-export const clockPosition = (v) => {
-	if (!Number.isFinite(v)) return '—';
-	const distance = Math.round(Math.abs(v) * 1e6);
-	return distance ? `${distance} µs ${v > 0 ? 'ahead' : 'behind'}` : 'On reference';
-};
-
-/* Parts per million, how fast a clock runs rather than where it is. */
-export const ppm = (v) =>
-	Number.isFinite(v) ? `${v < 0 ? '−' : '+'}${Math.abs(v).toFixed(3)} ppm` : '—';
-
 /* Two units at whatever scale reads best — a fortnight isn't read in minutes. Padded so a column doesn't jump crossing ten. */
 export function duration(seconds) {
 	if (!Number.isFinite(seconds) || seconds < 0) return '—';

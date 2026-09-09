@@ -7,13 +7,17 @@
 	import Projects from '$lib/sections/Projects.svelte';
 	import Contact from '$lib/sections/Contact.svelte';
 	import ActionLink from '$lib/components/ActionLink.svelte';
+
+	// Real height of the rendered StatusBar, so the hero's --cell formula reserves
+	// exactly the room it needs instead of a guessed constant (see --bar-reserve).
+	let barHeight = $state(0);
 </script>
 
 <svelte:head>
 	<title>Joshua Smith — Graduate Engineer</title>
 </svelte:head>
 
-<div class="landing" id="home">
+<div class="landing" id="home" style:--measured-bar-height={barHeight ? `${barHeight}px` : undefined}>
 	<div class="wrap">
 		<!-- Decorative — the heading below says the same thing, this is tens of thousands of digits to a screen reader. -->
 		<div class="bull" aria-hidden="true">
@@ -27,7 +31,9 @@
 		</div>
 	</div>
 
-	<StatusBar />
+	<div class="bar-measure" bind:clientHeight={barHeight}>
+		<StatusBar />
+	</div>
 </div>
 
 <Projects />
@@ -46,12 +52,14 @@
 		     1728x993 reference screenshot (art was 774px tall there).
 		   --tuck: how far the faded tail overlaps the cards before fading to page colour.
 		   --sky: minimum clear band between nav and horn tips.
-		   --bar-reserve: estimated card height, just to stop collisions on short viewports. */
+		   --bar-reserve: the status bar's real rendered height (--measured-bar-height,
+		     set from bar-measure's bind:clientHeight below), so the bull never overflows
+		     into a row sized off a guess. Falls back to the old estimate for the first
+		     paint before that measurement lands. */
 		--art-fill: 0.78;
 		--tuck: 4rem;
 		--sky: 2rem;
-		/* Cards + their bottom gap — same gap every section on the site keeps (.page, app.css). */
-		--bar-reserve: calc(8.5rem + clamp(0.75rem, 1.5vh, 1.25rem));
+		--bar-reserve: var(--measured-bar-height, calc(8.5rem + clamp(0.75rem, 1.5vh, 1.25rem)));
 
 		/* Smallest of three limits wins, no breakpoints: width cap, height-share cap,
 		   sky cap. Normal screens hit the height cap; extremes hit the others. The
@@ -77,6 +85,12 @@
 		justify-content: center;
 		/* Definite height, so the row above the bar gets the leftover space, not the bull's natural height. */
 		height: calc(100svh - var(--header-height));
+	}
+
+	/* display: grid (any block formatting context works) so StatusBar's own bottom
+	   margin can't collapse through and go missing from clientHeight. */
+	.bar-measure {
+		display: grid;
 	}
 
 	.wrap {
