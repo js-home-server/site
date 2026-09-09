@@ -39,7 +39,7 @@ export default defineConfig({
 				directives: {
 					'default-src': ['self'],
 					// web3forms client script + the hCaptcha it injects
-					'script-src': ['self', 'https://web3forms.com', 'https://hcaptcha.com', 'https://*.hcaptcha.com'],
+					'script-src': ['self', 'https://web3forms.com', 'https://hcaptcha.com', 'https://*.hcaptcha.com', 'https://static.cloudflareinsights.com'],
 					'style-src': ['self', 'https://hcaptcha.com', 'https://*.hcaptcha.com'],
 					// 6 inline style="" attributes (e.g. app.html's display:contents). Attributes
 					// can't run script, and hashes don't cover attributes, so this is the one place
@@ -48,7 +48,7 @@ export default defineConfig({
 					'img-src': ['self', 'data:'],
 					'font-src': ['self'],
 					// form POST, live dashboard, hCaptcha verification
-					'connect-src': ['self', 'https://api.web3forms.com', 'https://status-api.js195.co.uk', 'https://hcaptcha.com', 'https://*.hcaptcha.com'],
+					'connect-src': ['self', 'https://api.web3forms.com', 'https://status-api.js195.co.uk', 'https://hcaptcha.com', 'https://*.hcaptcha.com', 'https://cloudflareinsights.com'],
 					// ancestree demo embed + hCaptcha challenge iframe
 					'frame-src': ['https://js195.github.io', 'https://hcaptcha.com', 'https://*.hcaptcha.com'],
 					'object-src': ['none'],
