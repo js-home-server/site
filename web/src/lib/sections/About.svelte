@@ -8,19 +8,20 @@
 		{
 			period: '2024 — Present',
 			title: 'Graduate Engineer, AWE',
-			tools: ['Linux', 'Slurm', 'Git', 'Python', 'scikit-learn', 'Plotly', 'NumPy', 'MATLAB', 'CUDA', 'Pandas'],
+			detail: 'Recurring theme: turning noisy, high-volume signals into fast, reliable estimates, whether the source is sensors, radar, simulations or markets.',
+			tools: ['Slurm', 'Python', 'scikit-learn', 'NumPy', 'MATLAB', 'CUDA'],
 			points: [
 				{
 					heading: '3 km global localisation accuracy',
 					text: 'Synchronised 9 geographically distributed RF sensors to microsecond precision, correcting drift between their internal clocks and GPS time. Cleaned and denoised the data, then used TDOA cross-correlation and multi-objective optimisation to localise signals to a 3 km median error worldwide.'
 				},
 				{
-					heading: '325 m accuracy at 700 km range',
-					text: 'Designed a radar-based terrain-imaging navigation system, tested against the Sentinel-1 satellite constellation travelling at 7.5 km/s. Built the preprocessing pipeline and an ML-assisted optimisation solver, hitting 325 m median accuracy with 4-second end-to-end latency on just 8 GB of RAM.'
+					heading: '279 m accuracy at 700 km range',
+					text: 'Designed a radar-based terrain-imaging navigation system, tested against the Sentinel-1 satellite constellation travelling at 7.5 km/s. Built the preprocessing pipeline and an ML-assisted optimisation solver, hitting 279 m median accuracy with 4-second end-to-end latency on just 8 GB of RAM.'
 				},
 				{
-					heading: '26× faster optimisation',
-					text: 'Built a surrogate-modelling optimiser for expensive black-box simulators with a professor of statistics, designing the stopping conditions myself. Ported it to CUDA for a 26× speedup, cutting the simulations needed from 150,000 to 20,000 and shipping it company-wide.'
+					heading: '7.5× fewer simulations',
+					text: 'Built a surrogate-modelling optimiser for expensive black-box simulators with a professor of statistics, writing roughly 60% of the codebase and designing the stopping conditions myself. Cut the simulations needed from 150,000 to 20,000, then ported the optimiser to CUDA for a further 26× speedup and shipped it company-wide.'
 				}
 			]
 		},
@@ -44,7 +45,6 @@
 	let timelineHeight = $state(0);
 </script>
 
-<span id="about" aria-hidden="true"></span>
 <section id="experience" class="page experience-page">
 	<section class="surface-box experience">
 		<!-- Decorative — the stops beside it carry the meaning, this is thousands of digits to a screen reader. -->

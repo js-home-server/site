@@ -10,7 +10,7 @@
 </script>
 
 <svelte:head>
-	<title>Joshua Smith — Data Engineer</title>
+	<title>Joshua Smith — Graduate Engineer</title>
 </svelte:head>
 
 <div class="landing" id="home">
@@ -22,7 +22,7 @@
 
 		<div class="identity">
 			<h1>Joshua Smith</h1>
-			<p class="tagline">Data Engineer focused on real-time, scientific, and ML systems.<br class="tagline-break" /> I turn numbers into models, decisions and the occasional bull.</p>
+			<p class="tagline">Graduate Engineer seeking data engineering and quant research roles.<br class="tagline-break" /> I turn numbers into models, decisions, and the occasional bull.</p>
 			<ActionLink variant="cta" direction="site" href="#projects" class="hero-cta">View my work</ActionLink>
 		</div>
 	</div>

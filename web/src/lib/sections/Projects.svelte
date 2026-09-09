@@ -23,7 +23,7 @@
 		{
 			name: 'Ancestree',
 			blurb:
-				"Ten variations in, you are looking at final_v2_REAL.csv with no record of what produced it. Writen in pure python with no dependancies, Ancestree offers a lightweight and simple way to keep track of every result and its lineage, natively on your machine. Deduplication means it stores 3.93× less on a mixed corpus. Identical reruns bypass execution to fetch the data in milliseconds instead.",
+				"Ten variations in, you are looking at final_v2_REAL.csv with no record of what produced it. Written in pure Python with no dependencies, Ancestree offers a lightweight and simple way to keep track of every result and its lineage, natively on your machine. Deduplication means it stores 3.93× less on a mixed corpus. Identical reruns bypass execution to fetch the data in milliseconds instead.",
 			tools: ['Python', 'SQL'],
 			url: 'https://github.com/JS195/ancestree',
 			pypi: 'https://pypi.org/project/ancestree-track/',
@@ -36,7 +36,7 @@
 		{
 			name: 'This server',
 			blurb:
-				"I run my own home server: it's currently hosting this webiste! In addition to supporting other personal projects, it also runs an API publishing live data about itself. The box is designed around security, it sits behind a cloudflare tunnel and opens no ports.",
+				"I run my own home server: it's currently hosting this website! In addition to supporting other personal projects, it also runs an API publishing live data about itself. The box is designed around security: it sits behind a Cloudflare tunnel and opens no ports.",
 			tools: ['Svelte', 'JavaScript', 'Docker', 'Linux', 'Python'],
 			url: 'https://github.com/js-home-server',
 			live: '/server/',
@@ -48,7 +48,7 @@
 		{
 			name: 'Crypto orderflow',
 			blurb:
-				"Vendors selling granular multi-platform, mulit-asset cryptocurrency data charge a lot of money. So I built my own collector, it stores ~11.5M rows a day across ten venues in Parquet. The archive backs a market-neutral strategy with a 2.39 net Sharpe over 6.5 years.",
+				"Vendors selling granular, multi-platform, multi-asset cryptocurrency data charge a premium. So I built my own collector — it stores ~11.5M rows a day across ten venues in Parquet. The archive backs a market-neutral strategy with a 2.39 net Sharpe over 6.5 years.",
 			tools: ['Python', 'Docker', 'Polars', 'NumPy'],
 			url: 'https://github.com/JS195/orderflow-alpha',
 			proofLabel: 'Live',
@@ -59,7 +59,7 @@
 		{
 			name: 'ascii-art',
 			blurb:
-				"Ascii art is cool, so I built a beefed up generator for myself. Written in C, it turns an image into ascii characters with black and white, greyscale, or full colour modes. It turns a 667×667 photo into 132800 characters in ~13 ms, and drew every image on this site.",
+				"ASCII art is cool, so I built a beefed up generator for myself. Written in C, it turns an image into ASCII characters with black and white, greyscale, or full colour modes. It turns a 667×667 photo into 132,800 characters in ~13 ms, and drew every image on this site.",
 			tools: ['C', 'Make'],
 			url: 'https://github.com/JS195/asciiArt',
 			proofLabel: 'In use',
