@@ -308,7 +308,7 @@
 						{#if status === 'sending'}
 							Sending <LoadingDots />
 						{:else if captchaState === 'loading'}
-							Verifying…
+							Verifying <LoadingDots />
 						{:else if captchaState === 'failed'}
 							Captcha unavailable
 						{:else}
