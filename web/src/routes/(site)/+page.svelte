@@ -22,7 +22,7 @@
 
 		<div class="identity">
 			<h1>Joshua Smith</h1>
-			<p class="tagline">Graduate Engineer seeking data engineering and quant research roles.<br class="tagline-break" /> I turn numbers into models, decisions, and the occasional bull.</p>
+			<p class="tagline">Graduate engineer at AWE, seeking data engineering and quantitative research roles.<br class="tagline-break" /> I turn numbers into models, decisions, and the occasional bull.</p>
 			<ActionLink variant="cta" direction="site" href="#projects" class="hero-cta">View my work</ActionLink>
 		</div>
 	</div>
@@ -112,7 +112,7 @@
 		top: calc(45% + 0.75rem);
 		left: 50%;
 		z-index: 1;
-		width: min(100vw - 2 * var(--gutter), 90rem);
+		width: min(100vw - 2 * var(--gutter), 90rem, calc(var(--cell) * 96.34));
 		text-align: center;
 		transform: translateX(-50%);
 	}

@@ -12,16 +12,16 @@
 			tools: ['Slurm', 'Python', 'scikit-learn', 'NumPy', 'MATLAB', 'CUDA'],
 			points: [
 				{
-					heading: '3 km global localisation accuracy',
+					heading: '3 km median localisation error',
 					text: 'Synchronised 9 geographically distributed RF sensors to microsecond precision, correcting drift between their internal clocks and GPS time. Cleaned and denoised the data, then used TDOA cross-correlation and multi-objective optimisation to localise signals to a 3 km median error worldwide.'
 				},
 				{
-					heading: '279 m accuracy at 700 km range',
-					text: 'Designed a radar-based terrain-imaging navigation system, tested against the Sentinel-1 satellite constellation travelling at 7.5 km/s. Built the preprocessing pipeline and an ML-assisted optimisation solver, hitting 279 m median accuracy with 4-second end-to-end latency on just 8 GB of RAM.'
+					heading: '279 m median position error at 700 km range',
+					text: 'Designed a radar-based terrain-imaging navigation system, validated against recorded Sentinel-1 satellite data travelling at 7.5 km/s. Built the preprocessing pipeline and an ML-assisted optimisation solver, hitting a 279 m median position error with 4-second end-to-end latency on just 8 GB of RAM.'
 				},
 				{
 					heading: '7.5× fewer simulations',
-					text: 'Built a surrogate-modelling optimiser for expensive black-box simulators with a professor of statistics, writing roughly 60% of the codebase and designing the stopping conditions myself. Cut the simulations needed from 150,000 to 20,000, then ported the optimiser to CUDA for a further 26× speedup and shipped it company-wide.'
+					text: 'Built a surrogate-modelling based optimiser for expensive black-box simulators with a professor of statistics, cutting simulations required from 150,000 to 20,000. Also designed the stopping conditions and ported it to CUDA for a further 26× speedup over the CPU version. Shipped company-wide.'
 				}
 			]
 		},

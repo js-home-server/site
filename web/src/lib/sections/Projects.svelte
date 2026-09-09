@@ -23,7 +23,7 @@
 		{
 			name: 'Ancestree',
 			blurb:
-				"Ten variations in, you are looking at final_v2_REAL.csv with no record of what produced it. Written in pure Python with no dependencies, Ancestree offers a lightweight and simple way to keep track of every result and its lineage, natively on your machine. Deduplication means it stores 3.93× less on a mixed corpus. Identical reruns bypass execution to fetch the data in milliseconds instead.",
+				"Ten variations in, you are looking at final_v2_REAL.csv with no record of what produced it. Written in pure Python with no dependencies, Ancestree offers a lightweight and simple way to keep track of every result and its lineage, natively on your machine. Deduplication means it stores 3.93× less on a mixed corpus. Identical reruns skip execution entirely and return the cached result almost instantly.",
 			tools: ['Python', 'SQL'],
 			url: 'https://github.com/JS195/ancestree',
 			pypi: 'https://pypi.org/project/ancestree-track/',
@@ -36,7 +36,7 @@
 		{
 			name: 'This server',
 			blurb:
-				"I run my own home server: it's currently hosting this website! In addition to supporting other personal projects, it also runs an API publishing live data about itself. The box is designed around security: it sits behind a Cloudflare tunnel and opens no ports.",
+				"I run my own home server: it's currently hosting this website! In addition to supporting other personal projects, it also runs an API publishing live data about itself. The box is designed around security: public access goes through a Cloudflare tunnel, with no inbound ports exposed on my home network.",
 			tools: ['Svelte', 'JavaScript', 'Docker', 'Linux', 'Python'],
 			url: 'https://github.com/js-home-server',
 			live: '/server/',
@@ -59,11 +59,11 @@
 		{
 			name: 'ascii-art',
 			blurb:
-				"ASCII art is cool, so I built a beefed up generator for myself. Written in C, it turns an image into ASCII characters with black and white, greyscale, or full colour modes. It turns a 667×667 photo into 132,800 characters in ~13 ms, and drew every image on this site.",
+				"ASCII art is cool, so I wrote my own renderer in C. It converts images to monochrome, greyscale or full colour, block-averaging source pixels instead of sampling them for a result that stays stable at any size. In a benchmark, it rendered a 667×667 photo as 132,800 characters in around 13 ms, and drew the ASCII illustrations across this site.",
 			tools: ['C', 'Make'],
 			url: 'https://github.com/JS195/asciiArt',
 			proofLabel: 'In use',
-			proof: 'Generated every image on this site',
+			proof: 'Generated the ASCII illustrations on this site',
 			route: '/projects/ascii-art/',
 			brief: 'ascii'
 		}

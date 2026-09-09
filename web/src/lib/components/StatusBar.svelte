@@ -6,7 +6,7 @@
 	import LoadingDots from './LoadingDots.svelte';
 	import { degrees, ms, span, stamp, uptimeDays } from '$lib/format.js';
 	import { server, watch } from '$lib/server.svelte.js';
-	import { mean, minMax, outages, percentile, spanSeconds, values } from '$lib/stats.js';
+	import { mean, outages, spanSeconds, values } from '$lib/stats.js';
 
 	$effect(watch);
 
@@ -81,7 +81,10 @@
 			unit: Number.isFinite(snapshot?.cpu.temperature_c) ? '°C' : '',
 			tight: true,
 			tone: 'amber',
-			stats: minMax(temps, degrees),
+			/* Range, not MIN/MAX — the two figures next to each other already say which is which. */
+			stats: temps.length
+				? `RANGE ${degrees(Math.min(...values(temps)))} · ${degrees(Math.max(...values(temps)))}`
+				: 'NO HISTORY YET',
 			points: temps
 		},
 		{
@@ -92,9 +95,7 @@
 			unit: Number.isFinite(snapshot?.availability.latency_ms) ? 'ms' : '',
 			tone: 'azure',
 			/* Average + tail, not floor/ceiling — the best a link ever managed says nothing about right now. */
-			stats: latencies.length
-				? `AVG ${ms(mean(values(latencies)))} · P95 ${ms(percentile(values(latencies), 0.95))}`
-				: 'NO HISTORY YET',
+			stats: latencies.length ? `AVG ${ms(mean(values(latencies)))}` : 'NO HISTORY YET',
 			points: latencies
 		}
 	]);

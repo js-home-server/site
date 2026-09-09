@@ -8,6 +8,10 @@
 	import { ticking } from '$lib/clock.svelte.js';
 	import { fetchWithTimeout } from '$lib/http.js';
 
+	/* Measured, not guessed — the dish crops to whatever height .intro actually
+	   renders at, same technique as the astronaut portrait (About.svelte). */
+	let introHeight = $state(0);
+
 	const EMAIL = 'js-195@outlook.com';
 	/* Long enough that a slow but working submission isn't cut off, short enough
 	   that "Sending…" can't hang forever on a stalled dependency. */
@@ -133,12 +137,12 @@
 
 <section id="contact" class="page contact">
 	<section class="surface-box panel">
-		<div class="intro">
+		<div class="intro" bind:clientHeight={introHeight}>
 			<h2 class="section-title">Contact</h2>
 
 			<p class="headline">What's on your radar?</p>
 			<p class="lede">
-				Whether it's an opportunity, an interesting problem, or a question: get in contact,
+				Whether it's an opportunity, an interesting problem, or a question: get in contact.
 				I'd love to connect.
 			</p>
 
@@ -178,6 +182,7 @@
 
 			<form onsubmit={sendMessage} oninput={onDraftEdit}>
 				<h3 class="eyebrow">Or send a message</h3>
+				<p class="form-note">All fields are required.</p>
 
 				<!-- Off-screen not display:none — some bots skip fields known to be inert. aria-hidden too, since tabindex="-1" alone still lets browse mode land on it. -->
 				<input
@@ -255,8 +260,11 @@
 			</form>
 		</div>
 
-		<!-- Decorative: the copy beside it carries the meaning. -->
-		<div class="bracket-frame" aria-hidden="true">
+		<!-- Decorative: the copy beside it carries the meaning. Pinned to .intro's own
+		     measured height, not left to stretch — same reason as About.svelte's .visual:
+		     an unmeasured box would size itself off the art's own aspect ratio instead of
+		     the column beside it, and cover/crop needs a definite height to crop against. -->
+		<div class="bracket-frame" aria-hidden="true" style:height={introHeight ? `${introHeight}px` : 'auto'}>
 			<div class="visual"><AsciiRadioDish /></div>
 		</div>
 	</section>
@@ -329,6 +337,9 @@
 
 	.channels {
 		display: grid;
+		/* Between the timeline list's tight rhythm (0.4rem) and the rule's own
+		   section-level spacing above — the touch target below is invisible now,
+		   so the row's visible height no longer forces this gap wider on its own. */
 		gap: 0.75rem;
 		margin: 0;
 		padding: 0;
@@ -339,15 +350,28 @@
 	   icon included — is one tap target, not just the label text. */
 	a.value,
 	.channels :global(.value) {
+		position: relative;
 		display: flex;
 		align-items: center;
 		gap: 0.75rem;
-		/* ~44px touch target: 1.35rem icon + this padding clears it either way. */
-		min-height: 2.75rem;
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
 		font-size: var(--fs-base);
 		text-decoration: none;
+	}
+
+	/* Invisible hit area, not real padding — same technique as the nav links and
+	   ActionLink's own cta/back variants, so a ~44px touch target doesn't inflate
+	   the visible row (and so the list above) past its natural text height. */
+	a.value::before,
+	.channels :global(.value)::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 0;
+		right: 0;
+		height: max(100%, 2.75rem);
+		transform: translateY(-50%);
 	}
 
 	.channels .icon {
@@ -368,15 +392,25 @@
 		text-decoration: underline;
 	}
 
-	/* Rasterised now (F11) — no cell grid to size by, just fills the box at its own baked-in 137:104 aspect ratio. */
-	.visual {
-		display: grid;
+	/* .bracket-frame is pinned to .intro's measured height (see style:height above) — the
+	   frame's own overflow:hidden crops whatever the art doesn't fit into that box. */
+	.bracket-frame {
+		overflow: hidden;
 	}
 
+	.visual {
+		display: grid;
+		height: 100%;
+	}
+
+	/* cover + bottom: the dish is anchored to the frame's floor and cropped from the
+	   top down, same treatment as the astronaut portrait (About.svelte). */
 	.visual :global(img) {
 		display: block;
 		width: 100%;
-		height: auto;
+		height: 100%;
+		object-fit: cover;
+		object-position: bottom;
 	}
 
 	/* Stacked, not two-up — this lives in the .intro column, under half the box's width. */
@@ -389,6 +423,12 @@
 		display: block;
 		margin-bottom: -0.25rem;
 		font-size: var(--fs-base);
+	}
+
+	.form-note {
+		margin: 0;
+		color: var(--text-faint);
+		font-size: var(--fs-sm);
 	}
 
 	.field {
