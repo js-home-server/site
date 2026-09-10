@@ -8,7 +8,7 @@
 		{
 			period: '2024 — Present',
 			title: 'Graduate Engineer, AWE',
-			detail: 'Recurring theme: turning noisy, high-volume signals into fast, reliable estimates, whether the source is sensors, radar, simulations or markets.',
+			detail: 'Turning noisy, high-volume signals into fast, reliable estimates.',
 			tools: ['Slurm', 'Python', 'scikit-learn', 'NumPy', 'MATLAB', 'CUDA'],
 			points: [
 				{
@@ -21,7 +21,7 @@
 				},
 				{
 					heading: '7.5× fewer simulations',
-					text: 'Built a surrogate-modelling based optimiser for expensive black-box simulators with a professor of statistics, cutting simulations required from 150,000 to 20,000. Also designed the stopping conditions and ported it to CUDA for a further 26× speedup over the CPU version. Shipped company-wide.'
+					text: 'Built a surrogate-modelling based multi objective optimiser for expensive black-box simulators with a professor of statistics, cutting simulations required from 150,000 to 20,000. Also designed the stopping conditions and ported it to CUDA for a further 26× speedup over the CPU version. Shipped company-wide.'
 				}
 			]
 		},
