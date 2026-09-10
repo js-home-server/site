@@ -391,8 +391,7 @@ test_html_proportions();`}</code></pre>
 
 	.mark {
 		flex: none;
-		/* -ink: plain --amber is 1.75:1 on this light ground. */
-		color: var(--amber-ink);
+		color: var(--amber);
 		font-size: var(--fs-base);
 	}
 
@@ -627,7 +626,7 @@ test_html_proportions();`}</code></pre>
 		padding: 0.85rem 0.95rem;
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-panel);
-		background: color-mix(in srgb, var(--color-foreground) 2%, #fff);
+		background: color-mix(in srgb, var(--color-foreground) 2%, var(--background));
 	}
 
 	/* --- the build list --------------------------------------------------- */

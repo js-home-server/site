@@ -460,14 +460,12 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 	/* Most classes here live in app.css (shared across all four studies) — this
 	   file only keeps its own accent. */
 	.study {
-		/* Darkened for 4.5:1 on this white card — plain --amber only hit 3.17:1. */
-		--ink: var(--amber-ink);
+		--ink: var(--amber);
 	}
 
 	.mark {
 		flex: none;
-		/* -ink: plain --amber is 1.75:1 on this light ground. */
-		color: var(--amber-ink);
+		color: var(--amber);
 		font-size: var(--fs-base);
 	}
 
@@ -485,7 +483,7 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 		padding: 0.45rem 0.8rem;
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-control);
-		background: color-mix(in srgb, var(--color-foreground) 3%, #fff);
+		background: color-mix(in srgb, var(--color-foreground) 3%, var(--background));
 		color: var(--color-foreground);
 		font-family: var(--font-mono);
 		font-size: var(--fs-xs);
@@ -828,13 +826,13 @@ store.serve_graph()            # the explorer, on localhost`}</code></pre>
 	}
 
 	.severity.high {
-		border-color: var(--coral-ink);
-		color: var(--coral-ink);
+		border-color: var(--coral);
+		color: var(--coral);
 	}
 
 	.closed {
-		border: 1px solid var(--mint-ink);
-		color: var(--mint-ink);
+		border: 1px solid var(--mint);
+		color: var(--mint);
 	}
 
 	/* --- the rewrite table ------------------------------------------------ */

@@ -635,9 +635,8 @@
 <style>
 	/* Most classes here (.box, .lede, .prose, .foot-note, .row...) live in app.css — this file only keeps track colours + local deltas. */
 	.study {
-		/* Darkened for 4.5:1 on this white card — plain --violet only hit 3.44:1. */
-		--ink-azure: var(--azure-ink);
-		--ink-violet: var(--violet-ink);
+		--ink-azure: var(--azure);
+		--ink-violet: var(--violet);
 	}
 
 	/* Collector vs research colour tag. Global: rendered by StudyHead, not this template. */
@@ -663,8 +662,7 @@
 	}
 
 	.mark.warn {
-		/* -ink: plain --amber is 1.75:1 on this light ground. */
-		color: var(--amber-ink);
+		color: var(--amber);
 		font-size: var(--fs-base);
 	}
 
@@ -876,8 +874,7 @@
 	.card-item li::before {
 		position: absolute;
 		left: 0;
-		/* -ink: plain --mint is 1.68:1 here. */
-		color: var(--mint-ink);
+		color: var(--mint);
 		content: '—';
 	}
 
@@ -1023,7 +1020,7 @@
 		padding: 0.85rem 0.95rem;
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-panel);
-		background: color-mix(in srgb, var(--color-foreground) 2%, #fff);
+		background: color-mix(in srgb, var(--color-foreground) 2%, var(--background));
 	}
 
 	/* --- the daily partitions --------------------------------------------- */
@@ -1128,7 +1125,7 @@
 	.falsify .value {
 		text-align: right;
 		white-space: nowrap;
-		color: var(--mint-ink);
+		color: var(--mint);
 		font-weight: 600;
 	}
 
@@ -1166,12 +1163,11 @@
 		font-weight: 700;
 	}
 
-	/* -ink token: plain --coral border was 1.8:1 on white. */
 	.verdict {
 		padding: 0.1rem 0.45rem;
-		border: 1px solid var(--coral-ink);
+		border: 1px solid var(--coral);
 		border-radius: 999px;
-		color: var(--coral-ink);
+		color: var(--coral);
 		font-family: var(--font-mono);
 		font-size: var(--fs-xs);
 		letter-spacing: 0.06em;

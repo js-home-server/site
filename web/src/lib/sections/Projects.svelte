@@ -195,7 +195,7 @@
 
 	/* Demo link reads as an action, not faint prose like the rest of the line. */
 	.proof :global(.action-link) {
-		color: var(--mint-ink);
+		color: var(--mint);
 	}
 
 	.proof-label {
@@ -221,7 +221,7 @@
 	.actions {
 		display: grid;
 		gap: 0.5rem;
-		color: var(--mint-ink);
+		color: var(--mint);
 	}
 
 	.links {

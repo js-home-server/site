@@ -27,9 +27,9 @@
    .dark block that app.html always carried, which meant the light half could
    never apply and was only ever read as a set of defaults nothing could reach.
    color-scheme is declared here so form controls, scrollbars and the canvas
-   the browser paints behind the page match. The one light surface on the site
-   is deliberate and separate — see --paper-* below, which the projects box and
-   the case studies wear on purpose. */
+   the browser paints behind the page match. There is no light surface left
+   on the site — .box (the case study datasheet card) used to be one; it now
+   reads the same --surface every other nested card does. */
 :root {
 	color-scheme: dark;
 
@@ -74,9 +74,8 @@
    wears the keyboard's own affordance, and unlayered so it always outranks
    Tailwind's own outline utility (`* { outline-ring/50 }`, base layer above) —
    that one sets a colour and nothing else, so nothing was actually drawing a
-   ring before this. --focus-ring is --mint on the dark ground this rule is
-   written against; .projects (Projects.svelte) shadows it to --mint-ink for
-   the light one, the same way it shadows every other token in this file. */
+   ring before this. --focus-ring is --mint, the one value, everywhere — the
+   site has one ground and no theme switch. */
 :focus-visible {
 	outline: 2px solid var(--focus-ring);
 	outline-offset: 2px;
@@ -117,18 +116,10 @@
 	   it sits between. */
 	--surface: color-mix(in srgb, var(--foreground) 3%, var(--background));
 
-	/* Fixed paper surface for the one light section inside the dark site. These
-	   stay independent of the active colour scheme so nested components can use
-	   the same semantic palette instead of restating literals locally. */
-	--paper-background: #f9f9f7;
-	--paper-foreground: #0b0b0b;
-	--paper-border: #e1e0d9;
-	--paper-rule: #c9c8c0;
-	--paper-text-dim: #55544f;
-	--paper-text-faint: #6b6a64;
-
 	/* One perceptual lightness and chroma, five distinct hues. Colour stays rare:
-	   mint/amber/coral carry state, the others distinguish related data. */
+	   mint/amber/coral carry state, the others distinguish related data. Tuned
+	   against #090909, where they clear 11:1 — the one ground the site has, so
+	   there is no second, paper-tuned set to keep in sync with this one. */
 	--mint: #95d6ab;
 	--amber: #dfc07f;
 	--coral: #f9aea7;
@@ -138,27 +129,9 @@
 	--violet: #c3bbfb;
 	--azure: #8dccf9;
 
-	/* The same five hues, darkened for the one surface that stands on the light
-	   background instead of the dark one — .projects and everything nested in
-	   it (the four study components all inherit through it). The base hues are
-	   tuned against #090909, where they clear 11:1; against #fff or #f9f9f7 they
-	   measure as low as 1.6:1, which fails text and UI contrast outright. Mixed
-	   toward the light theme's foreground until each still clears normal-text AA
-	   on paper. Mint stays slightly closer to its dark-ground colour than the
-	   others, landing at 4.5:1; the remaining inks retain more margin. Text,
-	   badges, borders and figures on paper read through one of these; the plain
-	   hues stay for the dark ground, where they already have contrast to spare. */
-	--mint-ink: color-mix(in srgb, var(--mint) 55%, var(--paper-foreground));
-	--amber-ink: color-mix(in srgb, var(--amber) 50%, var(--paper-foreground));
-	--coral-ink: color-mix(in srgb, var(--coral) 50%, var(--paper-foreground));
-	--violet-ink: color-mix(in srgb, var(--violet) 50%, var(--paper-foreground));
-	--azure-ink: color-mix(in srgb, var(--azure) 50%, var(--paper-foreground));
-
 	/* The one focus ring, everywhere: mint, since it is already the site's
 	   "current/active" colour — the nav's own current-page mark, every live
-	   indicator. Shadowed to --mint-ink wherever .projects shadows the rest of
-	   the palette light, for the same reason every accent there is: plain mint
-	   is a 1.6:1 outline on paper. */
+	   indicator. */
 	--focus-ring: var(--mint);
 
 	/* Baselines are painted on whole device pixels, so that is the only pitch a row
@@ -291,24 +264,10 @@
 	background: var(--surface);
 }
 
-/* The one light surface inside the dark site: the projects box and the case
-   studies it opens into. Shadows the site's own semantic tokens to the --paper-*
-   palette above, so everything nested inside reads the same names it always does
-   and comes out light. Must follow .surface-box, whose border and background it
-   overrides at equal specificity. Here rather than in the two components that
-   wear it — they had a copy each, and the copies had already drifted to raw
-   literals on one side and tokens on the other. */
-.projects {
-	--color-foreground: var(--paper-foreground);
-	--color-border: var(--paper-rule);
-	--text-dim: var(--paper-text-dim);
-	--text-faint: var(--paper-text-faint);
-	--focus-ring: var(--mint-ink);
-
-	border-color: var(--paper-border);
-	background: var(--paper-background);
-	color: var(--color-foreground);
-}
+/* The projects box (Projects.svelte) and the case study shell it opens into
+   (StudyPage.svelte) both wear .surface-box's own dark --surface and
+   --color-border like every other panel — .projects itself carries no rule
+   of its own any more. */
 
 /* Corner brackets around whatever stands in them — eight hairlines, two to a
    corner, drawn as backgrounds rather than elements: the same trick Placeholder
@@ -526,16 +485,16 @@
 	gap: 0.75rem;
 }
 
-/* A section of the datasheet: bordered, padded, on its own white card
-   regardless of the page's theme — a study reads as paper even on the dark
-   ground the rest of the site stands on. */
+/* A section of the datasheet: bordered, padded, one frame per section —
+   same nested-card shape as Dashboard's own .box (surface, border, panel
+   radius), just under a different name here since this one holds prose. */
 .box {
 	display: grid;
 	gap: 0.9rem;
 	padding: 1rem 1.15rem;
 	border: 1px solid var(--color-border);
 	border-radius: var(--radius-panel);
-	background: #fff;
+	background: var(--surface);
 }
 
 /* A block's opening: a heading over the line that follows it. */
@@ -641,7 +600,7 @@
 	padding: 0.7rem 0.75rem;
 	border: 1px solid var(--color-border);
 	border-radius: var(--radius-panel);
-	background: color-mix(in srgb, var(--color-foreground) 2%, #fff);
+	background: color-mix(in srgb, var(--color-foreground) 6%, var(--background));
 }
 
 .stage strong {
@@ -767,9 +726,8 @@
 	text-transform: uppercase;
 }
 
-/* The icon beside a note or a limit. display/line-height only — the size and,
-   on the studies with a light ground of their own, the -ink colour a plain
-   accent doesn't clear there, are local per study. */
+/* The icon beside a note or a limit. display/line-height only — the size
+   and colour are local per study. */
 .mark {
 	display: inline-flex;
 	line-height: 1;

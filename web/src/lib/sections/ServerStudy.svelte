@@ -478,7 +478,7 @@
 	/* Most classes here live in app.css (shared across all four studies) — this
 	   file just keeps its accent and its own layout quirks. */
 	.study {
-		--ink: var(--amber-ink);
+		--ink: var(--amber);
 	}
 
 	/* Fixed label column so every section lines up regardless of content. */
@@ -509,8 +509,7 @@
 	}
 
 	.mark.warn {
-		/* -ink: plain --amber is 1.75:1 on this light ground, under the 3:1 an icon needs. */
-		color: var(--amber-ink);
+		color: var(--amber);
 		font-size: var(--fs-base);
 	}
 
@@ -555,7 +554,7 @@
 		padding: 0.75rem 0.85rem;
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-panel);
-		background: color-mix(in srgb, var(--color-foreground) 2%, #fff);
+		background: color-mix(in srgb, var(--color-foreground) 2%, var(--background));
 	}
 
 	.tray h3 {
@@ -607,7 +606,7 @@
 		padding: 0.75rem 0.85rem;
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-panel);
-		background: color-mix(in srgb, var(--color-foreground) 2%, #fff);
+		background: color-mix(in srgb, var(--color-foreground) 2%, var(--background));
 	}
 
 	.flow h3 {
@@ -667,7 +666,7 @@
 		margin: 0;
 		padding: 0.6rem 0.7rem;
 		border-radius: var(--radius-control);
-		background: color-mix(in srgb, var(--color-foreground) 5%, #fff);
+		background: color-mix(in srgb, var(--color-foreground) 5%, var(--background));
 		color: var(--text-dim);
 		font-family: var(--font-mono);
 		font-size: var(--fs-sm);
@@ -713,19 +712,18 @@
 	.core-track {
 		height: 0.4rem;
 		border-radius: var(--radius-control);
-		background: color-mix(in srgb, var(--color-foreground) 8%, #fff);
+		background: color-mix(in srgb, var(--color-foreground) 8%, var(--background));
 	}
 
 	.core-track i {
 		display: block;
 		height: 100%;
 		border-radius: inherit;
-		background: color-mix(in srgb, var(--color-foreground) 25%, #fff);
+		background: color-mix(in srgb, var(--color-foreground) 25%, var(--background));
 	}
 
 	.core-track i.pinned {
-		/* -ink: plain --mint is 1.68:1 on this light ground. */
-		background: var(--mint-ink);
+		background: var(--mint);
 	}
 
 	.core-detail {

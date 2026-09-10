@@ -16,7 +16,7 @@
 	/* Dashed+grey vs solid violet — the curves overlap for four of six years, colour alone won't separate them for everyone. */
 	const curves = [
 		{ id: 'xsflow', label: 'XSFLOW', tone: 'var(--text-faint)', dashed: true, d: chart(points('xsflow'), DOMAIN) },
-		{ id: 'xsflowR', label: 'XSFLOW-R', tone: 'var(--violet-ink)', d: chart(points('xsflowR'), DOMAIN) }
+		{ id: 'xsflowR', label: 'XSFLOW-R', tone: 'var(--violet)', d: chart(points('xsflowR'), DOMAIN) }
 	];
 
 	const span = { from: equity.start, to: equity.start + (equity.xsflow.length - 1) * WEEK };
