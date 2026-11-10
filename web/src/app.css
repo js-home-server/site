@@ -177,6 +177,14 @@
 	/* Hero Headline (48px) - "Hi, I'm [Name] / Web Developer" */
 	--fs-h1: 3rem;
 
+	/* The small-spacing scale, for gaps and insets inside a component. Layout-level
+	   spacing stays on --pad and --gutter. */
+	--space-xs: 0.25rem;
+	--space-sm: 0.5rem;
+	--space-md: 0.75rem;
+	--space-lg: 1rem;
+	--space-xl: 1.5rem;
+
 	/* The breakpoint scale. CSS custom properties can't be read inside an
 	   @media condition, so this is a convention rather than a token — pick
 	   the narrowest of these that already fits a new query rather than

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-/* Flattens the three landing-page ASCII art components (bull, astronaut,
-   radio dish) from thousands of colour spans each into one <img> apiece (F11).
+/* Flattens the site's ASCII art components (bull, astronaut, radio dish, and the
+   Projects ship) from thousands of colour spans each into one <img> apiece (F11).
    Dev tool, not part of `npm run build` — run by hand whenever `make site` (in
    ../asciiArt) regenerates one of these back to span markup.
 
@@ -37,7 +37,8 @@ const WEBP_QUALITY = 85;
 const TARGETS = [
 	{ name: 'AsciiBull', asset: 'bull', imgAttrs: 'fetchpriority="high"' },
 	{ name: 'AsciiAstronaut', asset: 'astronaut', imgAttrs: 'loading="lazy" decoding="async"' },
-	{ name: 'AsciiRadioDish', asset: 'radio-dish', imgAttrs: 'loading="lazy" decoding="async"' }
+	{ name: 'AsciiRadioDish', asset: 'radio-dish', imgAttrs: 'loading="lazy" decoding="async"' },
+	{ name: 'AsciiShipCard', asset: 'ship-card', imgAttrs: 'loading="lazy" decoding="async"' }
 ];
 
 function hasCwebp() {
